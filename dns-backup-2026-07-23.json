@@ -1,0 +1,44 @@
+﻿[
+    {
+        "data":  "15.197.225.128",
+        "name":  "@",
+        "ttl":  3600,
+        "type":  "A"
+    },
+    {
+        "data":  "3.33.251.168",
+        "name":  "@",
+        "ttl":  3600,
+        "type":  "A"
+    },
+    {
+        "data":  "ns47.domaincontrol.com",
+        "name":  "@",
+        "ttl":  3600,
+        "type":  "NS"
+    },
+    {
+        "data":  "ns48.domaincontrol.com",
+        "name":  "@",
+        "ttl":  3600,
+        "type":  "NS"
+    },
+    {
+        "data":  "@",
+        "name":  "www",
+        "ttl":  3600,
+        "type":  "CNAME"
+    },
+    {
+        "data":  "_domainconnect.gd.domaincontrol.com",
+        "name":  "_domainconnect",
+        "ttl":  3600,
+        "type":  "CNAME"
+    },
+    {
+        "data":  "v=DMARC1; p=reject; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;",
+        "name":  "_dmarc",
+        "ttl":  3600,
+        "type":  "TXT"
+    }
+]
