@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Stop Santé | Couverture santé d'entreprise pour flottes de camions</title>
+    <meta name="description" content="La couverture santé d'entreprise à 8 $/mois par employé, sur Spruce (télémédecine 100 % asynchrone).">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-asphalt: #0B1220;
+            --bg-light: #F6F8FB;
+            --primary-navy: #14264A;
+            --text-dark: #101828;
+            --text-muted: #5B6779;
+            --text-muted-dark: #8b95a5;
+            --accent-amber: #F59E0B;
+            --surface-white: #FFFFFF;
+            --border-color: #D9E0EA;
+            --success-green: #059669;
+            
+            --font-heading: 'Barlow Condensed', sans-serif;
+            --font-body: 'Barlow', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            line-height: 1.1;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 72px;
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .brand {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--primary-navy);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand .accent {
+            color: var(--accent-amber);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--primary-navy);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-amber);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.125rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            text-align: center;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-amber);
+            color: var(--text-dark);
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(245, 158, 11, 0.3);
+            background-color: #fbbf24;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--surface-white);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--surface-white);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-cta {
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            color: var(--surface-white);
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto 40px;
+            text-transform: none;
+            font-family: var(--font-body);
+            letter-spacing: normal;
+        }
+
+        .hero .offer-line {
+            margin-bottom: 24px;
+        }
+
+        .hero .price-huge {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--accent-amber);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .hero .offer-sub {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero .support-line {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin: 0 auto 48px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .scarcity-line {
+            font-size: 0.875rem;
+            color: var(--accent-amber);
+            font-weight: 500;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* Highway Divider */
+        .highway-divider {
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(to right, var(--accent-amber), var(--accent-amber) 32px, transparent 32px, transparent 64px);
+            opacity: 0.9;
+            background-color: var(--bg-asphalt);
+        }
+
+        /* Sections General */
+        section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            color: var(--primary-navy);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        /* Story Section */
+        .story-card {
+            background-color: var(--surface-white);
+            border-radius: 12px;
+            padding: 48px;
+            box-shadow: 0 4px 6px rgba(16, 24, 40, 0.08);
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .story-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--primary-navy);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .story-followup {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .story-followup svg {
+            color: var(--accent-amber);
+            flex-shrink: 0;
+        }
+
+        /* Inclus Section */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background-color: var(--surface-white);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.04);
+            border: 1px solid var(--border-color);
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .checklist-item svg {
+            flex-shrink: 0;
+        }
+
+        .confidentiality-notice {
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 48px;
+        }
+
+        .confidentiality-notice svg {
+            color: var(--primary-navy);
+        }
+
+        /* RAMQ Section */
+        .ramq-section {
+            background-color: var(--primary-navy);
+            color: var(--surface-white);
+            padding: 80px 0;
+        }
+
+        .ramq-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .ramq-title {
+            color: var(--surface-white);
+            font-size: 2.5rem;
+            margin-bottom: 24px;
+        }
+
+        .ramq-lead {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-amber);
+            margin-bottom: 24px;
+        }
+
+        .ramq-text {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            background-color: var(--bg-light);
+        }
+
+        .pricing-card {
+            background-color: var(--surface-white);
+            border-radius: 12px;
+            padding: 56px 40px;
+            box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: var(--accent-amber);
+        }
+
+        .pricing-title {
+            font-size: 2rem;
+            color: var(--primary-navy);
+            margin-bottom: 24px;
+        }
+
+        .pricing-amount {
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .pricing-period {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            display: block;
+        }
+
+        .pricing-desc {
+            font-size: 1.125rem;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .pricing-card .btn-primary {
+            width: 100%;
+            font-size: 1.25rem;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .pricing-contact {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .pricing-contact a {
+            color: var(--primary-navy);
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: var(--accent-amber);
+            text-underline-offset: 4px;
+        }
+
+        /* FAQ Section */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        details {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.02);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 24px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--accent-amber);
+            font-weight: 400;
+            transition: transform 0.2s ease;
+        }
+
+        details[open] summary::after {
+            content: '−';
+        }
+
+        .faq-answer {
+            padding: 0 24px 24px;
+            font-size: 1.125rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-asphalt);
+            color: var(--text-muted-dark);
+            padding: 64px 0 40px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .footer-compliance {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 24px;
+        }
+
+        .footer-links a {
+            color: var(--surface-white);
+            text-decoration: underline;
+            text-decoration-color: var(--text-muted-dark);
+            text-underline-offset: 4px;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-amber);
+            text-decoration-color: var(--accent-amber);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+
+            .hero .price-huge {
+                font-size: 4rem;
+            }
+
+            .hero .offer-sub {
+                font-size: 1.25rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .story-card {
+                padding: 32px 24px;
+            }
+
+            .checklist-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ramq-title {
+                font-size: 2rem;
+            }
+
+            .pricing-card {
+                padding: 40px 24px;
+            }
+
+            .pricing-amount {
+                font-size: 4.5rem;
+            }
+
+            summary {
+                font-size: 1.125rem;
+                padding: 20px;
+            }
+
+            .faq-answer {
+                padding: 0 20px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container">
+            <div class="brand">
+                Truck Stop <span class="accent">Santé</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#programme">Le programme</a>
+                <a href="#inclus">Inclus</a>
+                <a href="#prix">Prix</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary nav-cta">Inscrire mes chauffeurs</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>« Ton camion a un garage attitré. »</h1>
+            <h2>« Mais tes camionneurs ont de la difficulté à trouver un service en santé. Donne-leur une clinique attitrée. »</h2>
+            
+            <div class="offer-line">
+                <span class="price-huge">8 $/mois</span>
+                <span class="offer-sub">par chauffeur. Le chauffeur ne paie jamais rien.</span>
+            </div>
+            
+            <p class="support-line">Service aux entreprises : sans-rendez-vous — urgences mineures ponctuelles en médecine familiale. Télémédecine et asynchrone, sur Spruce.</p>
+            
+            <div class="hero-actions">
+                <div class="hero-buttons">
+                    <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary">Inscrire mes chauffeurs</a>
+                    <a href="mailto:cff@centremedicalfont.ca" class="btn btn-secondary">Écrire à la clinique</a>
+                </div>
+                <div class="scarcity-line">Capacité limitée : 10 000 chauffeurs. Les premières flottes gardent leur place.</div>
+            </div>
+
+            <div class="hero-badges">
+                <div class="badge">100 % asynchrone</div>
+                <div class="badge">Sur Spruce</div>
+                <div class="badge">Français · Español · English</div>
+                <div class="badge">Permis CMQ 16812</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <section id="programme">
+        <div class="container">
+            <h2 class="section-title">Pourquoi ça marche</h2>
+            <div class="story-card">
+                <p class="story-text">« Un chauffeur, une infection urinaire, un mardi soir à Rivière-du-Loup. Évalué sur Spruce, prescription envoyée à la pharmacie la plus proche — traité sans quitter la route. Aucune journée perdue. »</p>
+                <div class="story-followup">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                    Sans absence. Sans déplacement. Sans quitter la route.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="inclus" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title">Inclus dans le 8 $/mois</h2>
+            
+            <div class="checklist-grid">
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Documents d'arrêt de travail (congés)
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Formulaires d'assurance
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Attestations d'aptitude
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Évaluations de retour au travail
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Références vers spécialistes
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Requêtes d'imagerie
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Prises de sang et laboratoires
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Suivis
+                </div>
+            </div>
+
+            <div class="confidentiality-notice">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                L'employeur reçoit l'attestation — jamais le dossier médical. Confidentialité complète, conforme à la Loi 25.
+            </div>
+        </div>
+    </section>
+
+    <section class="ramq-section">
+        <div class="container ramq-container">
+            <h2 class="ramq-title">Et les soins médicaux eux-mêmes?</h2>
+            <p class="ramq-lead">Les soins sont couverts par la RAMQ. Votre forfait couvre ce que la RAMQ ne couvre pas.</p>
+            <p class="ramq-text">La RAMQ paie les consultations, les traitements, les prescriptions et les suivis — aucun frais pour vous, aucun frais pour l'employé. Elle ne paie pas les attestations d'aptitude, les notes de retour au travail ni les formulaires d'assurance. C'est exactement ça que le forfait couvre.</p>
+        </div>
+    </section>
+
+    <section id="prix" class="pricing-section">
+        <div class="container">
+            <div class="pricing-card">
+                <h2 class="pricing-title">Couverture santé d'entreprise</h2>
+                <div class="pricing-amount">8 $</div>
+                <div class="pricing-period">/ mois / employé</div>
+                
+                <p class="pricing-desc">Service aux entreprises — l'employé ne paie jamais rien. Sans engagement. Quantité ajustable de 1 à 10 000 employés.</p>
+                
+                <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary">Inscrire ma flotte</a>
+                
+                <p class="pricing-contact">
+                    Ou écrivez-nous : <a href="mailto:cff@centremedicalfont.ca">cff@centremedicalfont.ca</a><br>
+                    — envoyez simplement votre liste d'employés.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title">Foire aux questions</h2>
+            <div class="faq-container">
+                <details>
+                    <summary>Quels problèmes de santé sont couverts par le sans-rendez-vous?</summary>
+                    <div class="faq-answer">Les urgences mineures ponctuelles en médecine familiale : infections, blessures mineures, renouvellements de médicaments stables, requêtes d'imagerie et de laboratoire, références. Sont exclus : les narcotiques, la santé mentale, les problèmes chroniques et la prise en charge en médecine familiale — ces suivis doivent se faire en présentiel.</div>
+                </details>
+                
+                <details>
+                    <summary>En quelles langues?</summary>
+                    <div class="faq-answer">Français, español, English — le médecin est hispanophone natif. Vos travailleurs étrangers sont servis directement dans leur langue, sans interprète.</div>
+                </details>
+
+                <details>
+                    <summary>Et les examens SAAQ des chauffeurs?</summary>
+                    <div class="faq-answer">Service régulier de la clinique, hors forfait et sans frais — voir <a href="https://m28.ca" target="_blank" style="text-decoration: underline; color: var(--primary-navy); font-weight: 700;">m28.ca</a>.</div>
+                </details>
+
+                <details>
+                    <summary>Offrez-vous des examens de préembauche?</summary>
+                    <div class="faq-answer">Non. La pratique est 100 % télémédecine asynchrone, sans examen physique.</div>
+                </details>
+
+                <details>
+                    <summary>Comment ça démarre?</summary>
+                    <div class="faq-answer">Vous vous inscrivez, vous envoyez votre liste d'employés à cff@centremedicalfont.ca, et vos employés reçoivent leur invitation Spruce. C'est tout.</div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-compliance">
+                Les services assurés par la RAMQ (consultations, traitements, prescriptions, suivis) sont facturés à la RAMQ et ne font l'objet d'aucuns frais pour l'employeur ni pour l'employé. Le présent forfait couvre exclusivement des services non assurés.
+            </div>
+            <div>
+                Dr Carlos Font, médecin de famille — Truck Stop Santé — permis CMQ 16812 — <a href="mailto:cff@centremedicalfont.ca" style="color: inherit; text-decoration: underline;">cff@centremedicalfont.ca</a>
+            </div>
+            <div class="footer-links">
+                Examens SAAQ : <a href="https://m28.ca" target="_blank">m28.ca</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
