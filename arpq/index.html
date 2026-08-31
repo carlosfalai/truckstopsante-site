@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Stop Santé × ARPQ | 8 $/mois — famille incluse</title>
+    <meta name="description" content="Offre aux membres de l'ARPQ : sans-rendez-vous en médecine familiale, télémédecine 100 % asynchrone sur Spruce — 8 $/mois par membre, famille adulte (18 ans et plus) incluse. Le tarif baisse à mesure que l'ARPQ grandit.">
+    <link rel="canonical" href="https://truckstopsante.com/arpq/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2314264A'/><text x='50' y='74' font-size='64' text-anchor='middle' fill='%23F59E0B' font-family='Arial,sans-serif' font-weight='bold'>T</text></svg>">
+    <meta name="theme-color" content="#0B1220">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:site_name" content="Truck Stop Santé">
+    <meta property="og:title" content="Truck Stop Santé × ARPQ — 8 $/mois, famille incluse">
+    <meta property="og:description" content="Offre aux membres de l'ARPQ : télémédecine 100 % asynchrone sur Spruce — 8 $/mois par membre, famille adulte (18 ans et plus) incluse. Le tarif baisse à mesure que l'ARPQ grandit.">
+    <meta property="og:url" content="https://truckstopsante.com/arpq/">
+    <meta property="og:image" content="https://truckstopsante.com/hero-poster.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-asphalt: #0B1220;
+            --bg-light: #F6F8FB;
+            --primary-navy: #14264A;
+            --text-dark: #101828;
+            --text-muted: #5B6779;
+            --text-muted-dark: #8b95a5;
+            --accent-amber: #F59E0B;
+            --surface-white: #FFFFFF;
+            --border-color: #D9E0EA;
+            --success-green: #059669;
+
+            --font-heading: 'Barlow Condensed', sans-serif;
+            --font-body: 'Barlow', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            line-height: 1.1;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 72px;
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            transition: box-shadow 0.25s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 4px 16px rgba(16, 24, 40, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 16px;
+        }
+
+        .brand {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--primary-navy);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .brand .accent {
+            color: var(--accent-amber);
+        }
+
+        .brand .partner {
+            margin-left: 10px;
+            padding-left: 12px;
+            border-left: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--primary-navy);
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-amber);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: none;
+        }
+
+        .lang-toggle {
+            display: flex;
+            flex: none;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .lang-toggle button {
+            flex: none;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .lang-toggle button[aria-pressed="true"] {
+            background-color: var(--accent-amber);
+            color: var(--text-dark);
+        }
+
+        .lang-toggle button:focus-visible {
+            outline: 2px solid var(--accent-amber);
+            outline-offset: 2px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.125rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            text-align: center;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-amber);
+            color: var(--text-dark);
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(245, 158, 11, 0.3);
+            background-color: #fbbf24;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--surface-white);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--surface-white);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-cta {
+            font-size: 1rem;
+            padding: 10px 20px;
+            white-space: nowrap;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-media {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-media video,
+        .hero-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(11,18,32,.82) 0%, rgba(11,18,32,.68) 45%, rgba(11,18,32,.88) 100%);
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero .eyebrow,
+        .hero h1,
+        .hero h2,
+        .hero .offer-line,
+        .hero .support-line,
+        .hero-actions,
+        .hero-badges {
+            opacity: 0;
+            animation: fadeUp .55s cubic-bezier(.16,1,.3,1) forwards;
+        }
+
+        .hero h1 { animation-delay: .05s; }
+        .hero h2 { animation-delay: .1s; }
+        .hero .offer-line { animation-delay: .18s; }
+        .hero .support-line { animation-delay: .26s; }
+        .hero-actions { animation-delay: .34s; }
+        .hero-badges { animation-delay: .42s; }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
+        }
+
+        .reveal.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero .eyebrow {
+            font-family: var(--font-heading);
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.6rem;
+            margin-bottom: 16px;
+            color: var(--surface-white);
+        }
+
+        .hero h2 {
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 760px;
+            margin: 0 auto 40px;
+            text-transform: none;
+            font-family: var(--font-body);
+            letter-spacing: normal;
+        }
+
+        .hero .offer-line {
+            margin-bottom: 24px;
+        }
+
+        .hero .price-huge {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--accent-amber);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .hero .offer-sub {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .hero .support-line {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin: 0 auto 48px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .scarcity-line {
+            font-size: 0.9rem;
+            color: var(--accent-amber);
+            font-weight: 500;
+        }
+
+        .docs-line {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .docs-line a {
+            color: var(--surface-white);
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: var(--accent-amber);
+            text-underline-offset: 4px;
+        }
+
+        .docs-line a:hover {
+            color: var(--accent-amber);
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* Highway Divider */
+        .highway-divider {
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(to right, var(--accent-amber), var(--accent-amber) 32px, transparent 32px, transparent 64px);
+            opacity: 0.9;
+            background-color: var(--bg-asphalt);
+            animation: laneScroll 1.6s linear infinite;
+        }
+
+        @keyframes laneScroll {
+            from { background-position-x: 0; }
+            to   { background-position-x: -64px; }
+        }
+
+        /* Proof strip */
+        .proof {
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .proof .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px 40px;
+            padding-top: 28px;
+            padding-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .proof-main {
+            display: flex;
+            align-items: center;
+            gap: 20px 32px;
+            flex-wrap: wrap;
+            flex: 1 1 480px;
+        }
+
+        .proof-score {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: none;
+        }
+
+        .proof-rating {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--primary-navy);
+        }
+
+        .proof-stars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .proof-stars svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+
+        .proof-count {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary-navy);
+        }
+
+        .proof-text {
+            max-width: 460px;
+        }
+
+        .proof-attr {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .proof-src {
+            margin-top: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted-dark);
+        }
+
+        .proof-receipt {
+            flex: none;
+            margin-left: auto;
+        }
+
+        .proof-receipt img {
+            display: block;
+            max-height: 180px;
+            width: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface-white);
+            padding: 6px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06);
+        }
+
+        @media (max-width: 860px) {
+            .proof-receipt { margin: 0 auto; }
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            color: var(--primary-navy);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-sub {
+            text-align: center;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: -32px auto 48px;
+        }
+
+        /* Steps */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px 28px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.04);
+            border-top: 4px solid var(--accent-amber);
+        }
+
+        .step-number {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-amber);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            color: var(--primary-navy);
+            margin-bottom: 8px;
+        }
+
+        .step-card p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Checklist */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+            max-width: 980px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            background-color: var(--surface-white);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .checklist-item.item-wide {
+            grid-column: 1 / -1;
+            border-left: 4px solid var(--accent-amber);
+        }
+
+        .checklist-item svg {
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .checklist-label {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .checklist-det {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .confidentiality-notice {
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 48px;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .confidentiality-notice svg {
+            color: var(--primary-navy);
+        }
+
+        /* Growth ladder (dark) */
+        .ladder-section {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+        }
+
+        .ladder-kicker {
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .ladder-section .section-title {
+            color: var(--surface-white);
+            margin-bottom: 56px;
+        }
+
+        .ladder {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            max-width: 980px;
+            margin: 0 auto;
+            border-top: 3px solid var(--accent-amber);
+        }
+
+        .ladder-cell {
+            padding: 32px 24px 0 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .ladder-cell:not(:first-child) {
+            padding-left: 24px;
+        }
+
+        .ladder-cell:last-child {
+            border-right: 0;
+        }
+
+        .ladder-price {
+            font-family: var(--font-heading);
+            font-size: 3.6rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-amber);
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .ladder-cell h3 {
+            font-size: 1.2rem;
+            color: var(--surface-white);
+            margin-bottom: 8px;
+        }
+
+        .ladder-cell p {
+            font-size: 0.95rem;
+            color: var(--text-muted-dark);
+            line-height: 1.5;
+        }
+
+        .ladder-note {
+            max-width: 760px;
+            margin: 48px auto 0;
+            text-align: center;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .ladder-note strong {
+            color: var(--accent-amber);
+        }
+
+        .ladder-fine {
+            max-width: 760px;
+            margin: 16px auto 0;
+            text-align: center;
+            font-size: 0.875rem;
+            font-style: italic;
+            color: var(--text-muted-dark);
+        }
+
+        /* Calc (light) */
+        .calc-kicker {
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .calc-section .section-title {
+            margin-bottom: 56px;
+        }
+
+        .calc-ledger {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            max-width: 980px;
+            margin: 0 auto;
+            border-top: 3px solid var(--primary-navy);
+        }
+
+        .calc-cell {
+            padding: 32px 28px 0 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .calc-cell:not(:first-child) {
+            padding-left: 28px;
+        }
+
+        .calc-cell:last-child {
+            border-right: 0;
+        }
+
+        .calc-figure {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--primary-navy);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .calc-cell h3 {
+            font-size: 1.35rem;
+            color: var(--primary-navy);
+            margin-bottom: 8px;
+        }
+
+        .calc-cell p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .calc-note {
+            max-width: 760px;
+            margin: 48px auto 0;
+            text-align: center;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .calc-note strong {
+            color: var(--primary-navy);
+        }
+
+        .calc-fine {
+            max-width: 760px;
+            margin: 16px auto 0;
+            text-align: center;
+            font-size: 0.875rem;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        /* FAQ */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        details {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.02);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 24px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--accent-amber);
+            font-weight: 400;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        details[open] summary::after {
+            content: '−';
+        }
+
+        .faq-answer {
+            padding: 0 24px 24px;
+            font-size: 1.125rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Contact */
+        .contact-block {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+            padding: 80px 0;
+        }
+
+        .contact-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-label {
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            margin-bottom: 20px;
+        }
+
+        .contact-email {
+            display: inline-block;
+            font-family: var(--font-heading);
+            font-size: 2.6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--surface-white);
+            word-break: break-word;
+        }
+
+        .contact-email:hover {
+            color: var(--accent-amber);
+        }
+
+        .contact-note {
+            margin-top: 16px;
+            font-size: 1rem;
+            color: var(--text-muted-dark);
+        }
+
+        .contact-note a {
+            color: var(--surface-white);
+            text-decoration: underline;
+            text-decoration-color: var(--text-muted-dark);
+            text-underline-offset: 4px;
+        }
+
+        .contact-note a:hover {
+            color: var(--accent-amber);
+        }
+
+        .doctor-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .doctor-row img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-amber);
+            flex-shrink: 0;
+        }
+
+        .doctor-id {
+            text-align: left;
+        }
+
+        .doctor-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--surface-white);
+        }
+
+        .doctor-cred {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted-dark);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-asphalt);
+            color: var(--text-muted-dark);
+            padding: 48px 0 40px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .footer-compliance {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 24px;
+        }
+
+        .footer-disclaimer {
+            font-style: italic;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 24px;
+        }
+
+        .footer-links a {
+            color: var(--surface-white);
+            text-decoration: underline;
+            text-decoration-color: var(--text-muted-dark);
+            text-underline-offset: 4px;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-amber);
+            text-decoration-color: var(--accent-amber);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 2.6rem;
+            }
+
+            .hero h2 {
+                font-size: 1.3rem;
+            }
+
+            .hero .price-huge {
+                font-size: 4rem;
+            }
+
+            .hero .offer-sub {
+                font-size: 1.15rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checklist-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ladder {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .ladder-cell {
+                border-right: 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+                padding: 24px 12px 24px 0;
+            }
+
+            .ladder-cell:not(:first-child) {
+                padding-left: 12px;
+            }
+
+            .ladder-cell:nth-child(odd) {
+                border-right: 1px solid rgba(255, 255, 255, 0.16);
+            }
+
+            .ladder-cell:nth-child(3),
+            .ladder-cell:nth-child(4) {
+                border-bottom: 0;
+            }
+
+            .calc-ledger {
+                grid-template-columns: 1fr;
+            }
+
+            .calc-cell {
+                border-right: 0;
+                border-bottom: 1px solid var(--border-color);
+                padding: 28px 0;
+            }
+
+            .calc-cell:not(:first-child) {
+                padding-left: 0;
+            }
+
+            .calc-cell:last-child {
+                border-bottom: 0;
+            }
+
+            summary {
+                font-size: 1.125rem;
+                padding: 20px;
+            }
+
+            .faq-answer {
+                padding: 0 20px 20px;
+                font-size: 1rem;
+            }
+
+            .contact-email {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 560px) {
+            header {
+                height: 60px;
+            }
+
+            .container.nav-container {
+                padding: 0 12px;
+                gap: 6px;
+            }
+
+            .brand {
+                font-size: 1.02rem;
+                letter-spacing: 0;
+                gap: 4px;
+            }
+
+            .brand .partner {
+                display: none;
+            }
+
+            .nav-cta {
+                font-size: 0.78rem;
+                padding: 8px 12px;
+            }
+
+            .lang-toggle button {
+                padding: 6px 8px;
+                font-size: 0.68rem;
+            }
+
+            .nav-right {
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .brand {
+                font-size: 0.92rem;
+            }
+
+            .brand .partner {
+                display: none;
+            }
+
+            .lang-toggle button {
+                padding: 5px 6px;
+                font-size: 0.64rem;
+            }
+
+            .nav-cta {
+                font-size: 0.72rem;
+                padding: 7px 9px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero .eyebrow, .hero h1, .hero h2, .hero .offer-line, .hero .support-line,
+            .hero-actions, .hero-badges {
+                animation: none;
+                opacity: 1;
+            }
+            .highway-divider { animation: none; }
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            html { scroll-behavior: auto; }
+            .btn, .btn-primary:hover { transition: none; transform: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container">
+            <div class="brand">
+                Truck Stop <span class="accent">Santé</span>
+                <span class="partner">ARPQ</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#programme" data-fr="Le programme" data-en="The program">Le programme</a>
+                <a href="#inclus" data-fr="Inclus" data-en="Included">Inclus</a>
+                <a href="#tarif" data-fr="Le tarif" data-en="Pricing">Le tarif</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <div class="nav-right">
+                <div class="lang-toggle" role="group" aria-label="Langue / Language">
+                    <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+                    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+                </div>
+                <a href="mailto:cff@centremedicalfont.ca" class="btn btn-primary nav-cta js-mail"><span class="cta-full" data-fr="M’inscrire" data-en="Enrol me">M’inscrire</span></a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-media" aria-hidden="true">
+            <video id="heroVideo" muted loop playsinline preload="none" poster="../hero-poster.jpg">
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="container">
+            <p class="eyebrow" data-fr="Offre aux membres de l’ARPQ" data-en="An offer for ARPQ members">Offre aux membres de l’ARPQ</p>
+            <h1 data-fr="« La route a ses imprévus. Ta santé a une clinique attitrée. »" data-en="“The road has its surprises. Your health has its own clinic.”">« La route a ses imprévus. Ta santé a une clinique attitrée. »</h1>
+            <h2 data-fr="Un problème de santé qui ne peut pas attendre ? Écris au médecin quand ça te convient — du camion, d’une halte ou de la maison. Sans rendez-vous, sans salle d’attente." data-en="A health problem that can’t wait? Write to the doctor whenever it suits you — from the truck, a rest stop or home. No appointment, no waiting room.">Un problème de santé qui ne peut pas attendre ? Écris au médecin quand ça te convient — du camion, d’une halte ou de la maison. Sans rendez-vous, sans salle d’attente.</h2>
+
+            <div class="offer-line">
+                <span class="price-huge" data-fr="8 $/mois" data-en="$8/month">8 $/mois</span>
+                <span class="offer-sub" data-fr="par membre — famille adulte (18 ans et plus) du foyer incluse." data-en="per member — adult family (18+) in your household included.">par membre — famille adulte (18 ans et plus) du foyer incluse.</span>
+            </div>
+
+            <p class="support-line" data-fr="Offre réservée aux membres de l’ARPQ : sans-rendez-vous — urgences mineures en médecine familiale. Télémédecine et asynchrone, sur Spruce. Peu importe le nombre de consultations." data-en="Reserved for ARPQ members: walk-in care — minor urgent care in family medicine. Telemedicine, fully asynchronous, on Spruce. However many consultations you need.">Offre réservée aux membres de l’ARPQ : sans-rendez-vous — urgences mineures en médecine familiale. Télémédecine et asynchrone, sur Spruce. Peu importe le nombre de consultations.</p>
+
+            <div class="hero-actions">
+                <div class="hero-buttons">
+                    <a href="mailto:cff@centremedicalfont.ca" class="btn btn-primary js-mail" data-fr="M’inscrire" data-en="Enrol me">M’inscrire</a>
+                    <a href="#inclus" class="btn btn-secondary" data-fr="Ce qui est inclus" data-en="What’s included">Ce qui est inclus</a>
+                </div>
+                <div class="scarcity-line" data-fr="Cohorte de lancement : 2 000 places, par vagues d’inscription. Les premiers membres gardent leur place." data-en="Launch cohort: 2,000 spots, enrolled in waves. The first members keep their spot.">Cohorte de lancement : 2 000 places, par vagues d’inscription. Les premiers membres gardent leur place.</div>
+                <div class="docs-line">
+                    <span data-fr="À partager :" data-en="To share:">À partager :</span>
+                    <a href="/arpq/truck-stop-sante-arpq-affiche-fr-en.pdf" target="_blank" rel="noopener" data-fr="Affiche FR/EN (PDF)" data-en="Poster FR/EN (PDF)">Affiche FR/EN (PDF)</a>
+                </div>
+            </div>
+
+            <div class="hero-badges">
+                <div class="badge" data-fr="100 % asynchrone" data-en="100% asynchronous">100 % asynchrone</div>
+                <div class="badge" data-fr="Sur Spruce" data-en="On Spruce">Sur Spruce</div>
+                <div class="badge">Français · Español · English</div>
+                <div class="badge" data-fr="Permis CMQ 16812" data-en="CMQ Licence 16812">Permis CMQ 16812</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <div class="proof">
+        <div class="container">
+            <div class="proof-main">
+                <div class="proof-score">
+                    <span class="proof-rating" data-fr="4,4" data-en="4.4">4,4</span>
+                    <span class="proof-stars" role="img" aria-label="4,4 / 5">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="star44"><stop offset="40%" stop-color="#F59E0B"/><stop offset="40%" stop-color="#D9E0EA"/></linearGradient></defs><path fill="url(#star44)" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                    </span>
+                </div>
+                <div class="proof-text">
+                    <div class="proof-count" data-fr="183 avis Google" data-en="183 Google reviews">183 avis Google</div>
+                    <p class="proof-attr" data-fr="Note obtenue au Centre Médical Font, la clinique d’origine derrière Truck Stop Santé." data-en="Rating earned at Centre Médical Font, the original clinic behind Truck Stop Santé.">Note obtenue au Centre Médical Font, la clinique d’origine derrière Truck Stop Santé.</p>
+                    <p class="proof-src">Centre Médical M28 · m28.ca</p>
+                </div>
+            </div>
+            <div class="proof-receipt">
+                <img src="../google-reviews.jpg" alt="Avis Google — Truck Stop Santé, 4,4 sur 5, 183 avis" loading="lazy" width="520" height="520">
+            </div>
+        </div>
+    </div>
+
+    <section id="programme">
+        <div class="container">
+            <h2 class="section-title" data-fr="Comment ça marche" data-en="How it works">Comment ça marche</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <h3 data-fr="Vous vous inscrivez" data-en="You enrol">Vous vous inscrivez</h3>
+                    <p data-fr="Un courriel suffit. Chaque membre inscrit reçoit son invitation Spruce — et peut ajouter les adultes de son foyer, sans frais." data-en="One email is all it takes. Every enrolled member receives their Spruce invitation — and can add the adults in their household, at no charge.">Un courriel suffit. Chaque membre inscrit reçoit son invitation Spruce — et peut ajouter les adultes de son foyer, sans frais.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <h3 data-fr="Vous écrivez" data-en="You write">Vous écrivez</h3>
+                    <p data-fr="Décrivez votre problème sur Spruce quand ça vous convient. Jour, soir ou fin de semaine." data-en="Describe your problem on Spruce whenever it suits you. Day, evening or weekend.">Décrivez votre problème sur Spruce quand ça vous convient. Jour, soir ou fin de semaine.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">3</span>
+                    <h3 data-fr="Le médecin répond" data-en="The doctor replies">Le médecin répond</h3>
+                    <p data-fr="Évaluation, puis ordonnance envoyée directement à votre pharmacie — où que vous soyez sur la route." data-en="Assessment, then the prescription goes straight to your pharmacy — wherever you are on the road.">Évaluation, puis ordonnance envoyée directement à votre pharmacie — où que vous soyez sur la route.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="inclus" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title" data-fr="Inclus dans le 8 $/mois" data-en="Included in the $8/month">Inclus dans le 8 $/mois</h2>
+            <p class="section-sub" data-fr="Un montant fixe, par membre, par mois — sans frais additionnels." data-en="A flat rate, per member, per month — no additional fees.">Un montant fixe, par membre, par mois — sans frais additionnels.</p>
+
+            <div class="checklist-grid">
+                <div class="checklist-item item-wide">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Famille incluse" data-en="Family included">Famille incluse</span>
+                        <span class="checklist-det" data-fr="Les membres adultes (18 ans et plus) de votre foyer sont couverts, sans frais additionnels — à votre demande" data-en="Adult family members (18 and over) in your household are covered at no extra charge — at your request">Les membres adultes (18 ans et plus) de votre foyer sont couverts, sans frais additionnels — à votre demande</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Urgences mineures et dépistage" data-en="Minor urgent care and screening">Urgences mineures et dépistage</span>
+                        <span class="checklist-det" data-fr="Infections, cystite, sinusite, ITSS, problèmes de peau, allergies, reflux gastrique, contraception, renouvellement d’ordonnances, diabète, cholestérol, thyroïde, apnée du sommeil, ostéoporose, fatigue, sevrage tabagique, etc." data-en="Infections, cystitis, sinusitis, STIs, skin problems, allergies, acid reflux, contraception, prescription renewals, diabetes, cholesterol, thyroid, sleep apnea, osteoporosis, fatigue, smoking cessation, etc.">Infections, cystite, sinusite, ITSS, problèmes de peau, allergies, reflux gastrique, contraception, renouvellement d’ordonnances, diabète, cholestérol, thyroïde, apnée du sommeil, ostéoporose, fatigue, sevrage tabagique, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Douleur musculosquelettique" data-en="Musculoskeletal pain">Douleur musculosquelettique</span>
+                        <span class="checklist-det" data-fr="Lombalgie, cervicalgie, douleur à l’épaule, foulures, entorses, tendinites, sciatalgie, douleur au genou, etc." data-en="Low back pain, neck pain, shoulder pain, strains, sprains, tendinitis, sciatica, knee pain, etc.">Lombalgie, cervicalgie, douleur à l’épaule, foulures, entorses, tendinites, sciatalgie, douleur au genou, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Santé mentale" data-en="Mental health">Santé mentale</span>
+                        <span class="checklist-det" data-fr="Dépression, anxiété, épuisement professionnel, crises de panique, insomnie, stress, deuil, etc. Références en psychothérapie" data-en="Depression, anxiety, burnout, panic attacks, insomnia, stress, grief, etc. Psychotherapy referrals">Dépression, anxiété, épuisement professionnel, crises de panique, insomnie, stress, deuil, etc. Références en psychothérapie</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Partout sur la route" data-en="Anywhere on the road">Partout sur la route</span>
+                        <span class="checklist-det" data-fr="Du camion, de la maison ou d’ailleurs — aucun déplacement, aucune file" data-en="From the truck, from home or anywhere else — no travel, no queue">Du camion, de la maison ou d’ailleurs — aucun déplacement, aucune file</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Documents d’arrêt de travail (congés)" data-en="Sick-leave documentation">Documents d’arrêt de travail (congés)</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Formulaires d’assurance" data-en="Insurance forms">Formulaires d’assurance</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Attestations d’aptitude" data-en="Fitness-for-duty attestations">Attestations d’aptitude</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Évaluations de retour au travail" data-en="Return-to-work evaluations">Évaluations de retour au travail</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Références vers spécialistes" data-en="Referrals to specialists">Références vers spécialistes</span>
+                        <span class="checklist-det" data-fr="Physiothérapie, massothérapie, kinésithérapie, nutrition, orthopédie, chirurgie plastique, psychiatrie, rhumatologie, neurologie, cardiologie, etc." data-en="Physiotherapy, massage therapy, kinesitherapy, nutrition, orthopedics, plastic surgery, psychiatry, rheumatology, neurology, cardiology, etc.">Physiothérapie, massothérapie, kinésithérapie, nutrition, orthopédie, chirurgie plastique, psychiatrie, rhumatologie, neurologie, cardiologie, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Requêtes d’imagerie" data-en="Imaging requisitions">Requêtes d’imagerie</span>
+                        <span class="checklist-det" data-fr="Radiographie, échographie, mammographie, densitométrie osseuse (DEXA), TDM, IRM" data-en="X-ray, ultrasound, mammography, bone densitometry (DEXA), CT, MRI">Radiographie, échographie, mammographie, densitométrie osseuse (DEXA), TDM, IRM</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Prises de sang et laboratoires" data-en="Blood work and labs">Prises de sang et laboratoires</span>
+                        <span class="checklist-det" data-fr="Bilans sanguins, cultures, dépistage ITSS" data-en="Blood panels, cultures, STI screening">Bilans sanguins, cultures, dépistage ITSS</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Suivis" data-en="Follow-ups">Suivis</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confidentiality-notice">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span data-fr="Les documents vous sont remis directement — vous décidez vous-même de ce que vous transmettez à votre employeur. Confidentialité conforme à la Loi 25." data-en="Documents are given directly to you — you decide what to pass on to your employer. Confidentiality compliant with Quebec’s Law 25.">Les documents vous sont remis directement — vous décidez vous-même de ce que vous transmettez à votre employeur. Confidentialité conforme à la Loi 25.</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="tarif" class="ladder-section">
+        <div class="container">
+            <p class="ladder-kicker" data-fr="L’échelle de croissance ARPQ" data-en="The ARPQ growth ladder">L’échelle de croissance ARPQ</p>
+            <h2 class="section-title" data-fr="Plus l’ARPQ grandit, moins ça coûte — pour tout le monde." data-en="The more the ARPQ grows, the less everyone pays.">Plus l’ARPQ grandit, moins ça coûte — pour tout le monde.</h2>
+            <div class="ladder">
+                <div class="ladder-cell">
+                    <span class="ladder-price" data-fr="8 $" data-en="$8">8 $</span>
+                    <h3 data-fr="Au lancement" data-en="At launch">Au lancement</h3>
+                    <p data-fr="Par membre, par mois. Famille adulte (18 ans et plus) incluse." data-en="Per member, per month. Adult family (18+) included.">Par membre, par mois. Famille adulte (18 ans et plus) incluse.</p>
+                </div>
+                <div class="ladder-cell">
+                    <span class="ladder-price" data-fr="7 $" data-en="$7">7 $</span>
+                    <h3 data-fr="À 2 500 membres" data-en="At 2,500 members">À 2 500 membres</h3>
+                    <p data-fr="Le tarif baisse pour tous les membres inscrits." data-en="The price drops for every enrolled member.">Le tarif baisse pour tous les membres inscrits.</p>
+                </div>
+                <div class="ladder-cell">
+                    <span class="ladder-price" data-fr="6 $" data-en="$6">6 $</span>
+                    <h3 data-fr="À 5 000 membres" data-en="At 5,000 members">À 5 000 membres</h3>
+                    <p data-fr="Le tarif baisse encore — pour tous." data-en="The price drops again — for everyone.">Le tarif baisse encore — pour tous.</p>
+                </div>
+                <div class="ladder-cell">
+                    <span class="ladder-price" data-fr="5 $" data-en="$5">5 $</span>
+                    <h3 data-fr="À 10 000 membres" data-en="At 10,000 members">À 10 000 membres</h3>
+                    <p data-fr="Le tarif plancher. Famille toujours incluse." data-en="The floor price. Family still included.">Le tarif plancher. Famille toujours incluse.</p>
+                </div>
+            </div>
+            <p class="ladder-note" data-fr="Chaque palier s’applique à <strong>tous les membres inscrits</strong> dès qu’il est atteint — les premiers inscrits en profitent autant que les nouveaux. Recruter un collègue, c’est faire baisser sa propre facture." data-en="Each tier applies to <strong>every enrolled member</strong> as soon as it is reached — early members benefit as much as new ones. Recruiting a colleague lowers your own bill.">Chaque palier s’applique à <strong>tous les membres inscrits</strong> dès qu’il est atteint — les premiers inscrits en profitent autant que les nouveaux. Recruter un collègue, c’est faire baisser sa propre facture.</p>
+            <p class="ladder-fine" data-fr="Offre réservée aux membres en règle de l’ARPQ. Paliers calculés sur les inscriptions actives au service." data-en="Reserved for ARPQ members in good standing. Tiers are based on active enrolments in the service.">Offre réservée aux membres en règle de l’ARPQ. Paliers calculés sur les inscriptions actives au service.</p>
+        </div>
+    </section>
+
+    <section class="calc-section">
+        <div class="container">
+            <p class="calc-kicker" data-fr="Le calcul" data-en="The arithmetic">Le calcul</p>
+            <h2 class="section-title" data-fr="Une demi-journée sauvée par année, et le service est payé." data-en="One half-day saved per year, and the service has paid for itself.">Une demi-journée sauvée par année, et le service est payé.</h2>
+            <div class="calc-ledger">
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="4 h" data-en="4 h">4 h</span>
+                    <h3 data-fr="Une visite au sans-rendez-vous" data-en="One walk-in clinic visit">Une visite au sans-rendez-vous</h3>
+                    <p data-fr="Détour, attente, retour. La demi-journée y passe." data-en="A detour, waiting, the drive back. There goes the half-day.">Détour, attente, retour. La demi-journée y passe.</p>
+                </div>
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="0 h" data-en="0 h">0 h</span>
+                    <h3 data-fr="Une consultation asynchrone" data-en="One asynchronous consultation">Une consultation asynchrone</h3>
+                    <p data-fr="Vous écrivez, le médecin répond. Aucune absence, aucun déplacement." data-en="You write, the doctor replies. No absence, no travel.">Vous écrivez, le médecin répond. Aucune absence, aucun déplacement.</p>
+                </div>
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="96 $" data-en="$96">96 $</span>
+                    <h3 data-fr="Le coût annuel, au maximum" data-en="The annual cost, at most">Le coût annuel, au maximum</h3>
+                    <p data-fr="8 $ par mois, famille incluse — et moins à mesure que l’ARPQ grandit. Peu importe le nombre de consultations." data-en="$8 a month, family included — and less as the ARPQ grows. However many consultations you need.">8 $ par mois, famille incluse — et moins à mesure que l’ARPQ grandit. Peu importe le nombre de consultations.</p>
+                </div>
+            </div>
+            <p class="calc-note" data-fr="À 24 $ l’heure, quatre heures perdues coûtent <strong>96 $</strong> — exactement une année de service. Tout ce qui suit est un gain net." data-en="At $24 an hour, four lost hours cost <strong>$96</strong> — exactly one year of service. Everything after that is net gain.">À 24 $ l’heure, quatre heures perdues coûtent <strong>96 $</strong> — exactement une année de service. Tout ce qui suit est un gain net.</p>
+            <p class="calc-fine" data-fr="Exemple illustratif." data-en="Illustrative example.">Exemple illustratif.</p>
+        </div>
+    </section>
+
+    <section id="faq" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title" data-fr="Foire aux questions" data-en="Frequently asked questions">Foire aux questions</h2>
+            <div class="faq-container">
+                <details>
+                    <summary><span data-fr="Quels problèmes de santé sont couverts par le sans-rendez-vous?" data-en="What health problems does the walk-in service cover?">Quels problèmes de santé sont couverts par le sans-rendez-vous?</span></summary>
+                    <div class="faq-answer" data-fr="Les urgences mineures et le dépistage en médecine familiale : infections, blessures mineures, douleur musculosquelettique, santé mentale, renouvellements de médicaments stables, requêtes d’imagerie et de laboratoire, références vers spécialistes. Sont exclus : les narcotiques. Le service ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence — en cas d’urgence, composez le 9-1-1." data-en="Minor urgent care and screening in family medicine: infections, minor injuries, musculoskeletal pain, mental health, stable prescription renewals, imaging and lab requisitions, referrals to specialists. Excluded: narcotics. The service does not replace enrolment with a family doctor or emergency care — in an emergency, call 9-1-1.">Les urgences mineures et le dépistage en médecine familiale : infections, blessures mineures, douleur musculosquelettique, santé mentale, renouvellements de médicaments stables, requêtes d’imagerie et de laboratoire, références vers spécialistes. Sont exclus : les narcotiques. Le service ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence — en cas d’urgence, composez le 9-1-1.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Ma famille est vraiment incluse?" data-en="Is my family really included?">Ma famille est vraiment incluse?</span></summary>
+                    <div class="faq-answer" data-fr="Oui — les membres adultes (18 ans et plus) de votre foyer sont couverts avec votre abonnement, sans frais additionnels. Vous les ajoutez à votre demande, au moment de l’inscription ou plus tard." data-en="Yes — adult family members (18 and over) in your household are covered with your subscription, at no extra charge. You add them at your request, at enrolment or later.">Oui — les membres adultes (18 ans et plus) de votre foyer sont couverts avec votre abonnement, sans frais additionnels. Vous les ajoutez à votre demande, au moment de l’inscription ou plus tard.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Comment fonctionne l’échelle de tarifs?" data-en="How does the price ladder work?">Comment fonctionne l’échelle de tarifs?</span></summary>
+                    <div class="faq-answer" data-fr="Le tarif de départ est 8 $/mois par membre. Quand les inscriptions actives atteignent 2 500 membres, tout le monde passe à 7 $/mois; à 5 000 membres, 6 $/mois; à 10 000 membres, 5 $/mois — le tarif plancher. La famille reste incluse à tous les paliers." data-en="The starting price is $8/month per member. When active enrolments reach 2,500 members, everyone moves to $7/month; at 5,000 members, $6/month; at 10,000 members, $5/month — the floor price. Family stays included at every tier.">Le tarif de départ est 8 $/mois par membre. Quand les inscriptions actives atteignent 2 500 membres, tout le monde passe à 7 $/mois; à 5 000 membres, 6 $/mois; à 10 000 membres, 5 $/mois — le tarif plancher. La famille reste incluse à tous les paliers.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="En quelles langues?" data-en="In which languages?">En quelles langues?</span></summary>
+                    <div class="faq-answer" data-fr="Français, español, English — le médecin est hispanophone natif." data-en="French, Spanish, English — the doctor is a native Spanish speaker.">Français, español, English — le médecin est hispanophone natif.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Pourquoi une cohorte de lancement?" data-en="Why a launch cohort?">Pourquoi une cohorte de lancement?</span></summary>
+                    <div class="faq-answer" data-fr="Le lancement se fait par vagues — les 2 000 premières places d’abord, puis le déploiement à l’ensemble des membres à mesure que l’équipe de médecins grandit. C’est ce qui garantit la qualité du service dès le premier jour. Les premiers inscrits gardent leur place." data-en="The launch happens in waves — the first 2,000 spots first, then rollout to all members as the physician team grows. That is what guarantees quality of service from day one. The first enrolled keep their spot.">Le lancement se fait par vagues — les 2 000 premières places d’abord, puis le déploiement à l’ensemble des membres à mesure que l’équipe de médecins grandit. C’est ce qui garantit la qualité du service dès le premier jour. Les premiers inscrits gardent leur place.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Et les examens SAAQ?" data-en="What about SAAQ exams?">Et les examens SAAQ?</span></summary>
+                    <div class="faq-answer" data-fr="Service régulier de la clinique, hors forfait et sans frais — voir <a href='https://m28.ca' target='_blank' rel='noopener' style='text-decoration: underline; color: var(--primary-navy); font-weight: 700;'>m28.ca</a>." data-en="A regular service of the clinic, outside this plan and at no charge — see <a href='https://m28.ca' target='_blank' rel='noopener' style='text-decoration: underline; color: var(--primary-navy); font-weight: 700;'>m28.ca</a>.">Service régulier de la clinique, hors forfait et sans frais — voir <a href="https://m28.ca" target="_blank" rel="noopener" style="text-decoration: underline; color: var(--primary-navy); font-weight: 700;">m28.ca</a>.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Comment ça démarre?" data-en="How does it start?">Comment ça démarre?</span></summary>
+                    <div class="faq-answer" data-fr="Vous vous inscrivez par courriel à cff@centremedicalfont.ca, vous recevez votre invitation Spruce, et c’est tout. Votre famille peut être ajoutée au même moment." data-en="You enrol by email at cff@centremedicalfont.ca, you receive your Spruce invitation, and that’s it. Your family can be added at the same time.">Vous vous inscrivez par courriel à cff@centremedicalfont.ca, vous recevez votre invitation Spruce, et c’est tout. Votre famille peut être ajoutée au même moment.</div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <div class="contact-block">
+        <div class="container contact-inner">
+            <p class="contact-label" data-fr="S’inscrire ou poser une question" data-en="Enrol or ask a question">S’inscrire ou poser une question</p>
+            <a class="contact-email js-mail" href="mailto:cff@centremedicalfont.ca">cff@centremedicalfont.ca</a>
+            <p class="contact-note" data-fr="Membre de l’ARPQ ? Cette offre est pour vous — <a href='https://arpq.org' target='_blank' rel='noopener'>arpq.org</a>. La clinique derrière le service : Centre Médical Font — <a href='https://m28.ca' target='_blank' rel='noopener'>m28.ca</a>" data-en="ARPQ member? This offer is for you — <a href='https://arpq.org' target='_blank' rel='noopener'>arpq.org</a>. The clinic behind the service: Centre Médical Font — <a href='https://m28.ca' target='_blank' rel='noopener'>m28.ca</a>">Membre de l’ARPQ ? Cette offre est pour vous — <a href="https://arpq.org" target="_blank" rel="noopener">arpq.org</a>. La clinique derrière le service : Centre Médical Font — <a href="https://m28.ca" target="_blank" rel="noopener">m28.ca</a></p>
+            <div class="doctor-row">
+                <img src="../dr-carlos-font.jpg" alt="Dr Carlos Font" loading="lazy" width="200" height="200">
+                <div class="doctor-id">
+                    <div class="doctor-name">D<sup>r</sup> Carlos Font</div>
+                    <div class="doctor-cred" data-fr="Médecin de famille · Permis CMQ 16812" data-en="Family physician · CMQ Licence 16812">Médecin de famille · Permis CMQ 16812</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-compliance" data-fr="Les services assurés par la RAMQ (consultations, traitements, prescriptions, suivis) sont facturés à la RAMQ et ne font l’objet d’aucuns frais pour le membre. Le présent forfait couvre exclusivement des services non assurés." data-en="Services insured by the RAMQ (consultations, treatments, prescriptions, follow-ups) are billed to the RAMQ and involve no charge to the member. This plan covers exclusively uninsured services.">
+                Les services assurés par la RAMQ (consultations, traitements, prescriptions, suivis) sont facturés à la RAMQ et ne font l’objet d’aucuns frais pour le membre. Le présent forfait couvre exclusivement des services non assurés.
+            </div>
+            <div class="footer-disclaimer" data-fr="Le service couvre les urgences mineures, le dépistage et les suivis ponctuels. Il ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence. En cas d’urgence, composez le 9-1-1." data-en="The service covers minor urgent care, screening and episodic follow-up. It does not replace enrolment with a family doctor or emergency care. In an emergency, call 9-1-1.">
+                Le service couvre les urgences mineures, le dépistage et les suivis ponctuels. Il ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence. En cas d’urgence, composez le 9-1-1.
+            </div>
+            <div>
+                <span data-fr="Dr Carlos Font, médecin de famille — Truck Stop Santé — permis CMQ 16812 —" data-en="Dr Carlos Font, family physician — Truck Stop Santé — CMQ licence 16812 —">Dr Carlos Font, médecin de famille — Truck Stop Santé — permis CMQ 16812 —</span> <a href="mailto:cff@centremedicalfont.ca" style="color: inherit; text-decoration: underline;">cff@centremedicalfont.ca</a>
+            </div>
+            <div class="footer-links">
+                <span data-fr="Examens SAAQ :" data-en="SAAQ exams:">Examens SAAQ :</span> <a href="https://m28.ca" target="_blank" rel="noopener">m28.ca</a> · <span data-fr="Employeurs et flottes :" data-en="Employers and fleets:">Employeurs et flottes :</span> <a href="/">truckstopsante.com</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        var header = document.querySelector('header');
+        var onScroll = function () { header.classList.toggle('scrolled', window.scrollY > 8); };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        var i18nNodes = document.querySelectorAll('[data-fr][data-en]');
+        var langButtons = document.querySelectorAll('.lang-toggle button');
+        var MAIL = {
+            fr: 'mailto:cff@centremedicalfont.ca?subject=' +
+                encodeURIComponent('Inscription — Truck Stop Santé (ARPQ)') + '&body=' +
+                encodeURIComponent('Bonjour Dr Font,\n\nJe suis membre de l’ARPQ et je souhaite m’inscrire au service Truck Stop Santé.\n\nNom complet : \nCourriel : \nTéléphone : \nMembres de la famille (18 ans et plus) à inclure : \n\nMerci !'),
+            en: 'mailto:cff@centremedicalfont.ca?subject=' +
+                encodeURIComponent('Enrolment — Truck Stop Santé (ARPQ)') + '&body=' +
+                encodeURIComponent('Hello Dr Font,\n\nI am an ARPQ member and I would like to enrol in the Truck Stop Santé service.\n\nFull name: \nEmail: \nPhone: \nFamily members (18 and over) to include: \n\nThank you!')
+        };
+
+        function setLang(lang) {
+            document.documentElement.lang = lang === 'en' ? 'en-CA' : 'fr';
+            i18nNodes.forEach(function (n) { n.innerHTML = n.getAttribute('data-' + lang); });
+            langButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+            document.querySelectorAll('.js-mail').forEach(function (a) { a.setAttribute('href', MAIL[lang]); });
+            try { localStorage.setItem('tss-lang', lang); } catch (e) {}
+        }
+
+        langButtons.forEach(function (b) {
+            b.addEventListener('click', function () { setLang(b.dataset.lang); });
+        });
+
+        var saved = null;
+        try { saved = localStorage.getItem('tss-lang'); } catch (e) {}
+        if (saved === 'en') { setLang('en'); } else { setLang('fr'); }
+
+        var v = document.getElementById('heroVideo');
+        var conn = navigator.connection || {};
+        if (v && !reduced && window.innerWidth >= 768 && !conn.saveData) {
+            var s = document.createElement('source');
+            s.src = '../hero.mp4';
+            s.type = 'video/mp4';
+            v.appendChild(s);
+            v.load();
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+        }
+
+        if (reduced) return;
+
+        var groups = [
+            ['.proof-main', 0],
+            ['.proof-receipt', 0],
+            ['.section-title', 0],
+            ['.step-card', 70],
+            ['.checklist-item', 40],
+            ['.confidentiality-notice', 0],
+            ['.ladder-kicker', 0],
+            ['.ladder-cell', 70],
+            ['.ladder-note', 0],
+            ['.ladder-fine', 0],
+            ['.calc-kicker', 0],
+            ['.calc-cell', 70],
+            ['.calc-note', 0],
+            ['.calc-fine', 0],
+            ['#faq details', 60],
+            ['.contact-inner', 0]
+        ];
+        var targets = [];
+        groups.forEach(function (g) {
+            Array.prototype.forEach.call(document.querySelectorAll(g[0]), function (el, i) {
+                el.classList.add('reveal');
+                el.style.transitionDelay = (i * g[1]) + 'ms';
+                targets.push(el);
+            });
+        });
+
+        if (!('IntersectionObserver' in window)) {
+            targets.forEach(function (el) { el.classList.add('in'); });
+            return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        targets.forEach(function (el) { io.observe(el); });
+    })();
+    </script>
+
+</body>
+</html>
