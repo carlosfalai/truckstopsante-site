@@ -21,6 +21,9 @@ const TG_CHAT = process.env.TELEGRAM_CHAT_ID || "";
 const SPRUCE_AUTH = process.env.SPRUCE_AUTH || ""; // "Basic …" — même valeur que spruce-invite-today.js
 const AUTO_INVITE = (process.env.AUTO_INVITE || "oui") === "oui";
 const COVERAGES = ["indeterminee", "3", "6", "12"];
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const ADMIN_GOOGLE_EMAILS = (process.env.ADMIN_GOOGLE_EMAILS || "").toLowerCase().split(",").map((e) => e.trim()).filter(Boolean);
+const splitEmails = (v) => String(v || "").toLowerCase().split(/[,;\s]+/).map((e) => e.trim()).filter(Boolean);
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +41,23 @@ const digits = (p) => String(p || "").replace(/\D/g, "");
 const e164 = (p) => { let d = digits(p); if (d.length === 10) d = "1" + d; return d.length === 11 ? "+" + d : ""; };
 const validPhone = (p) => digits(p).length >= 10;
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+/* ---------- Google (connexion des entreprises, jamais des membres) ---------- */
+// Vérifie un ID token "Sign in with Google" : signature + audience validées par Google, courriel vérifié exigé.
+async function verifyGoogle(idToken) {
+  if (!GOOGLE_CLIENT_ID || !idToken) return null;
+  try {
+    const r = await fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(idToken));
+    if (!r.ok) return null;
+    const t = await r.json();
+    if (t.aud !== GOOGLE_CLIENT_ID || t.email_verified !== "true" || !t.email) return null;
+    return { email: String(t.email).toLowerCase(), sub: t.sub, name: t.name || "", picture: t.picture || "" };
+  } catch { return null; }
+}
+async function findPartnerByGoogleEmail(email) {
+  const all = await listPartners();
+  return all.find((p) => p.active !== "non" && (splitEmails(p.google_emails).includes(email) || (p.contact_email || "").toLowerCase() === email)) || null;
+}
 
 /* ---------- DynamoDB helpers ---------- */
 const unmarshal = (it) => {
@@ -205,7 +225,7 @@ async function telegram(text, partner) {
 }
 
 /* ---------- Résumé ---------- */
-function summary(members, billing) {
+function summary(members, billing, full) {
   const actifs = members.filter((m) => m.status === "actif");
   const pause = members.filter((m) => m.status === "pause");
   const retires = members.filter((m) => m.status === "retire");
@@ -220,7 +240,7 @@ function summary(members, billing) {
     actifs: actifs.length, pause: pause.length, retires: retires.length,
     prix: PRIX, montant: actifs.length * PRIX,
     ajouts_mois: ajoutsMois, pauses_mois: pausesMois, retraits_mois: retraitsMois,
-    a_inviter: aInviter, invitations_en_attente: enAttente,
+    ...(full ? { a_inviter: aInviter, invitations_en_attente: enAttente } : {}),
     banque_consultations: banque,
     places_payees: billing?.quantite ?? null,
     prochaine_facture: billing?.prochaine_facture || null,
@@ -228,18 +248,18 @@ function summary(members, billing) {
   };
 }
 const monthsSince = (iso) => { if (!iso) return 0; const d = (Date.now() - new Date(iso).getTime()) / (30.44 * 86400000); return Math.max(0, Math.floor(d)); };
-const publicMember = (m) => ({
+const publicMember = (m, full) => ({
   id: m.id, first_name: m.first_name, last_name: m.last_name, phone: m.phone, email: m.email,
   status: m.status, family_of: m.family_of || "", note: m.note || "",
   since_months: m.since_months ? Number(m.since_months) : 0, coverage: m.coverage || "indeterminee",
   created_at: m.created_at, months_covered: monthsSince(m.created_at), paused_at: m.paused_at || "", removed_at: m.removed_at || "",
-  spruce: m.spruce || "a_inviter", spruce_detail: m.spruce_detail || "", spruce_invited_at: m.spruce_invited_at || "",
+  ...(full ? { spruce: m.spruce || "a_inviter", spruce_detail: m.spruce_detail || "", spruce_invited_at: m.spruce_invited_at || "" } : {}),
 });
 const publicPartner = (p) => ({
   code: p.code, name: p.name, type: p.type, contact_name: p.contact_name, contact_email: p.contact_email,
   contact_phone: p.contact_phone, billing_email: p.billing_email, created_at: p.created_at,
   stripe_subscription_id: p.stripe_subscription_id || "", stripe_customer_id: p.stripe_customer_id || "",
-  bank_code: p.bank_code || "", demo: p.demo === "oui",
+  bank_code: p.bank_code || "", demo: p.demo === "oui", google_emails: splitEmails(p.google_emails),
 });
 function makeCode(name) {
   const base = clean(name, 12).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "TSS";
@@ -305,6 +325,26 @@ export const handler = async (event) => {
       return reply(200, { ok: true, role: "partner", partner: publicPartner(p) });
     }
 
+    // Connexion Google : le courriel Google doit être connu (contact de l'entreprise ou courriel lié). Sinon, lier une fois avec le code.
+    if (path === "/login/google" && method === "POST") {
+      const g = await verifyGoogle(clean(data.credential, 4000));
+      if (!g) return reply(401, { error: "bad_google" });
+      if (ADMIN_GOOGLE_EMAILS.includes(g.email)) return reply(200, { ok: true, role: "admin", code: ADMIN_CODE, google: { email: g.email, name: g.name } });
+      const p = await findPartnerByGoogleEmail(g.email);
+      if (!p) return reply(404, { error: "unknown_google", email: g.email });
+      return reply(200, { ok: true, role: "partner", code: p.code, partner: publicPartner(p), google: { email: g.email, name: g.name } });
+    }
+    if (path === "/login/google/link" && method === "POST") {
+      const g = await verifyGoogle(clean(data.credential, 4000));
+      if (!g) return reply(401, { error: "bad_google" });
+      const p = await getPartner(code);
+      if (!p) return reply(401, { error: "bad_code" });
+      const emails = splitEmails(p.google_emails);
+      if (!emails.includes(g.email)) { emails.push(g.email); await updateFields(T_PARTNERS, { code: S(p.code) }, { google_emails: emails.join(",") }); p.google_emails = emails.join(","); }
+      await telegram(`Portail TSS — ${p.name} a lié le compte Google ${g.email}`, p);
+      return reply(200, { ok: true, role: "partner", code: p.code, partner: publicPartner(p), google: { email: g.email, name: g.name } });
+    }
+
     /* ----- Admin : vue globale ----- */
     if (path === "/admin/state" && method === "GET") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
@@ -312,7 +352,7 @@ export const handler = async (event) => {
       const out = [];
       for (const p of partners) {
         const members = await listMembers(p.code);
-        out.push({ ...publicPartner(p), active: p.active !== "non", resume: summary(members, null), members: members.map(publicMember) });
+        out.push({ ...publicPartner(p), active: p.active !== "non", resume: summary(members, null, true), members: members.map((m) => publicMember(m, true)) });
       }
       return reply(200, { ok: true, partners: out, prix: PRIX });
     }
@@ -328,7 +368,7 @@ export const handler = async (event) => {
         contact_phone: clean(data.contact_phone, 40), billing_email: clean(data.billing_email || data.contact_email, 160),
         stripe_customer_id: clean(data.stripe_customer_id, 80), stripe_subscription_id: clean(data.stripe_subscription_id, 80),
         bank_code: clean(data.bank_code, 40) || (name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE"),
-        demo: data.demo === "oui" ? "oui" : "non",
+        demo: data.demo === "oui" ? "oui" : "non", google_emails: splitEmails(data.google_emails).join(","),
         active: "oui", created_at: now(),
       };
       await putItem(T_PARTNERS, item);
@@ -339,8 +379,8 @@ export const handler = async (event) => {
       const p = await getPartner(clean(data.partner_code, 60));
       if (!p) return reply(404, { error: "unknown_partner" });
       const fields = {};
-      for (const k of ["name", "contact_name", "contact_email", "contact_phone", "billing_email", "stripe_customer_id", "stripe_subscription_id", "active", "type", "bank_code", "demo"]) {
-        if (data[k] !== undefined) fields[k] = clean(data[k], 160);
+      for (const k of ["name", "contact_name", "contact_email", "contact_phone", "billing_email", "stripe_customer_id", "stripe_subscription_id", "active", "type", "bank_code", "demo", "google_emails"]) {
+        if (data[k] !== undefined) fields[k] = k === "google_emails" ? splitEmails(data[k]).join(",").slice(0, 1000) : clean(data[k], 160);
       }
       if (!Object.keys(fields).length) return reply(400, { error: "nothing_to_update" });
       await updateFields(T_PARTNERS, { code: S(p.code) }, fields);
@@ -448,7 +488,7 @@ export const handler = async (event) => {
       const already = added.filter((r) => r.member.spruce === "compte").length;
       const failed = results.length - added.length;
       await telegram(`Portail TSS — ${partner.name} a ajouté ${added.length} personne(s) (liste collée)\nInvitations Spruce envoyées : ${invited} · déjà sur Spruce : ${already} · rejetées : ${failed}\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
-      return reply(200, { ok: true, results, actifs, stripe: stripeSync, resume: { added: added.length, invited, already, failed } });
+      return reply(200, { ok: true, results, actifs, stripe: stripeSync, resume: { added: added.length, failed } });
     }
 
     if (path === "/member/status" && method === "POST") {

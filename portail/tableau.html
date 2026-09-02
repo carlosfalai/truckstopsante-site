@@ -25,7 +25,7 @@
         <p class="sub">Votre couverture santé en un coup d’œil. La clinique vous facture 8 $ par personne couverte, par mois. Vos gens ne paient jamais rien.</p>
         <div class="grid">
             <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber" id="s-actifs">–</div><div class="d" id="s-montant"></div></div>
-            <div class="stat"><div class="k">Sur Spruce</div><div class="v" id="s-spruce">–</div><div class="d" id="s-spruce-d"></div></div>
+            <div class="stat"><div class="k">Ajoutées ce mois-ci</div><div class="v" id="s-mois">–</div><div class="d" id="s-mois-d"></div></div>
             <div class="stat"><div class="k">Prochaine facture</div><div class="v" id="s-facture">–</div><div class="d" id="s-facture-d"></div></div>
             <div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="s-banque">–</div><div class="d">par mois, à partir de 100 personnes couvertes</div></div>
         </div>
@@ -64,9 +64,8 @@
             document.getElementById("pav").textContent = (p.name || "?").replace(/[^A-Za-z0-9 ]/g, "").split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase();
             document.getElementById("s-actifs").textContent = r.actifs;
             document.getElementById("s-montant").textContent = r.montant + " $/mois" + (r.pause ? " · " + r.pause + " en pause" : "");
-            var onSpruce = ms.filter(function (m) { return m.status === "actif" && m.spruce === "compte"; }).length;
-            document.getElementById("s-spruce").textContent = onSpruce + " / " + r.actifs;
-            document.getElementById("s-spruce-d").textContent = (r.invitations_en_attente ? r.invitations_en_attente + " invitation(s) en attente" : "") + (r.a_inviter ? (r.invitations_en_attente ? " · " : "") + r.a_inviter + " à envoyer" : "") || "tout le monde est connecté";
+            document.getElementById("s-mois").textContent = r.ajouts_mois || 0;
+            document.getElementById("s-mois-d").textContent = r.pause ? r.pause + " en pause" : "";
             document.getElementById("s-facture").textContent = r.prochaine_facture ? r.prochaine_facture.slice(5).split("-").reverse().join("/") : "–";
             document.getElementById("s-facture-d").textContent = r.facturation_active ? r.actifs + " personnes x 8 $" : "facturation à activer";
             document.getElementById("s-banque").textContent = r.banque_consultations;
@@ -81,7 +80,7 @@
                 var tr = document.createElement("tr");
                 if (sub) tr.className = "fam";
                 var act = m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
-                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
+                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.coverTag(m) + "</td><td class=\"actions\">" + act + "</td>";
                 return tr;
             }
             principals.forEach(function (p) {
