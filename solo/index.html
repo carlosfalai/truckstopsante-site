@@ -3,26 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
-    <title>Truck Stop Santé — M'abonner (chauffeur solo)</title>
-    <meta http-equiv="refresh" content="0; url=https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t">
+    <title>Truck Stop Santé — Chauffeur solo : un médecin pour la route, 8 $/mois</title>
+    <meta name="description" content="Chauffeur solo, propriétaire-exploitant ou travailleur autonome incorporé : ton entreprise s'abonne pour toi en un clic. 8 $ par mois, par personne couverte. Sans rendez-vous, sur Spruce.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2314264A'/><text x='50' y='74' font-size='64' text-anchor='middle' fill='%23F59E0B' font-family='Arial,sans-serif' font-weight='bold'>T</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #14264A; color: #fff; font-family: Barlow, Inter, system-ui, sans-serif; text-align: center; padding: 24px; }
-        .card { max-width: 520px; }
-        h1 { font-size: 1.6rem; margin: 0 0 12px; }
-        p { color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0 0 20px; }
-        a.btn { display: inline-block; background: #F59E0B; color: #14264A; font-weight: 700; padding: 14px 28px; border-radius: 8px; text-decoration: none; }
-        small { display: block; margin-top: 22px; color: rgba(255,255,255,0.55); }
+        :root { --navy: #14264A; --navy-deep: #0B1530; --amber: #F59E0B; --muted: rgba(255,255,255,0.75); }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--navy-deep); color: #fff; font-family: Barlow, Inter, system-ui, sans-serif; }
+        header { background: var(--navy); border-bottom: 4px solid var(--amber); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { font-family: "Barlow Condensed", Impact, sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; color: #fff; text-decoration: none; }
+        .brand span { color: var(--amber); }
+        .tag { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 0.95rem; letter-spacing: 4px; color: var(--muted); }
+        main { max-width: 1040px; margin: 0 auto; padding: 36px 20px 60px; display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
+        @media (min-width: 860px) { main { grid-template-columns: 340px 1fr; gap: 56px; padding-top: 56px; } }
+        .player { position: relative; width: min(100%, 340px); margin: 0 auto; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); }
+        .player video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--amber); color: var(--navy); font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
+        .sound.off { display: none; }
+        .kicker { color: var(--amber); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.85rem; margin: 0 0 12px; }
+        h1 { font-family: "Barlow Condensed", Impact, sans-serif; font-weight: 700; font-size: clamp(2.4rem, 6vw, 3.6rem); line-height: 1.02; margin: 0 0 16px; }
+        .lead { font-size: 1.15rem; line-height: 1.5; color: var(--muted); margin: 0 0 22px; }
+        .price { display: flex; align-items: baseline; gap: 12px; margin: 0 0 20px; }
+        .price b { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 3rem; color: var(--amber); line-height: 1; }
+        .price span { color: var(--muted); }
+        .btn { display: inline-block; background: var(--amber); color: var(--navy); font-weight: 700; padding: 16px 30px; border-radius: 10px; text-decoration: none; font-size: 1.1rem; box-shadow: 0 8px 20px rgba(245,158,11,0.3); }
+        .btn:hover { transform: translateY(-2px); }
+        .steps { margin: 30px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+        .steps li { display: flex; gap: 14px; align-items: flex-start; color: var(--muted); line-height: 1.4; }
+        .steps b { font-family: "Barlow Condensed", Impact, sans-serif; color: var(--amber); font-size: 1.5rem; line-height: 1; min-width: 28px; }
+        .steps strong { color: #fff; display: block; font-size: 1rem; }
+        .fine { margin-top: 26px; font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+        .fine a { color: var(--amber); }
+        footer { border-top: 1px solid rgba(255,255,255,0.12); padding: 20px; text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.55); }
+        footer a { color: var(--amber); text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Truck Stop Santé — Abonnement</h1>
-        <p>Redirection vers le paiement sécurisé (Stripe)… 8 $ par mois, par personne couverte. Le chauffeur ne paie jamais la clinique : c'est l'entreprise qui s'abonne.</p>
-        <a class="btn" href="https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t">M'abonner maintenant</a>
-        <small>Redirecting to secure checkout (Stripe). $8/month per covered person. Dr Carlos Font — CMQ 16812 — <a href="https://truckstopsante.com" style="color:#F59E0B">truckstopsante.com</a></small>
-    </div>
-    <script>setTimeout(function () { window.location.replace("https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t"); }, 300);</script>
+    <header>
+        <a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a>
+        <span class="tag">SOLO</span>
+    </header>
+    <main>
+        <div class="player">
+            <video src="/videos/solo-fr-web.mp4" poster="/videos/solo-fr.jpg" muted autoplay loop playsinline preload="metadata"></video>
+            <button type="button" class="sound">Activer le son</button>
+        </div>
+        <div>
+            <p class="kicker">Chauffeur solo, propriétaire-exploitant, autonome incorporé</p>
+            <h1>Un médecin pour la route. Toi aussi.</h1>
+            <p class="lead">Un problème de santé qui ne peut pas attendre ? Tu écris au médecin sur Spruce, du camion, d’une halte ou de la maison. Pas de rendez-vous, pas de salle d’attente. Le médecin répond, et l’ordonnance part directement à ta pharmacie.</p>
+            <div class="price"><b>8 $/mois</b><span>par personne couverte, facturés à ton entreprise. Sans engagement.</span></div>
+            <a class="btn" href="https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t">M’abonner maintenant</a>
+            <ul class="steps">
+                <li><b>1</b><div><strong>Clique sur M’abonner</strong>Paiement sécurisé Stripe, en dollars canadiens.</div></li>
+                <li><b>2</b><div><strong>Entre le nom de ton entreprise, ton nom et ton cellulaire</strong>Ta conjointe ou tes enfants de 18 ans et plus : même lien, 8 $ par personne couverte.</div></li>
+                <li><b>3</b><div><strong>Tu reçois ton invitation Spruce par texto dans les 24 heures</strong>Et c’est parti. Infections, dos, sommeil, anxiété, renouvellements, arrêts de travail, formulaires, références : inclus.</div></li>
+            </ul>
+            <p class="fine">Service aux entreprises : c’est ton entreprise (ou toi, comme travailleur autonome) qui s’abonne. Les services assurés par la RAMQ sont facturés à la RAMQ; le forfait couvre exclusivement des services non assurés. En cas d’urgence, composez le 9-1-1. Flottes et équipes : <a href="https://truckstopsante.com/">truckstopsante.com</a>.</p>
+        </div>
+    </main>
+    <footer>Dr Carlos Font, médecin de famille — Truck Stop Santé · Centre Médical Font — permis CMQ 16812</footer>
+    <script>
+    (function () {
+        var v = document.querySelector('.player video'), btn = document.querySelector('.sound');
+        btn.addEventListener('click', function () { v.muted = false; v.currentTime = 0; v.controls = true; v.loop = false; v.play(); btn.classList.add('off'); });
+        v.addEventListener('ended', function () { btn.classList.remove('off'); v.controls = false; v.muted = true; v.loop = true; v.play().catch(function(){}); });
+    })();
+    </script>
 </body>
 </html>
