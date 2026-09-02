@@ -151,13 +151,15 @@ function contactMatches(c, phone, email) {
 }
 // Cherche un contact Spruce par téléphone puis par courriel (la recherche est floue : on valide sur les vrais champs).
 async function findSpruceContact(phone, email) {
+  // Several Spruce contacts can share a phone (duplicates): prefer one with an account, then a pending invite.
+  const hits = [];
   for (const q of [e164(phone), digits(phone).slice(-10), email].filter(Boolean)) {
     const r = await spruce("POST", "/v1/contacts/search", { freeText: q });
     const list = (r.s === 200 && r.b.contacts) || [];
-    const hit = list.find((c) => contactMatches(c, phone, email));
-    if (hit) return hit;
+    for (const c of list) if (contactMatches(c, phone, email) && !hits.some((h) => h.id === c.id)) hits.push(c);
   }
-  return null;
+  if (!hits.length) return null;
+  return hits.find((c) => c.hasAccount) || hits.find((c) => c.hasPendingInvite) || hits[0];
 }
 // Retour : { statut: "compte" | "invite" | "erreur", detail }
 async function spruceInvite(m) {
