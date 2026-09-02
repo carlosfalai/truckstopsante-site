@@ -16,6 +16,12 @@
         tr.fam td { background: #FAFBFF; }
         tr.fam td:first-child { padding-left: 40px; }
         .famlink { color: var(--muted); font-size: 0.8rem; margin-right: 6px; }
+        .sw { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+        .sw input { width: auto; margin: 0; }
+        .bank { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 12px 0; }
+        .bank div { background: #F6F8FB; border-radius: 10px; padding: 12px 14px; }
+        .bank b { display: block; font-family: "Barlow Condensed", sans-serif; font-size: 1.8rem; line-height: 1; color: var(--navy); }
+        .bank span { color: var(--muted); font-size: 0.82rem; }
     </style>
 </head>
 <body>
@@ -27,7 +33,7 @@
             <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber" id="s-actifs">–</div><div class="d" id="s-montant"></div></div>
             <div class="stat"><div class="k">Ajoutées ce mois-ci</div><div class="v" id="s-mois">–</div><div class="d" id="s-mois-d"></div></div>
             <div class="stat"><div class="k">Prochaine facture</div><div class="v" id="s-facture">–</div><div class="d" id="s-facture-d"></div></div>
-            <div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="s-banque">–</div><div class="d">par mois, à partir de 100 personnes couvertes</div></div>
+            <div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="s-banque">–</div><div class="d" id="s-banque-d">disponibles pour vos gens et leur famille</div></div>
         </div>
         <div class="card">
             <div class="row" style="justify-content: space-between;">
@@ -38,14 +44,15 @@
                 </div>
             </div>
             <table style="margin-top: 16px;">
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th></th></tr></thead>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th>Codes</th><th></th></tr></thead>
                 <tbody id="rows"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
             </table>
             <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
         </div>
-        <div class="card">
-            <h2>Votre code pour la banque de consultations gratuites</h2>
-            <div class="row"><span class="code" id="bank">–</span><span class="hint" style="margin:0">La banque s’active à 100 personnes couvertes : 5 consultations gratuites par mois par tranche de 100, pour qui vous voulez, famille incluse, sans abonnement. La personne nous écrit avec ce code.</span></div>
+        <div class="card" id="bankCard">
+            <div class="row" style="justify-content: space-between;"><h2 style="margin:0">Banque de consultations gratuites</h2><button class="btn secondary" id="allcodes">Activer les codes pour tout le monde</button></div>
+            <div class="bank"><div><b id="b-rest">–</b><span>consultations disponibles</span></div><div><b id="b-mois">–</b><span>ajoutées chaque mois</span></div><div><b id="b-acc">–</b><span>accumulées depuis le début</span></div><div><b id="b-emis">–</b><span>codes générés</span></div></div>
+            <p class="hint" style="margin:0">Chaque mois, 5 consultations gratuites par tranche de 100 personnes couvertes s’ajoutent à votre banque, et elles s’accumulent. Vos gens génèrent eux-mêmes un code au besoin, dans leur espace membre (<b>truckstopsante.com/portail/membre.html</b>, connexion Google), et l’envoient à un proche : un code = une consultation, sans abonnement. La banque ne baisse que lorsque le médecin utilise le code. La colonne « Codes » indique qui peut en générer. Vous voyez le solde, jamais qui a consulté.</p>
         </div>
     </main>
     <div class="toast" id="toast"></div>
@@ -68,8 +75,10 @@
             document.getElementById("s-mois-d").textContent = r.pause ? r.pause + " en pause" : "";
             document.getElementById("s-facture").textContent = r.prochaine_facture ? r.prochaine_facture.slice(5).split("-").reverse().join("/") : "–";
             document.getElementById("s-facture-d").textContent = r.facturation_active ? r.actifs + " personnes x 8 $" : "facturation à activer";
-            document.getElementById("s-banque").textContent = r.banque_consultations;
-            document.getElementById("bank").textContent = p.bank_code || p.code;
+            var bk = state.banque || { restantes: 0, mensuel: 0, accumulees: 0, emis: 0 };
+            document.getElementById("s-banque").textContent = bk.restantes;
+            document.getElementById("s-banque-d").textContent = "+" + bk.mensuel + " par mois, cumulatives";
+            document.getElementById("b-rest").textContent = bk.restantes; document.getElementById("b-mois").textContent = "+" + bk.mensuel; document.getElementById("b-acc").textContent = bk.accumulees; document.getElementById("b-emis").textContent = bk.emis;
             var tb = document.getElementById("rows"); tb.innerHTML = "";
             var live = ms.filter(function (m) { return m.status !== "retire"; });
             if (!live.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Aucune personne couverte pour l’instant. Cliquez sur « Ajouter des personnes ».</td></tr>'; return; }
@@ -80,7 +89,7 @@
                 var tr = document.createElement("tr");
                 if (sub) tr.className = "fam";
                 var act = m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
-                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.coverTag(m) + "</td><td class=\"actions\">" + act + "</td>";
+                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.coverTag(m) + "</td><td>" + (sub ? '<span class="muted" style="font-size:.8rem">via le membre</span>' : '<label class="sw"><input type="checkbox" data-codes="' + m.id + '"' + (m.codes ? " checked" : "") + '> ' + (m.codes ? "peut générer" : "désactivé") + "</label>") + "</td><td class=\"actions\">" + act + "</td>";
                 return tr;
             }
             principals.forEach(function (p) {
@@ -107,6 +116,16 @@
                 say(m.first_name + " " + m.last_name + " : " + (a === "pause" ? "en pause" : a === "retire" ? "retiré" : "réactivé") + ". Facture ajustée.");
                 load();
             });
+        });
+        document.getElementById("rows").addEventListener("change", function (e) {
+            var c = e.target.closest("input[data-codes]"); if (!c) return;
+            var on = c.checked ? "oui" : "non"; c.disabled = true;
+            TSS.api("/member/codes", { id: c.getAttribute("data-codes"), codes: on }).then(function (j) { if (!j.ok) { say("Changement impossible"); } load(); });
+        });
+        document.getElementById("allcodes").addEventListener("click", function () {
+            var ids = state.members.filter(function (m) { return m.status === "actif" && !m.family_of; }).map(function (m) { return m.id; });
+            if (!ids.length) { say("Aucune personne active."); return; }
+            TSS.api("/member/codes", { ids: ids, codes: "oui" }).then(function (j) { say(j.ok ? j.updated + " personne(s) peuvent maintenant générer des codes." : "Changement impossible"); load(); });
         });
         document.getElementById("stripe").addEventListener("click", function () {
             TSS.api("/billing/portal", {}).then(function (j) {
