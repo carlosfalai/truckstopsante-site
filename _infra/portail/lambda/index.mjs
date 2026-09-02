@@ -450,7 +450,7 @@ export const handler = async (event) => {
       const members = await listMembers(partner.code);
       const billing = await billingInfo(partner);
       return reply(200, {
-        ok: true, partner: publicPartner(partner), members: members.map(publicMember),
+        ok: true, partner: publicPartner(partner), members: members.map((m) => publicMember(m)),
         resume: summary(members, billing), facturation: billing,
       });
     }
