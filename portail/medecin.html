@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Espace médecin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+    <style>
+        .redeem { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .redeem input { border: 2px solid var(--navy); border-radius: 10px; padding: 14px 16px; font: inherit; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; min-width: 260px; font-family: "Barlow Condensed", sans-serif; }
+        .result { margin-top: 14px; padding: 14px 16px; border-radius: 12px; display: none; font-size: 1.05rem; }
+        .result.ok { display: block; background: #ECFDF3; border: 1px solid #ABEFC6; color: #067647; }
+        .result.bad { display: block; background: #FEF3F2; border: 1px solid #FECDCA; color: #B42318; }
+        .muted { color: var(--muted); }
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="dname">Espace médecin</span><button id="logout" style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
+    <main>
+        <h1 id="h1">Espace médecin</h1>
+        <p class="sub">Le proche arrive avec son code de consultation (Spruce ou m28.ca). Vous faites la consultation, vous entrez le code : il est retiré de la banque de la compagnie, et compté à votre nom.</p>
+        <div class="grid">
+            <div class="stat"><div class="k">Aujourd’hui</div><div class="v amber" id="s-jour">–</div><div class="d">consultations par code</div></div>
+            <div class="stat"><div class="k">Ce mois-ci</div><div class="v" id="s-mois">–</div><div class="d">consultations par code</div></div>
+            <div class="stat"><div class="k">Au total</div><div class="v" id="s-total">–</div><div class="d">depuis le début</div></div>
+        </div>
+        <div class="card">
+            <h2>Utiliser un code de consultation</h2>
+            <div class="redeem"><input id="rcode" placeholder="TSS-XXX-XXX" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="rgo">Consultation faite</button></div>
+            <div class="result" id="result"></div>
+            <p class="hint">Un code déjà utilisé, inconnu, ou dont la banque est vide est refusé, avec le motif. Rien d’autre n’est demandé : aucune donnée de santé ne passe par ici.</p>
+        </div>
+        <div class="card">
+            <h2>Mes dernières consultations par code</h2>
+            <table><thead><tr><th>Date</th><th>Code</th><th>Compagnie</th><th>Membre à l’origine du code</th></tr></thead><tbody id="rows"><tr><td colspan="4" class="muted">Chargement…</td></tr></tbody></table>
+        </div>
+    </main>
+    <div class="toast" id="toast"></div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+    (function () {
+        var s = TSS.requireSession(); if (!s) return;
+        if (s.role !== "medecin") { window.location.href = s.role === "admin" ? "admin.html" : "tableau.html"; return; }
+        var toast = document.getElementById("toast");
+        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+        document.getElementById("logout").addEventListener("click", function () { TSS.clearSession(); window.location.href = "index.html"; });
+        function load() {
+            TSS.api("/medecin/state").then(function (j) {
+                if (!j.ok) { if (j._status === 401) { TSS.clearSession(); window.location.href = "index.html"; } return; }
+                document.getElementById("dname").textContent = j.medecin.name; document.getElementById("h1").textContent = j.medecin.name;
+                document.getElementById("s-jour").textContent = j.aujourdhui; document.getElementById("s-mois").textContent = j.mois; document.getElementById("s-total").textContent = j.total;
+                var tb = document.getElementById("rows"); tb.innerHTML = "";
+                if (!j.derniers.length) tb.innerHTML = '<tr><td colspan="4" class="muted">Aucune consultation par code pour l’instant.</td></tr>';
+                j.derniers.forEach(function (c) { var tr = document.createElement("tr"); tr.innerHTML = "<td>" + TSS.esc((c.used_at || "").slice(0, 10)) + "</td><td><b>" + TSS.esc(c.code) + "</b></td><td>" + TSS.esc(c.partner) + "</td><td>" + TSS.esc(c.member_name) + "</td>"; tb.appendChild(tr); });
+            });
+        }
+        function redeem() {
+            var v = document.getElementById("rcode").value.trim().toUpperCase(), res = document.getElementById("result");
+            if (v.length < 6) { say("Entrez le code du proche."); return; }
+            var b = document.getElementById("rgo"); b.disabled = true;
+            TSS.api("/medecin/redeem", { consult_code: v }).then(function (j) {
+                b.disabled = false;
+                if (j.ok) { res.className = "result ok"; res.textContent = "Consultation enregistrée : " + j.code.code + " · " + j.partner + " (code généré par " + j.code.member_name + "). Il reste " + j.banque.restantes + " consultation(s) dans la banque de " + j.partner + "."; document.getElementById("rcode").value = ""; }
+                else { res.className = "result bad"; res.textContent = j.error === "already_used" ? "Ce code a déjà été utilisé le " + (j.code.used_at || "").slice(0, 10) + " (" + j.partner + ")." : j.error === "unknown_consult_code" ? "Code inconnu. Vérifiez les lettres et les chiffres." : j.error === "banque_vide" ? "La banque de " + j.partner + " est vide : cette consultation n’est pas couverte pour l’instant. Le code reste valide pour plus tard." : "Impossible pour le moment."; }
+                load();
+            }).catch(function () { b.disabled = false; say("Connexion impossible pour le moment."); });
+        }
+        document.getElementById("rgo").addEventListener("click", redeem);
+        document.getElementById("rcode").addEventListener("keydown", function (e) { if (e.key === "Enter") redeem(); });
+        load();
+    })();
+    </script>
+</body>
+</html>

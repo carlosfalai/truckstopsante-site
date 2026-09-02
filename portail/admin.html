@@ -21,6 +21,11 @@
         .kpi span { color: var(--muted); font-size: 0.85rem; }
         .demo-tag { background: #FFF4E5; color: #92400E; border-radius: 6px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; margin-left: 6px; }
         .gform { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+        .redeem { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .redeem input { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; min-width: 220px; }
+        .codes { font-size: 0.85rem; margin-top: 6px; }
+        .codes span { display: inline-block; margin: 2px 8px 2px 0; padding: 2px 8px; border-radius: 6px; background: #F6F8FB; border: 1px solid var(--line); }
+        .codes span.used { background: #ECFDF3; border-color: #ABEFC6; }
         .gform input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 0.85rem; min-width: 240px; }
         .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
     </style>
@@ -31,14 +36,21 @@
         <h1>Résumé</h1>
         <p class="sub">Où en est Truck Stop Santé aujourd’hui, sans compter les partenaires démo.</p>
         <div class="kpis" id="kpis"></div>
+        <div class="card">
+            <h2>Utiliser un code de consultation</h2>
+            <div class="redeem"><input id="rcode" placeholder="TSS-XXX-XXX" autocomplete="off"><button class="btn" id="rgo">Marquer utilisé</button><span class="meta" id="rmsg">Le proche arrive avec son code (Spruce, m28.ca) : entrez-le ici, il est retiré de la banque de la compagnie.</span></div>
+        </div>
         <h1>Partenaires</h1>
         <p class="sub">Chaque entreprise ou association a son code d’accès (à lui remettre), son code de banque de consultations, ses personnes couvertes et son lien Stripe. Elle peut aussi entrer avec son compte Google si son courriel est connu ici. Total personnes couvertes : <b id="total">–</b>, soit <b id="mrr">–</b> par mois.</p>
         <div id="list"></div>
+        <h1>Médecins</h1>
+        <p class="sub">Chaque médecin a sa connexion (code ou Google) à truckstopsante.com/portail : il prend la consultation, entre le code du proche, et la banque de la compagnie baisse. On voit combien chaque médecin en fait.</p>
+        <div id="doctors"></div>
         <div class="card">
             <h2>Nouveau partenaire</h2>
             <form class="new" id="new">
                 <input name="name" placeholder="Nom (entreprise ou association)" required>
-                <select name="type"><option value="entreprise">Entreprise</option><option value="association">Association</option></select>
+                <select name="type"><option value="entreprise">Entreprise</option><option value="association">Association</option><option value="medecin">Médecin (rachète les codes)</option></select>
                 <input name="contact_name" placeholder="Personne-ressource">
                 <input name="contact_email" placeholder="Courriel" type="email">
                 <input name="contact_phone" placeholder="Téléphone">
@@ -63,12 +75,21 @@
         function render() {
             var list = document.getElementById("list"); list.innerHTML = "";
             var total = 0;
-            var real = state.partners.filter(function (p) { return !p.demo; });
+            var real = state.partners.filter(function (p) { return !p.demo && p.type !== "medecin"; });
+            var docs = document.getElementById("doctors"); docs.innerHTML = "";
+            state.partners.filter(function (p) { return p.type === "medecin"; }).forEach(function (d) {
+                var el = document.createElement("div"); el.className = "card partner";
+                el.innerHTML = '<div class="head"><div><h2 style="margin:0">' + TSS.esc(d.name) + ' <span class="meta">(médecin)</span></h2><div class="meta">' + TSS.esc(d.contact_email || "") + (d.google_emails && d.google_emails.length ? " · Google : " + TSS.esc(d.google_emails.join(", ")) : "") + "</div></div><div class=\"row\"><span class=\"code\" title=\"code de connexion du médecin\">" + d.code + "</span></div></div>" +
+                    '<div class="meta" style="margin:10px 0">Consultations rachetées : <b>' + d.rachats + "</b> au total · " + d.rachats_mois + " ce mois-ci</div>" +
+                    '<div class="gform"><input type="email" placeholder="ajouter un courriel Google" data-gmail="' + d.code + '"><button data-gadd="' + d.code + '">Autoriser</button></div>';
+                docs.appendChild(el);
+            });
             var now = Date.now(), month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
-            var k = { entreprises: 0, associations: 0, personnes: 0, familles: 0, spruceOk: 0, spruceAttente: 0, aInviter: 0, nouveaux: 0, sansFacturation: 0, enPause: 0 };
+            var k = { entreprises: 0, associations: 0, personnes: 0, familles: 0, spruceOk: 0, spruceAttente: 0, aInviter: 0, nouveaux: 0, sansFacturation: 0, enPause: 0, codesEmis: 0, codesUtilises: 0 };
             real.forEach(function (p) {
                 if (p.type === "association") k.associations++; else k.entreprises++;
                 if (!p.stripe_subscription_id) k.sansFacturation++;
+                (p.codes || []).forEach(function (c) { k.codesEmis++; if (c.status === "utilise") k.codesUtilises++; });
                 p.members.forEach(function (m) {
                     if (m.status === "retire") return;
                     if (m.status === "pause") { k.enPause++; return; }
@@ -79,19 +100,25 @@
                 });
             });
             var kp = document.getElementById("kpis"); kp.innerHTML = "";
-            [[k.entreprises, "entreprise(s)"], [k.associations, "association(s)"], [k.personnes, "personnes couvertes"], [(k.personnes * state.prix) + " $", "par mois (" + (k.personnes * state.prix * 12) + " $/an)"], [k.familles, "membres de famille"], [k.nouveaux, "ajoutées ce mois-ci"], [k.spruceOk, "actives sur Spruce"], [k.spruceAttente, "invitées, en attente"], [k.aInviter, "à inviter"], [k.enPause, "en pause"], [k.sansFacturation, "partenaire(s) sans facturation Stripe"]].forEach(function (x) {
+            [[k.entreprises, "entreprise(s)"], [k.associations, "association(s)"], [k.personnes, "personnes couvertes"], [(k.personnes * state.prix) + " $", "par mois (" + (k.personnes * state.prix * 12) + " $/an)"], [k.familles, "membres de famille"], [k.nouveaux, "ajoutées ce mois-ci"], [k.spruceOk, "actives sur Spruce"], [k.spruceAttente, "invitées, en attente"], [k.aInviter, "à inviter"], [k.enPause, "en pause"], [k.sansFacturation, "partenaire(s) sans facturation Stripe"], [k.codesEmis, "codes de consultation émis"], [k.codesUtilises, "consultations gratuites utilisées"]].forEach(function (x) {
                 var d = document.createElement("div"); d.className = "kpi"; d.innerHTML = "<b>" + x[0] + "</b><span>" + x[1] + "</span>"; kp.appendChild(d);
             });
             state.partners.forEach(function (p) {
+                if (p.type === "medecin") return;
                 if (!p.demo) total += p.resume.actifs;
                 var card = document.createElement("div"); card.className = "card partner";
                 var members = p.members.filter(function (m) { return m.status !== "retire"; });
                 var rows = members.map(function (m) {
                     var inv = (m.status === "actif" && m.spruce !== "compte") ? ' <button data-inv="' + m.id + '" data-p="' + p.code + '">' + (m.spruce === "invite" ? "Réinviter" : "Inviter sur Spruce") + "</button>" : "";
+                    inv += (m.status === "actif" && !m.family_of) ? ' <button data-issue="' + m.id + '" data-p="' + p.code + '" title="émettre un code de consultation pour ce membre">Code</button>' : "";
+                    inv += m.codes ? ' <span class="tag ok" style="font-size:.7rem">codes actifs</span>' : "";
+                    inv += m.google_email ? ' <span class="muted mini" title="compte Google lié">G</span>' : "";
                     return "<tr><td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.spruceTag(m) + "<span class=\"mini\">" + inv + "</span></td><td class=\"muted mini\">" + TSS.esc(m.spruce_detail || "") + "</td></tr>";
                 }).join("");
                 card.innerHTML = '<div class="head"><div><h2 style="margin:0">' + TSS.esc(p.name) + ' <span class="meta">(' + p.type + ")</span>" + (p.demo ? '<span class="demo-tag">DÉMO</span>' : "") + "</h2><div class=\"meta\">" + TSS.esc(p.contact_name || "") + (p.contact_email ? " · " + TSS.esc(p.contact_email) : "") + (p.contact_phone ? " · " + TSS.esc(p.contact_phone) : "") + "</div></div><div class=\"row\"><span class=\"code\" title=\"code d’accès du partenaire\">" + p.code + '</span><span class="code" style="background:#EEF2FF;border-color:#6366F1" title="code banque consultations">' + TSS.esc(p.bank_code || "") + "</span></div></div>" +
                     '<div class="meta" style="margin:10px 0">' + p.resume.actifs + " personne(s) couverte(s) · " + p.resume.montant + " $/mois · Spruce à inviter : " + p.resume.a_inviter + " · Stripe : " + (p.stripe_subscription_id ? p.stripe_subscription_id : (p.demo ? "démo" : '<button data-bill="' + p.code + '">Activer la facturation</button>')) + "</div>" +
+                    '<div class="meta" style="margin:6px 0">Banque : <b>' + (p.banque ? p.banque.restantes : 0) + '</b> disponible(s) · +' + (p.banque ? p.banque.mensuel : 0) + '/mois (bonus ' + (p.banque_bonus || 0) + ') · accumulées ' + (p.banque ? p.banque.accumulees : 0) + ' · émis ' + (p.banque ? p.banque.emis : 0) + ' · utilisés ' + (p.banque ? p.banque.utilises : 0) + ' <input type="number" min="0" style="width:64px;border:1px solid var(--line);border-radius:6px;padding:3px 6px;font:inherit;font-size:.85rem" value="' + (p.banque_bonus || 0) + '" data-bonus="' + p.code + '" title="bonus de consultations par mois"> <button data-bonusgo="' + p.code + '">Bonus/mois</button></div>' +
+                    ((p.codes || []).length ? '<div class="codes">' + p.codes.slice(0, 30).map(function (c) { return '<span class="' + (c.status === "utilise" ? "used" : "") + '" title="' + TSS.esc(c.created_at.slice(0, 10)) + '">' + TSS.esc(c.code) + " · " + TSS.esc(c.member_name) + (c.status === "utilise" ? " · utilisé " + TSS.esc((c.used_at || "").slice(0, 10)) : "") + "</span>"; }).join("") + "</div>" : "") +
                     '<div class="gform"><span class="meta">Connexion Google : ' + (p.google_emails && p.google_emails.length ? TSS.esc(p.google_emails.join(", ")) : (p.contact_email ? TSS.esc(p.contact_email) + " (contact)" : "aucun courriel")) + '</span><input type="email" placeholder="ajouter un courriel Google" data-gmail="' + p.code + '"><button data-gadd="' + p.code + '">Autoriser</button></div>' +
                     (members.length ? "<table><thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Spruce</th><th></th></tr></thead><tbody>" + rows + "</tbody></table>" : '<div class="meta">Aucune personne pour l’instant.</div>');
                 list.appendChild(card);
@@ -102,8 +129,19 @@
         document.getElementById("list").addEventListener("click", function (e) {
             var b = e.target.closest("button"); if (!b) return;
             if (b.dataset.inv) { b.disabled = true; TSS.api("/admin/member/spruce", { partner_code: b.dataset.p, id: b.dataset.inv, action: "inviter" }).then(function (j) { say(j.ok ? "Spruce : " + j.spruce.statut + " — " + j.spruce.detail : "Échec : " + (j.error || "")); load(); }); }
+            if (b.dataset.issue) { b.disabled = true; TSS.api("/admin/member/code", { partner_code: b.dataset.p, id: b.dataset.issue }).then(function (j) { say(j.ok ? "Code émis : " + j.code.code + " (reste " + j.banque.restantes + ")" : "Impossible : " + (j.error === "banque_vide" ? "banque vide" : (j.error || ""))); load(); }); }
+            if (b.dataset.bonusgo) { var bi = document.querySelector('input[data-bonus="' + b.dataset.bonusgo + '"]'); TSS.api("/admin/partner/update", { partner_code: b.dataset.bonusgo, banque_bonus: String(parseInt(bi.value, 10) || 0) }).then(function (j) { say(j.ok ? "Bonus mis à jour (s’applique aux prochains mois)" : "Échec"); load(); }); }
             if (b.dataset.gadd) { var inp = document.querySelector('input[data-gmail="' + b.dataset.gadd + '"]'); var em = (inp.value || "").trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { say("Courriel invalide"); return; } var cur = (state.partners.find(function (p) { return p.code === b.dataset.gadd; }) || {}).google_emails || []; TSS.api("/admin/partner/update", { partner_code: b.dataset.gadd, google_emails: cur.concat([em]).join(",") }).then(function (j) { say(j.ok ? "Courriel Google autorisé : " + em : "Échec : " + (j.error || "")); load(); }); }
             if (b.dataset.bill) { if (!confirm("Créer l’abonnement Stripe (facture mensuelle à 30 jours) pour ce partenaire ?")) return; b.disabled = true; TSS.api("/admin/billing/activate", { partner_code: b.dataset.bill }).then(function (j) { say(j.ok ? "Facturation activée : " + j.subscription : "Échec : " + (j.error || "")); load(); }); }
+        });
+        document.getElementById("rgo").addEventListener("click", function () {
+            var v = document.getElementById("rcode").value.trim().toUpperCase(); if (v.length < 6) { say("Entrez le code"); return; }
+            TSS.api("/admin/code/redeem", { consult_code: v }).then(function (j) {
+                var msg = document.getElementById("rmsg");
+                if (j.ok) { msg.textContent = "Utilisé : " + j.code.code + " · " + j.code.member_name + " · " + j.partner + ". Retiré de la banque."; document.getElementById("rcode").value = ""; }
+                else msg.textContent = j.error === "already_used" ? "Ce code a déjà été utilisé le " + (j.code.used_at || "").slice(0, 10) + " (" + j.partner + ")." : j.error === "unknown_consult_code" ? "Code inconnu." : "Erreur.";
+                load();
+            });
         });
         document.getElementById("new").addEventListener("submit", function (e) {
             e.preventDefault();

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Espace membre</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+    <style>
+        .gwrap { display: flex; justify-content: center; margin: 8px 0 14px; min-height: 44px; }
+        .link-box { background: #F6F8FB; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 12px; text-align: left; }
+        .link-box p { margin: 0 0 10px; font-size: 0.92rem; }
+        .link-box input { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+        .hello { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .bigcode { font-family: "Barlow Condensed", sans-serif; font-size: 2.6rem; letter-spacing: 3px; color: var(--navy); background: #FFF7E6; border: 2px dashed var(--amber, #F59E0B); border-radius: 12px; padding: 12px 20px; display: inline-block; }
+        .share { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .mycodes span { display: inline-block; margin: 4px 8px 4px 0; padding: 4px 10px; border-radius: 8px; background: #F6F8FB; border: 1px solid var(--line); font-size: 0.9rem; }
+        .mycodes span.used { background: #ECFDF3; border-color: #ABEFC6; }
+        .off { background: #FFF4E5; border: 1px solid #FCD9A8; border-radius: 10px; padding: 12px 14px; color: #92400E; }
+        textarea.msg { width: 100%; box-sizing: border-box; min-height: 120px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Espace membre</span><button id="logout" hidden style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
+
+    <div class="login-wrap" id="loginView">
+        <div class="login">
+            <h1>Espace membre</h1>
+            <p class="sub">Pour les chauffeurs et employés couverts par leur compagnie ou leur association. Connectez-vous avec Google : on vous reconnaît à partir de la liste fournie par votre compagnie.</p>
+            <div class="gwrap" id="gbtn"></div>
+            <p class="hint" id="msg" style="min-height:1.4em"></p>
+            <div class="link-box" id="verifybox" hidden>
+                <p><b id="gemail"></b> n’est pas dans la liste de votre compagnie. Confirmez avec le cellulaire et le nom de famille que votre compagnie nous a donnés, une seule fois.</p>
+                <form id="verifyform">
+                    <input type="tel" id="vphone" placeholder="votre cellulaire (ex. 418 555-0199)" autocomplete="tel" required>
+                    <input type="text" id="vname" placeholder="votre nom de famille" autocomplete="family-name" required>
+                    <button class="btn" type="submit" id="vgo" style="width:100%;justify-content:center">Me reconnaître</button>
+                </form>
+            </div>
+            <p class="fine">Aucune donnée de santé ici : votre nom, votre cellulaire et votre courriel seulement. Votre compagnie ne voit jamais si vous avez consulté.</p>
+        </div>
+    </div>
+
+    <main id="appView" hidden>
+        <div class="hello"><div><h1 id="h1">Bonjour</h1><p class="sub" id="sub"></p></div><div class="av" id="av"></div></div>
+        <div class="grid">
+            <div class="stat"><div class="k">Couvert depuis</div><div class="v" id="since">–</div><div class="d" id="since-d"></div></div>
+            <div class="stat"><div class="k">Consultations gratuites</div><div class="v amber" id="rest">–</div><div class="d">disponibles dans la banque de votre compagnie, pour votre famille</div></div>
+        </div>
+
+        <div class="card">
+            <h2>Une consultation gratuite pour un proche</h2>
+            <p class="hint">Conjoint, conjointe, enfant, parent : générez un code et envoyez-le-lui. Un code = une consultation avec le médecin, sans abonnement. La banque de votre compagnie ne baisse que lorsque le médecin utilise le code.</p>
+            <div id="offbox" class="off" hidden>Votre compagnie n’a pas encore activé la génération de codes pour vous. Demandez-lui de l’activer dans son portail (colonne « Codes »).</div>
+            <div id="emptybox" class="off" hidden>La banque de votre compagnie est vide pour l’instant. Elle se remplit chaque mois : le code restera valide et sera couvert quand la banque aura des consultations.</div>
+            <div class="row" id="genrow"><button class="btn" id="gen">Générer un code pour un proche</button></div>
+            <div id="newcode" hidden style="margin-top:14px">
+                <div class="bigcode" id="codeval">–</div>
+                <p class="hint" style="margin:10px 0 4px">Envoyez ce message à votre proche (copiez-le ou textez-le) :</p>
+                <textarea class="msg" id="msgtext" readonly></textarea>
+                <div class="share"><a class="btn" id="smsbtn" href="#">Envoyer par texto</a><button class="btn secondary" id="copybtn">Copier le message</button><a class="btn secondary" id="mailbtn" href="#">Envoyer par courriel</a></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Comment votre proche l’utilise</h2>
+            <ol class="hint" style="margin:0;padding-left:20px;line-height:1.7">
+                <li>Il ouvre le lien Spruce de la clinique : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a> (ou passe par m28.ca).</li>
+                <li>Il écrit au médecin avec son code de consultation.</li>
+                <li>La clinique retire une consultation de la banque de votre compagnie. Personne d’autre n’est informé.</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Mes codes</h2>
+            <div class="mycodes" id="mycodes"><span class="muted">Aucun code généré pour l’instant.</span></div>
+        </div>
+    </main>
+    <div class="toast" id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;display:none"></div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+    (function () {
+        var KEY = "tss_membre";
+        var API = window.TSS_API || "";
+        var toast = document.getElementById("toast"), msg = document.getElementById("msg");
+        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+        function token() { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
+        function post(path, body) { return fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }).then(function (r) { return r.json(); }); }
+        function show(view) { document.getElementById("loginView").hidden = view !== "login"; document.getElementById("appView").hidden = view !== "app"; document.getElementById("logout").hidden = view !== "app"; window.scrollTo(0, 0); }
+        var state = null, lastCredential = "";
+
+        function sinceText(created) {
+            if (!created) return { v: "–", d: "" };
+            var days = Math.max(0, Math.floor((Date.now() - new Date(created).getTime()) / 86400000)), months = Math.floor(days / 30.44), rest = Math.floor(days - months * 30.44);
+            var d = new Date(created).toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
+            return { v: months ? months + " mois" + (rest ? " " + rest + " j" : "") : (days ? days + " j" : "aujourd’hui"), d: "depuis le " + d };
+        }
+        function render() {
+            var m = state.membre, e = state.entreprise, b = state.banque;
+            document.getElementById("h1").textContent = "Bonjour " + m.first_name;
+            document.getElementById("sub").textContent = "Couvert par " + e.name + ". Votre médecin est à un texto : " + "spruce.care/centremdicalfont";
+            document.getElementById("av").textContent = (m.first_name[0] || "") + (m.last_name[0] || "");
+            var st = sinceText(m.created_at); document.getElementById("since").textContent = st.v; document.getElementById("since-d").textContent = st.d;
+            document.getElementById("rest").textContent = b.restantes;
+            var can = m.status === "actif" && m.codes;
+            document.getElementById("offbox").hidden = !(m.status === "actif" && !m.codes);
+            document.getElementById("emptybox").hidden = !(m.codes && b.restantes <= 0);
+            document.getElementById("genrow").hidden = !can;
+            var mc = document.getElementById("mycodes"); mc.innerHTML = "";
+            if (!state.mes_codes.length) mc.innerHTML = '<span class="muted">Aucun code généré pour l’instant.</span>';
+            state.mes_codes.forEach(function (c) { var s = document.createElement("span"); s.className = c.status === "utilise" ? "used" : ""; s.textContent = c.code + " · " + c.created_at.slice(0, 10) + (c.status === "utilise" ? " · utilisé" : " · à utiliser"); mc.appendChild(s); });
+        }
+        function load() {
+            var t = token(); if (!t) { show("login"); return; }
+            post("/membre/state", { token: t }).then(function (j) {
+                if (!j.ok) { try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {} show("login"); return; }
+                state = j; render(); show("app");
+            }).catch(function () { show("login"); msg.textContent = "Connexion impossible pour le moment."; });
+        }
+        function enter(j) { try { localStorage.setItem(KEY, j.token); } catch (e) { sessionStorage.setItem(KEY, j.token); } load(); }
+
+        window.onGoogleCredential = function (resp) {
+            lastCredential = resp && resp.credential; if (!lastCredential) return;
+            msg.textContent = "Vérification du compte Google…";
+            post("/membre/login", { credential: lastCredential }).then(function (j) {
+                if (j.ok) { enter(j); return; }
+                if (j.error === "unknown_member") { document.getElementById("gemail").textContent = j.email; document.getElementById("verifybox").hidden = false; msg.textContent = ""; document.getElementById("vphone").focus(); return; }
+                msg.textContent = "Compte Google refusé. Réessayez.";
+            }).catch(function () { msg.textContent = "Connexion impossible pour le moment."; });
+        };
+        document.getElementById("verifyform").addEventListener("submit", function (e) {
+            e.preventDefault();
+            var b = document.getElementById("vgo"); b.disabled = true; msg.textContent = "Vérification…";
+            post("/membre/verify", { credential: lastCredential, phone: document.getElementById("vphone").value, last_name: document.getElementById("vname").value }).then(function (j) {
+                b.disabled = false;
+                if (j.ok) { enter(j); return; }
+                msg.textContent = j.error === "no_match" ? "On ne trouve pas cette personne dans les listes reçues. Vérifiez le cellulaire (celui donné à votre compagnie) et le nom, ou écrivez-nous à cff@centremedicalfont.ca." : "Vérification impossible.";
+            }).catch(function () { b.disabled = false; msg.textContent = "Connexion impossible pour le moment."; });
+        });
+        document.getElementById("gen").addEventListener("click", function () {
+            var b = this; b.disabled = true; b.textContent = "Génération…";
+            post("/membre/code", { token: token() }).then(function (j) {
+                b.disabled = false; b.textContent = "Générer un autre code";
+                if (!j.ok) { say(j.error === "banque_vide" ? "La banque de votre compagnie est vide." : j.error === "codes_off" ? "Votre compagnie n’a pas activé les codes pour vous." : "Impossible pour le moment."); load(); return; }
+                var code = j.code.code;
+                document.getElementById("codeval").textContent = code;
+                var text = "Bonjour ! Tu as droit à une consultation gratuite avec mon médecin (Truck Stop Santé). Ton code : " + code + ". Ouvre https://spruce.care/centremdicalfont et écris au médecin avec ce code. C’est payé par ma compagnie, rien à débourser.";
+                document.getElementById("msgtext").value = text;
+                document.getElementById("smsbtn").href = "sms:?&body=" + encodeURIComponent(text);
+                document.getElementById("mailbtn").href = "mailto:?subject=" + encodeURIComponent("Consultation gratuite avec mon médecin") + "&body=" + encodeURIComponent(text);
+                document.getElementById("newcode").hidden = false;
+                state.banque.restantes = j.banque.restantes; state.mes_codes.unshift(j.code); render();
+                document.getElementById("newcode").hidden = false;
+            }).catch(function () { b.disabled = false; b.textContent = "Générer un code pour un proche"; say("Connexion impossible pour le moment."); });
+        });
+        document.getElementById("copybtn").addEventListener("click", function () {
+            var t = document.getElementById("msgtext"); t.select();
+            try { navigator.clipboard.writeText(t.value).then(function () { say("Message copié."); }); } catch (e) { document.execCommand("copy"); say("Message copié."); }
+        });
+        document.getElementById("logout").addEventListener("click", function () {
+            var t = token(); post("/membre/logout", { token: t }).catch(function () {});
+            try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {}
+            show("login");
+        });
+
+        if (window.TSS_GOOGLE_CLIENT_ID) {
+            var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = function () {
+                google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
+                google.accounts.id.renderButton(document.getElementById("gbtn"), { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
+            };
+            document.head.appendChild(sc);
+        } else {
+            document.getElementById("gbtn").innerHTML = '<span class="hint">La connexion Google s’active sous peu.</span>';
+        }
+        load();
+    })();
+    </script>
+</body>
+</html>

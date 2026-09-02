@@ -51,7 +51,7 @@
         var lastCredential = "";
         function enter(j, code) {
             TSS.saveSession({ code: code, role: j.role, partner: j.partner || null, google: j.google || null, at: Date.now() }, remember());
-            window.location.href = j.role === "admin" ? "admin.html" : "tableau.html";
+            window.location.href = j.role === "admin" ? "admin.html" : j.role === "medecin" ? "medecin.html" : "tableau.html";
         }
         form.addEventListener("submit", function (e) {
             e.preventDefault();
