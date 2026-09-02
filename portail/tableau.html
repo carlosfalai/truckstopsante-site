@@ -35,7 +35,7 @@
                 </div>
             </div>
             <table style="margin-top: 16px;">
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Chez vous depuis</th><th>Couvert depuis</th><th>Couverture</th><th>Statut</th><th></th></tr></thead>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th></th></tr></thead>
                 <tbody id="rows"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
             </table>
             <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
@@ -74,7 +74,7 @@
             live.forEach(function (m) {
                 var tr = document.createElement("tr");
                 var act = m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
-                tr.innerHTML = "<td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b>" + (m.family_of ? '<div class="muted" style="font-size:.85rem">famille de ' + TSS.esc(m.family_of) + "</div>" : "") + "</td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + (m.since_months ? m.since_months + " mois" : "–") + "</td><td>" + (m.months_covered ? m.months_covered + " mois" : "ce mois-ci") + "</td><td>" + TSS.coverageLabel(m.coverage) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
+                tr.innerHTML = "<td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b>" + (m.family_of ? '<div class="muted" style="font-size:.85rem">famille de ' + TSS.esc(m.family_of) + "</div>" : "") + "</td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
                 tb.appendChild(tr);
             });
         }

@@ -13,13 +13,13 @@
     <main>
         <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. Invitations envoyées</span></div>
         <h1>Ajouter des personnes</h1>
-        <p class="sub">Collez votre liste telle quelle, en vrac ou une personne par ligne : nom, cellulaire (qui reçoit les textos), courriel, et depuis combien de mois la personne est chez vous. Le système reconnaît tout seul les numéros et les courriels.</p>
+        <p class="sub">Collez votre liste telle quelle, en vrac ou une personne par ligne : nom, cellulaire (qui reçoit les textos), courriel, et le courriel. Le système reconnaît tout seul les numéros et les courriels. Nous suivons ensuite pour vous depuis combien de temps chaque personne est abonnée.</p>
 
         <div class="card" id="paste">
             <h2>Votre liste</h2>
-            <textarea id="raw" placeholder="Ex. : Marc Bélanger 418 555-0199 marc.b@transport.ca depuis 8 mois
-Karim Benali, 514-555-0133, kbenali@gmail.com, 2 ans
-Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
+            <textarea id="raw" placeholder="Ex. : Marc Bélanger 418 555-0199 marc.b@transport.ca
+Karim Benali, 514-555-0133, kbenali@gmail.com
+Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
             <p class="hint">Ou téléversez un fichier CSV ou texte avec les mêmes colonnes (un fichier Excel : copiez les cellules et collez-les ici). Les places sont ajustées sur votre abonnement automatiquement, 8 $ par mois par personne.</p>
             <div class="row"><button class="btn" id="parse">Reconnaître les personnes</button><label class="btn secondary">Téléverser un fichier<input type="file" id="file" accept=".csv,.txt,.tsv" hidden></label></div>
         </div>
@@ -28,7 +28,7 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
             <h2>Vérifiez avant d’envoyer</h2>
             <p class="hint" id="count"></p>
             <table>
-                <thead><tr><th>Prénom</th><th>Nom</th><th>Cellulaire (texto)</th><th>Courriel</th><th>Depuis (mois)</th><th>Durée de couverture</th><th>Famille de</th></tr></thead>
+                <thead><tr><th>Prénom</th><th>Nom</th><th>Cellulaire (texto)</th><th>Courriel</th><th>Famille de</th></tr></thead>
                 <tbody id="rows"></tbody>
             </table>
             <p class="hint" id="seats"></p>
@@ -63,7 +63,7 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
             var tb = document.getElementById("rows"); tb.innerHTML = "";
             parsed.forEach(function (p) {
                 var tr = document.createElement("tr");
-                tr.innerHTML = '<td><input name="first_name" value="' + TSS.esc(p.first_name) + '"></td><td><input name="last_name" value="' + TSS.esc(p.last_name) + '"></td><td><input name="phone" value="' + TSS.esc(p.phone) + '"></td><td><input name="email" value="' + TSS.esc(p.email) + '"></td><td><input name="since_months" value="' + p.since_months + '" style="width:80px"></td><td><select name="coverage"><option value="indeterminee">Indéterminée</option><option value="3">3 mois</option><option value="6">6 mois</option><option value="12">12 mois</option></select></td><td><input name="family_of" placeholder="(si famille)"></td>';
+                tr.innerHTML = '<td><input name="first_name" value="' + TSS.esc(p.first_name) + '"></td><td><input name="last_name" value="' + TSS.esc(p.last_name) + '"></td><td><input name="phone" value="' + TSS.esc(p.phone) + '"></td><td><input name="email" value="' + TSS.esc(p.email) + '"></td><td><input name="family_of" placeholder="(si famille)"></td>';
                 tb.appendChild(tr);
             });
             document.getElementById("count").textContent = parsed.length + " personne(s) reconnue(s). Corrigez au besoin, tout est modifiable.";

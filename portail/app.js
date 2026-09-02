@@ -16,7 +16,7 @@
   function requireSession() { var s = session(); if (!s || !s.code) { window.location.href = "index.html"; return null; } return s; }
   function fmtPhone(p) { var d = String(p || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d.slice(0, 3) + " " + d.slice(3, 6) + "-" + d.slice(6) : p; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function coverageLabel(c) { return c === "indeterminee" || !c ? "Indéterminée" : c + " mois"; }
+  function sinceLabel(m) { if (!m.created_at) return "–"; var d = new Date(m.created_at); var date = d.toLocaleDateString("fr-CA", { day: "numeric", month: "short", year: "numeric" }); return date + (m.months_covered ? " (" + m.months_covered + " mois)" : " (ce mois-ci)"); }
   function spruceTag(m) {
     if (m.status === "pause") return '<span class="tag grace">En pause (grâce 90 j)</span>';
     if (m.status === "retire") return '<span class="tag grace">Retiré</span>';
@@ -24,7 +24,7 @@
     if (m.spruce === "invite") return '<span class="tag wait">Invité, en attente</span>';
     return '<span class="tag wait">Invitation à envoyer</span>';
   }
-  // Free-text parser: phones (SMS-able Canadian formats), emails, "depuis N mois / N ans", the rest is the name.
+  // Free-text parser: phones (SMS-able Canadian formats), emails, the rest is the name. (Subscription time is computed by us, never typed by the company.)
   function parseList(text) {
     var people = [];
     text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (line) {
@@ -38,9 +38,9 @@
       var parts = rest.split(" ").filter(Boolean);
       var given = parts.shift() || "";
       var family = parts.join(" ");
-      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email, since_months: months, coverage: "indeterminee" });
+      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email });
     });
     return people;
   }
-  window.TSS = { API: API, session: session, saveSession: saveSession, clearSession: clearSession, api: api, requireSession: requireSession, fmtPhone: fmtPhone, esc: esc, coverageLabel: coverageLabel, spruceTag: spruceTag, parseList: parseList };
+  window.TSS = { API: API, session: session, saveSession: saveSession, clearSession: clearSession, api: api, requireSession: requireSession, fmtPhone: fmtPhone, esc: esc, sinceLabel: sinceLabel, spruceTag: spruceTag, parseList: parseList };
 })();
