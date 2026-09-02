@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Ajouter des personnes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Les Frères Dalton inc</span><div class="av">LD</div></div></header>
+    <main>
+        <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. Invitations envoyées</span></div>
+        <h1>Ajouter des personnes</h1>
+        <p class="sub">Collez votre liste telle quelle, en vrac ou une personne par ligne : nom, cellulaire (qui reçoit les textos), courriel, et depuis combien de mois la personne est chez vous. Le système reconnaît tout seul les numéros et les courriels.</p>
+
+        <div class="card" id="paste">
+            <h2>Votre liste</h2>
+            <textarea id="raw" placeholder="Ex. : Marc Bélanger 418 555-0199 marc.b@transport.ca depuis 8 mois
+Karim Benali, 514-555-0133, kbenali@gmail.com, 2 ans
+Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
+            <p class="hint">Ou téléversez un fichier Excel ou CSV avec les mêmes colonnes. Les places disponibles sont vérifiées avec votre abonnement Stripe; s’il en manque, on vous propose d’ajouter des places.</p>
+            <div class="row"><button class="btn" id="parse">Reconnaître les personnes</button><label class="btn secondary">Téléverser un fichier<input type="file" hidden></label></div>
+        </div>
+
+        <div class="card" id="review" hidden>
+            <h2>Vérifiez avant d’envoyer</h2>
+            <p class="hint" id="count"></p>
+            <table>
+                <thead><tr><th>Prénom</th><th>Nom</th><th>Cellulaire (texto)</th><th>Courriel</th><th>Depuis (mois)</th><th>Durée de couverture</th></tr></thead>
+                <tbody id="rows"></tbody>
+            </table>
+            <p class="hint" id="seats"></p>
+            <div class="row"><button class="btn" id="send">Envoyer les invitations Spruce</button><button class="btn secondary" id="back">Modifier la liste</button></div>
+        </div>
+
+        <div class="card" id="done" hidden>
+            <div class="ok-banner" id="okmsg"></div>
+            <table>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Invitation</th><th>Registre</th></tr></thead>
+                <tbody id="donerows"></tbody>
+            </table>
+            <p class="hint">Chaque personne reçoit un texto et un courriel de Truck Stop Santé sur Spruce. Sans réponse après 48 h, une relance part toute seule. Votre registre Google Sheets est à jour et votre facture du mois prochain suit le nombre de personnes couvertes.</p>
+            <div class="row"><a class="btn" href="tableau.html">Retour à mon entreprise</a></div>
+        </div>
+    </main>
+    <script>
+    // Free-text parser: finds phones (SMS-able Canadian formats), emails, "depuis N mois / N ans", and takes the rest as the name.
+    function parseList(text) {
+        var people = [];
+        var chunks = text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean);
+        chunks.forEach(function (line) {
+            var email = (line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [''])[0];
+            var phone = (line.match(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [''])[0];
+            var months = 0;
+            var m = line.match(/(\d+)\s*(mois|ans?)/i);
+            if (m) months = /an/i.test(m[2]) ? parseInt(m[1], 10) * 12 : parseInt(m[1], 10);
+            if (/nouveau|nouvelle|new/i.test(line)) months = 0;
+            var rest = line.replace(email, ' ').replace(phone, ' ').replace(/depuis|since|nouveau|nouvelle|new|\d+\s*(mois|ans?)/gi, ' ').replace(/[,()]/g, ' ').replace(/\s+/g, ' ').trim();
+            var parts = rest.split(' ').filter(Boolean);
+            var given = parts.shift() || '';
+            var family = parts.join(' ');
+            if (given || phone || email) people.push({ given: given, family: family, phone: formatPhone(phone), email: email, months: months });
+        });
+        return people;
+    }
+    function formatPhone(p) { var d = p.replace(/\D/g, ''); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d.length === 10 ? d.slice(0, 3) + ' ' + d.slice(3, 6) + '-' + d.slice(6) : p; }
+    var SEATS_FREE = 2;
+    var parsed = [];
+    document.getElementById('parse').addEventListener('click', function () {
+        parsed = parseList(document.getElementById('raw').value);
+        var tb = document.getElementById('rows'); tb.innerHTML = '';
+        parsed.forEach(function (p, i) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><input value="' + p.given + '"></td><td><input value="' + p.family + '"></td><td><input value="' + p.phone + '"></td><td><input value="' + p.email + '"></td><td><input value="' + p.months + '" style="width:80px"></td><td><select><option>Indéterminée</option><option>3 mois</option><option>6 mois</option><option>12 mois</option></select></td>';
+            tb.appendChild(tr);
+        });
+        document.getElementById('count').textContent = parsed.length + ' personne(s) reconnue(s). Corrigez au besoin, tout est modifiable.';
+        var need = parsed.length - SEATS_FREE;
+        document.getElementById('seats').innerHTML = need > 0 ? 'Il vous manque <b>' + need + ' place(s)</b> : elles seront ajoutées à votre abonnement Stripe (8 $/mois chacune) au moment de l’envoi.' : 'Vous avez assez de places dans votre abonnement.';
+        document.getElementById('paste').hidden = true; document.getElementById('review').hidden = false;
+        document.getElementById('d2').classList.add('on'); document.getElementById('s2').innerHTML = '<b>2. Vérifiez</b>';
+        window.scrollTo(0, 0);
+    });
+    document.getElementById('back').addEventListener('click', function () { document.getElementById('review').hidden = true; document.getElementById('paste').hidden = false; });
+    document.getElementById('send').addEventListener('click', function () {
+        var tb = document.getElementById('donerows'); tb.innerHTML = '';
+        var rows = document.querySelectorAll('#rows tr');
+        rows.forEach(function (tr) {
+            var v = tr.querySelectorAll('input');
+            var x = document.createElement('tr');
+            x.innerHTML = '<td><b>' + v[0].value + ' ' + v[1].value + '</b></td><td>' + v[2].value + '</td><td>' + v[3].value + '</td><td><span class="tag ok">Texto + courriel envoyés</span></td><td><span class="tag ok">Ligne ajoutée</span></td>';
+            tb.appendChild(x);
+        });
+        document.getElementById('okmsg').textContent = rows.length + ' invitation(s) Spruce envoyée(s). Registre mis à jour. Abonnement : ' + Math.max(0, rows.length - SEATS_FREE) + ' place(s) ajoutée(s).';
+        document.getElementById('review').hidden = true; document.getElementById('done').hidden = false;
+        document.getElementById('d3').classList.add('on'); document.getElementById('s3').innerHTML = '<b>3. Invitations envoyées</b>';
+        window.scrollTo(0, 0);
+    });
+    </script>
+</body>
+</html>

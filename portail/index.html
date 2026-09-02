@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Portail entreprise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Portail entreprise</div></header>
+    <div class="login-wrap">
+        <div class="login">
+            <h1>Connexion</h1>
+            <p class="sub">Gérez vos personnes couvertes, vos invitations et votre facture, comme n’importe quel abonnement.</p>
+            <button class="btn google" id="google"><span class="g"></span>Se connecter avec Google</button>
+            <div class="or">ou recevez un code par courriel</div>
+            <input type="email" id="email" placeholder="courriel de l’entreprise" value="">
+            <button class="btn secondary" id="code">Recevoir mon code</button>
+            <p class="fine">Réservé aux entreprises et associations abonnées. Identité et coordonnées seulement — aucune donnée de santé ne passe par ce portail (Loi 25).</p>
+        </div>
+    </div>
+    <script>
+    document.getElementById('google').addEventListener('click', function () { window.location.href = 'tableau.html'; });
+    document.getElementById('code').addEventListener('click', function () { window.location.href = 'tableau.html'; });
+    </script>
+</body>
+</html>
