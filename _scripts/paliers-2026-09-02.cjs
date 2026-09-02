@@ -46,10 +46,10 @@ function block(kind) {
 }
 
 const TARGETS = [
-  { file: "index.html", kind: "fleet", after: /<section id="prix"[\s\S]*?<\/section>\n/ },
-  { file: "tsq/index.html", kind: "fleet", after: /<section id="prix"[\s\S]*?<\/section>\n/ },
-  { file: "entreprises/index.html", kind: "team", after: /<section class="maths"[\s\S]*?<\/section>\n/ },
-  { file: "hedhofis/index.html", kind: "team", after: /<section class="maths"[\s\S]*?<\/section>\n/ },
+  { file: "index.html", kind: "fleet", after: /<section id="prix"[\s\S]*?<\/section>[ \t]*\r?\n/ },
+  { file: "tsq/index.html", kind: "fleet", after: /<section id="prix"[\s\S]*?<\/section>[ \t]*\r?\n/ },
+  { file: "entreprises/index.html", kind: "team", after: /<section class="maths"[\s\S]*?<\/section>[ \t]*\r?\n/ },
+  { file: "hedhofis/index.html", kind: "team", after: /<section class="maths"[\s\S]*?<\/section>[ \t]*\r?\n/ },
 ];
 
 for (const t of TARGETS) {
@@ -75,7 +75,8 @@ for (const t of TARGETS) {
   const frNew = fr + " Et à chaque tranche de 1 000 membres couverts, l’ARPQ reçoit 50 consultations gratuites par mois — pour la famille des membres ou pour qui elle veut, sans abonnement, avec un code. Chaque consultation est déduite jusqu’à zéro; la banque se renouvelle chaque mois, non cumulable.";
   const enNew = en + " And for every 1,000 covered members, the ARPQ receives 50 free consultations a month — for members’ families or whoever it wants, no subscription, with a code. Each consultation is deducted down to zero; the bank renews monthly and does not accumulate.";
   const before = s;
-  s = s.split(fr).join(frNew).split(en).join(enNew);
+  if (!s.includes(frNew)) s = s.split(fr).join(frNew);
+  if (!s.includes(enNew)) s = s.split(en).join(enNew);
   fs.writeFileSync(file, s);
   console.log("arpq/index.html", before !== s ? "association sentence updated" : "MISS sentence");
 }
