@@ -30,7 +30,7 @@ function block(kind) {
                     <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
                     <div class="p-head" data-fr="${n} personnes couvertes" data-en="${n.replace(" ", ",")} covered persons">${n} personnes couvertes</div>
                     <div class="p-free">${f}</div>
-                    <div class="p-label" data-fr="accès gratuits par mois" data-en="free consultations a month">accès gratuits par mois</div>
+                    <div class="p-label" data-fr="consultations gratuites par mois" data-en="free consultations a month">consultations gratuites par mois</div>
                 </div>`).join("");
   return `
     <section id="paliers" class="paliers">
