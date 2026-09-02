@@ -13,6 +13,9 @@
         .muted { color: var(--muted); }
         .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
         .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+        tr.fam td { background: #FAFBFF; }
+        tr.fam td:first-child { padding-left: 40px; }
+        .famlink { color: var(--muted); font-size: 0.8rem; margin-right: 6px; }
     </style>
 </head>
 <body>
@@ -71,12 +74,21 @@
             var tb = document.getElementById("rows"); tb.innerHTML = "";
             var live = ms.filter(function (m) { return m.status !== "retire"; });
             if (!live.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Aucune personne couverte pour l’instant. Cliquez sur « Ajouter des personnes ».</td></tr>'; return; }
-            live.forEach(function (m) {
+            var norm = function (s) { return String(s || "").toLowerCase().replace(/[^a-z0-9À-ſ]/g, ""); };
+            var principals = live.filter(function (m) { return !m.family_of; });
+            var orphans = live.filter(function (m) { return m.family_of && !principals.some(function (p) { return norm(p.first_name + p.last_name) === norm(m.family_of); }); });
+            function rowFor(m, sub) {
                 var tr = document.createElement("tr");
+                if (sub) tr.className = "fam";
                 var act = m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
-                tr.innerHTML = "<td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b>" + (m.family_of ? '<div class="muted" style="font-size:.85rem">famille de ' + TSS.esc(m.family_of) + "</div>" : "") + "</td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
-                tb.appendChild(tr);
+                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
+                return tr;
+            }
+            principals.forEach(function (p) {
+                tb.appendChild(rowFor(p, false));
+                live.filter(function (m) { return m.family_of && norm(m.family_of) === norm(p.first_name + p.last_name); }).forEach(function (f) { tb.appendChild(rowFor(f, true)); });
             });
+            orphans.forEach(function (f) { tb.appendChild(rowFor(f, true)); });
         }
         function load() {
             TSS.api("/state").then(function (j) {
