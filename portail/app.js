@@ -24,6 +24,11 @@
     if (m.spruce === "invite") return '<span class="tag wait">Invité, en attente</span>';
     return '<span class="tag wait">Invitation à envoyer</span>';
   }
+  function coverTag(m) {
+    if (m.status === "pause") return '<span class="tag grace">En pause (grâce 90 j)</span>';
+    if (m.status === "retire") return '<span class="tag grace">Retirée</span>';
+    return '<span class="tag ok">Couverte</span>';
+  }
   // Free-text parser: phones (SMS-able Canadian formats), emails, the rest is the name. (Subscription time is computed by us, never typed by the company.)
   function parseList(text) {
     var people = [];
@@ -41,5 +46,5 @@
     });
     return people;
   }
-  window.TSS = { API: API, session: session, saveSession: saveSession, clearSession: clearSession, api: api, requireSession: requireSession, fmtPhone: fmtPhone, esc: esc, sinceLabel: sinceLabel, spruceTag: spruceTag, parseList: parseList };
+  window.TSS = { API: API, session: session, saveSession: saveSession, clearSession: clearSession, api: api, requireSession: requireSession, fmtPhone: fmtPhone, esc: esc, sinceLabel: sinceLabel, spruceTag: spruceTag, coverTag: coverTag, parseList: parseList };
 })();

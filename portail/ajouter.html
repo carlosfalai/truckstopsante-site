@@ -11,7 +11,7 @@
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="pname"></span><a href="tableau.html" style="color:#fff;font-size:.9rem">Mon entreprise</a></div></header>
     <main>
-        <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. Invitations envoyées</span></div>
+        <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. C’est fait</span></div>
         <h1>Ajouter des personnes</h1>
         <p class="sub">Collez votre liste telle quelle, en vrac ou une personne par ligne : nom, cellulaire (qui reçoit les textos) et courriel. Un membre de la famille ? Ajoutez « conjointe de Marc Bélanger » sur sa ligne et il sera regroupé sous ce membre. Le système reconnaît tout seul les numéros et les courriels. Nous suivons ensuite pour vous depuis combien de temps chaque personne est abonnée.</p>
 
@@ -32,16 +32,16 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
                 <tbody id="rows"></tbody>
             </table>
             <p class="hint" id="seats"></p>
-            <div class="row"><button class="btn" id="send">Envoyer les invitations Spruce</button><button class="btn secondary" id="back">Modifier la liste</button></div>
+            <div class="row"><button class="btn" id="send">Ajouter et couvrir ces personnes</button><button class="btn secondary" id="back">Modifier la liste</button></div>
         </div>
 
         <div class="card" id="done" hidden>
             <div class="ok-banner" id="okmsg"></div>
             <table>
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Invitation Spruce</th></tr></thead>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Résultat</th></tr></thead>
                 <tbody id="donerows"></tbody>
             </table>
-            <p class="hint">Chaque personne reçoit un texto et un courriel de Truck Stop Santé sur Spruce. Votre facture du mois prochain suit le nombre de personnes couvertes.</p>
+            <p class="hint">Nous contactons chaque personne directement pour activer son accès. Vous n’avez rien d’autre à faire. Votre facture du mois prochain suit le nombre de personnes couvertes.</p>
             <div class="row"><a class="btn" href="tableau.html">Retour à mon entreprise</a><button class="btn secondary" id="again">Ajouter d’autres personnes</button></div>
         </div>
     </main>
@@ -81,20 +81,20 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
             if (bad.length) { alert(bad.length + " ligne(s) incomplète(s) : il faut prénom, nom, un cellulaire à 10 chiffres et un courriel."); return; }
             var btn = document.getElementById("send"); btn.disabled = true; btn.textContent = "Envoi en cours…";
             TSS.api("/members/bulk", { members: rows }).then(function (j) {
-                btn.disabled = false; btn.textContent = "Envoyer les invitations Spruce";
+                btn.disabled = false; btn.textContent = "Ajouter et couvrir ces personnes";
                 if (!j.ok) { alert("Envoi impossible : " + (j.error || "erreur")); return; }
                 var tb = document.getElementById("donerows"); tb.innerHTML = "";
                 j.results.forEach(function (r, i) {
                     var row = rows[i]; var tr = document.createElement("tr");
-                    var tag = !r.ok ? '<span class="tag grace">' + (r.error === "duplicate" ? "Déjà dans votre liste" : r.error === "bad_phone" ? "Cellulaire invalide" : r.error === "bad_email" ? "Courriel invalide" : "Rejeté") + "</span>" : TSS.spruceTag(r.member);
+                    var tag = !r.ok ? '<span class="tag grace">' + (r.error === "duplicate" ? "Déjà dans votre liste" : r.error === "bad_phone" ? "Cellulaire invalide" : r.error === "bad_email" ? "Courriel invalide" : "Rejeté") + "</span>" : '<span class="tag ok">Ajoutée et couverte</span>';
                     tr.innerHTML = "<td><b>" + TSS.esc(row.first_name + " " + row.last_name) + "</b></td><td>" + TSS.esc(row.phone) + "</td><td>" + TSS.esc(row.email) + "</td><td>" + tag + "</td>";
                     tb.appendChild(tr);
                 });
                 var rs = j.resume;
-                document.getElementById("okmsg").textContent = rs.added + " personne(s) ajoutée(s). Invitations Spruce envoyées : " + rs.invited + (rs.already ? ", déjà sur Spruce : " + rs.already : "") + (rs.failed ? ", rejetées : " + rs.failed : "") + ". Personnes couvertes : " + j.actifs + " (" + (j.actifs * 8) + " $/mois).";
-                document.getElementById("d3").classList.add("on"); document.getElementById("s3").innerHTML = "<b>3. Invitations envoyées</b>";
+                document.getElementById("okmsg").textContent = rs.added + " personne(s) ajoutée(s)" + (rs.failed ? ", " + rs.failed + " rejetée(s)" : "") + ". Personnes couvertes : " + j.actifs + " (" + (j.actifs * 8) + " $/mois).";
+                document.getElementById("d3").classList.add("on"); document.getElementById("s3").innerHTML = "<b>3. C’est fait</b>";
                 show("done");
-            }).catch(function () { btn.disabled = false; btn.textContent = "Envoyer les invitations Spruce"; alert("Connexion impossible pour le moment. Réessayez."); });
+            }).catch(function () { btn.disabled = false; btn.textContent = "Ajouter et couvrir ces personnes"; alert("Connexion impossible pour le moment. Réessayez."); });
         });
     })();
     </script>

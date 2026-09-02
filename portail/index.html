@@ -7,6 +7,13 @@
     <title>Truck Stop Santé — Portail entreprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="portail.css">
+    <style>
+        .gwrap { display: flex; justify-content: center; margin: 4px 0 14px; min-height: 44px; }
+        .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; margin: 6px 0 12px; }
+        .sep::before, .sep::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+        .link-box { background: #F6F8FB; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 12px; text-align: left; }
+        .link-box p { margin: 0 0 10px; font-size: 0.92rem; }
+    </style>
 </head>
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Portail entreprise</div></header>
@@ -14,11 +21,20 @@
         <div class="login">
             <h1>Connexion</h1>
             <p class="sub">Gérez vos personnes couvertes, vos invitations et votre facture, comme n’importe quel abonnement.</p>
+            <div class="gwrap" id="gbtn" hidden></div>
+            <div class="sep" id="gsep" hidden>ou avec votre code d’accès</div>
             <form id="form">
                 <input type="text" id="code" placeholder="votre code d’accès (ex. DALTON-7K2M9P)" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
                 <label style="display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:0.9rem;margin:2px 0 12px"><input type="checkbox" id="remember" style="width:auto;margin:0"> Rester connecté sur cet appareil</label>
                 <button class="btn" type="submit" id="go" style="width:100%;justify-content:center">Entrer</button>
             </form>
+            <div class="link-box" id="linkbox" hidden>
+                <p><b id="gemail"></b> n’est pas encore associé à une entreprise. Entrez votre code d’accès une seule fois : la prochaine fois, le bouton Google suffira.</p>
+                <form id="linkform" class="row" style="gap:8px">
+                    <input type="text" id="linkcode" placeholder="votre code d’accès" autocomplete="off" autocapitalize="characters" spellcheck="false" required style="flex:1;min-width:180px">
+                    <button class="btn" type="submit" id="linkgo">Lier mon entreprise</button>
+                </form>
+            </div>
             <p class="hint" id="msg" style="min-height:1.4em;margin-top:12px"></p>
             <div class="or">Pas encore de code ? Il arrive avec votre abonnement.</div>
             <div class="row" style="justify-content:center"><a class="btn secondary" href="https://truckstopsante.com/#prix">Inscrire mes chauffeurs</a><a class="btn secondary" href="mailto:cff@centremedicalfont.ca?subject=Code%20portail%20Truck%20Stop%20Sant%C3%A9">Demander mon code</a></div>
@@ -31,6 +47,12 @@
     (function () {
         var s = TSS.session(); if (s && s.code) { window.location.replace("tableau.html"); return; }
         var form = document.getElementById("form"), msg = document.getElementById("msg"), go = document.getElementById("go");
+        var remember = function () { return document.getElementById("remember").checked; };
+        var lastCredential = "";
+        function enter(j, code) {
+            TSS.saveSession({ code: code, role: j.role, partner: j.partner || null, google: j.google || null, at: Date.now() }, remember());
+            window.location.href = j.role === "admin" ? "admin.html" : "tableau.html";
+        }
         form.addEventListener("submit", function (e) {
             e.preventDefault();
             var code = document.getElementById("code").value.trim().toUpperCase();
@@ -40,11 +62,42 @@
                 .then(function (r) { return r.json(); })
                 .then(function (j) {
                     if (!j.ok) { msg.textContent = "Code inconnu. Vérifiez la lettre et les chiffres, ou demandez votre code."; go.disabled = false; return; }
-                    TSS.saveSession({ code: code, role: j.role, partner: j.partner || null, at: Date.now() }, document.getElementById("remember").checked);
-                    window.location.href = j.role === "admin" ? "admin.html" : "tableau.html";
+                    enter(j, code);
                 })
                 .catch(function () { msg.textContent = "Connexion impossible pour le moment. Réessayez dans une minute."; go.disabled = false; });
         });
+        // Google : réservé aux entreprises et associations (jamais aux membres). Le courriel Google doit être connu, sinon on le lie une fois avec le code.
+        window.onGoogleCredential = function (resp) {
+            lastCredential = resp && resp.credential; if (!lastCredential) return;
+            msg.textContent = "Vérification du compte Google…";
+            fetch(TSS.API + "/login/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ credential: lastCredential }) })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (j.ok) { enter(j, j.code); return; }
+                    if (j.error === "unknown_google") { document.getElementById("gemail").textContent = j.email; document.getElementById("linkbox").hidden = false; msg.textContent = ""; document.getElementById("linkcode").focus(); return; }
+                    msg.textContent = "Compte Google refusé. Utilisez votre code d’accès.";
+                })
+                .catch(function () { msg.textContent = "Connexion impossible pour le moment. Réessayez dans une minute."; });
+        };
+        document.getElementById("linkform").addEventListener("submit", function (e) {
+            e.preventDefault();
+            var code = document.getElementById("linkcode").value.trim().toUpperCase(), b = document.getElementById("linkgo");
+            if (code.length < 8) { msg.textContent = "Le code a au moins 8 caractères."; return; }
+            b.disabled = true; msg.textContent = "Liaison du compte…";
+            fetch(TSS.API + "/login/google/link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ credential: lastCredential, code: code }) })
+                .then(function (r) { return r.json(); })
+                .then(function (j) { if (!j.ok) { msg.textContent = j.error === "bad_code" ? "Code inconnu." : "Liaison impossible."; b.disabled = false; return; } enter(j, code); })
+                .catch(function () { msg.textContent = "Connexion impossible pour le moment."; b.disabled = false; });
+        });
+        if (window.TSS_GOOGLE_CLIENT_ID) {
+            var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = function () {
+                google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
+                var host = document.getElementById("gbtn"); host.hidden = false; document.getElementById("gsep").hidden = false;
+                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
+            };
+            document.head.appendChild(sc);
+        }
     })();
     </script>
 </body>
