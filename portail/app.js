@@ -30,10 +30,6 @@
     text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (line) {
       var email = (line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [""])[0];
       var phone = (line.match(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [""])[0];
-      var months = 0;
-      var m = line.match(/(\d+)\s*(mois|ans?)/i);
-      if (m) months = /an/i.test(m[2]) ? parseInt(m[1], 10) * 12 : parseInt(m[1], 10);
-      if (/nouveau|nouvelle|new/i.test(line)) months = 0;
       var rest = line.replace(email, " ").replace(phone, " ").replace(/depuis|since|nouveau|nouvelle|new|\d+\s*(mois|ans?)/gi, " ").replace(/[,()\t]/g, " ").replace(/\s+/g, " ").trim();
       var parts = rest.split(" ").filter(Boolean);
       var given = parts.shift() || "";
