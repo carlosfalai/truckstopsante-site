@@ -329,6 +329,22 @@ footer p{font-style:italic;font-size:.85rem;line-height:1.5;max-width:74ch}
   .lang button{padding:.4rem .6rem}
   .cta .btn{flex:1 1 100%;text-align:center}
 }
+
+        /* --- intro video (auto-embedded by instanthpi-videos/_scripts/arpq-publish-web.cjs) --- */
+        .intro-video { display: flex; justify-content: center; margin: 0 auto 28px; }
+        .intro-video .player { position: relative; width: min(100%, 340px); aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); }
+        .intro-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .intro-video .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: #F59E0B; color: #14264A; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
+        .intro-video .sound.off { display: none; }
+        @media (min-width: 900px) { .intro-video .player { width: 300px; } }
+
+        /* --- intro video (auto-embedded by instanthpi-videos/_scripts/arpq-publish-web.cjs) --- */
+        .intro-video { display: flex; justify-content: center; margin: 0 auto 28px; }
+        .intro-video .player { position: relative; width: min(100%, 340px); aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); }
+        .intro-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .intro-video .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: #F59E0B; color: #14264A; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
+        .intro-video .sound.off { display: none; }
+        @media (min-width: 900px) { .intro-video .player { width: 300px; } }
 </style>
 
 <header>
@@ -541,5 +557,31 @@ footer p{font-style:italic;font-size:.85rem;line-height:1.5;max-width:74ch}
 })();
 </script>
 
+
+    <script>
+    (function () {
+        var box = document.querySelector('.intro-video'); if (!box) return;
+        var v = box.querySelector('video'), btn = box.querySelector('.sound');
+        var srcFr = v.getAttribute('data-src-fr'), srcEn = v.getAttribute('data-src-en');
+        function setLang(l) { var s = (l === 'en' && srcEn) ? srcEn : srcFr; if (v.getAttribute('src') !== s) { v.setAttribute('src', s); v.muted = true; v.load(); v.play().catch(function(){}); btn.classList.remove('off'); } }
+        btn.addEventListener('click', function () { v.muted = false; v.currentTime = 0; v.controls = true; v.loop = false; v.play(); btn.classList.add('off'); });
+        v.addEventListener('ended', function () { btn.classList.remove('off'); v.controls = false; v.muted = true; v.loop = true; v.play().catch(function(){}); });
+        document.querySelectorAll('.lang-toggle button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.getAttribute('data-lang')); }); });
+        setLang(document.documentElement.lang && document.documentElement.lang.indexOf('en') === 0 ? 'en' : 'fr');
+    })();
+    </script>
+
+    <script>
+    (function () {
+        var box = document.querySelector('.intro-video'); if (!box) return;
+        var v = box.querySelector('video'), btn = box.querySelector('.sound');
+        var srcFr = v.getAttribute('data-src-fr'), srcEn = v.getAttribute('data-src-en');
+        function setLang(l) { var s = (l === 'en' && srcEn) ? srcEn : srcFr; if (v.getAttribute('src') !== s) { v.setAttribute('src', s); v.muted = true; v.load(); v.play().catch(function(){}); btn.classList.remove('off'); } }
+        btn.addEventListener('click', function () { v.muted = false; v.currentTime = 0; v.controls = true; v.loop = false; v.play(); btn.classList.add('off'); });
+        v.addEventListener('ended', function () { btn.classList.remove('off'); v.controls = false; v.muted = true; v.loop = true; v.play().catch(function(){}); });
+        document.querySelectorAll('.lang-toggle button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.getAttribute('data-lang')); }); });
+        setLang(document.documentElement.lang && document.documentElement.lang.indexOf('en') === 0 ? 'en' : 'fr');
+    })();
+    </script>
 </body>
 </html>
