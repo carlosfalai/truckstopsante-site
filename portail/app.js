@@ -16,7 +16,7 @@
   function requireSession() { var s = session(); if (!s || !s.code) { window.location.href = "index.html"; return null; } return s; }
   function fmtPhone(p) { var d = String(p || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d.slice(0, 3) + " " + d.slice(3, 6) + "-" + d.slice(6) : p; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function sinceLabel(m) { if (!m.created_at) return "–"; var d = new Date(m.created_at); var date = d.toLocaleDateString("fr-CA", { day: "numeric", month: "short", year: "numeric" }); return date + (m.months_covered ? " (" + m.months_covered + " mois)" : " (ce mois-ci)"); }
+  function sinceLabel(m) { if (!m.created_at) return "–"; var ms = Date.now() - new Date(m.created_at).getTime(); var days = Math.max(0, Math.floor(ms / 86400000)); var months = Math.floor(days / 30.44); var rest = Math.floor(days - months * 30.44); var d = new Date(m.created_at).toLocaleDateString("fr-CA", { day: "numeric", month: "short", year: "numeric" }); var counter = months ? months + " mois" + (rest ? " " + rest + " j" : "") : (days ? days + " j" : "aujourd’hui"); return "<b>" + counter + "</b><div class=\"muted\" style=\"font-size:.82rem\">depuis le " + d + "</div>"; }
   function spruceTag(m) {
     if (m.status === "pause") return '<span class="tag grace">En pause (grâce 90 j)</span>';
     if (m.status === "retire") return '<span class="tag grace">Retiré</span>';
@@ -30,11 +30,14 @@
     text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (line) {
       var email = (line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [""])[0];
       var phone = (line.match(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [""])[0];
+      var family_of = "";
+      var fam = line.match(/(?:famille|conjoint|conjointe|époux|épouse|fils|fille|enfant|mère|père|parent)\s+(?:de|d’|d')\s*([^,()]+)/i);
+      if (fam) { family_of = fam[1].trim(); line = line.replace(fam[0], " "); }
       var rest = line.replace(email, " ").replace(phone, " ").replace(/depuis|since|nouveau|nouvelle|new|\d+\s*(mois|ans?)/gi, " ").replace(/[,()\t]/g, " ").replace(/\s+/g, " ").trim();
       var parts = rest.split(" ").filter(Boolean);
       var given = parts.shift() || "";
       var family = parts.join(" ");
-      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email });
+      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email, family_of: family_of });
     });
     return people;
   }
