@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="portail.css">
 </head>
 <body>
-    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Les Frères Dalton inc</span><div class="av">LD</div></div></header>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="pname"></span><a href="tableau.html" style="color:#fff;font-size:.9rem">Mon entreprise</a></div></header>
     <main>
         <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. Invitations envoyées</span></div>
         <h1>Ajouter des personnes</h1>
@@ -20,15 +20,15 @@
             <textarea id="raw" placeholder="Ex. : Marc Bélanger 418 555-0199 marc.b@transport.ca depuis 8 mois
 Karim Benali, 514-555-0133, kbenali@gmail.com, 2 ans
 Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
-            <p class="hint">Ou téléversez un fichier Excel ou CSV avec les mêmes colonnes. Les places disponibles sont vérifiées avec votre abonnement Stripe; s’il en manque, on vous propose d’ajouter des places.</p>
-            <div class="row"><button class="btn" id="parse">Reconnaître les personnes</button><label class="btn secondary">Téléverser un fichier<input type="file" hidden></label></div>
+            <p class="hint">Ou téléversez un fichier CSV ou texte avec les mêmes colonnes (un fichier Excel : copiez les cellules et collez-les ici). Les places sont ajustées sur votre abonnement automatiquement, 8 $ par mois par personne.</p>
+            <div class="row"><button class="btn" id="parse">Reconnaître les personnes</button><label class="btn secondary">Téléverser un fichier<input type="file" id="file" accept=".csv,.txt,.tsv" hidden></label></div>
         </div>
 
         <div class="card" id="review" hidden>
             <h2>Vérifiez avant d’envoyer</h2>
             <p class="hint" id="count"></p>
             <table>
-                <thead><tr><th>Prénom</th><th>Nom</th><th>Cellulaire (texto)</th><th>Courriel</th><th>Depuis (mois)</th><th>Durée de couverture</th></tr></thead>
+                <thead><tr><th>Prénom</th><th>Nom</th><th>Cellulaire (texto)</th><th>Courriel</th><th>Depuis (mois)</th><th>Durée de couverture</th><th>Famille de</th></tr></thead>
                 <tbody id="rows"></tbody>
             </table>
             <p class="hint" id="seats"></p>
@@ -38,66 +38,65 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177 nouvelle"></textarea>
         <div class="card" id="done" hidden>
             <div class="ok-banner" id="okmsg"></div>
             <table>
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Invitation</th><th>Registre</th></tr></thead>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Invitation Spruce</th></tr></thead>
                 <tbody id="donerows"></tbody>
             </table>
-            <p class="hint">Chaque personne reçoit un texto et un courriel de Truck Stop Santé sur Spruce. Sans réponse après 48 h, une relance part toute seule. Votre registre Google Sheets est à jour et votre facture du mois prochain suit le nombre de personnes couvertes.</p>
-            <div class="row"><a class="btn" href="tableau.html">Retour à mon entreprise</a></div>
+            <p class="hint">Chaque personne reçoit un texto et un courriel de Truck Stop Santé sur Spruce. Votre facture du mois prochain suit le nombre de personnes couvertes.</p>
+            <div class="row"><a class="btn" href="tableau.html">Retour à mon entreprise</a><button class="btn secondary" id="again">Ajouter d’autres personnes</button></div>
         </div>
     </main>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
     <script>
-    // Free-text parser: finds phones (SMS-able Canadian formats), emails, "depuis N mois / N ans", and takes the rest as the name.
-    function parseList(text) {
-        var people = [];
-        var chunks = text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean);
-        chunks.forEach(function (line) {
-            var email = (line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [''])[0];
-            var phone = (line.match(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [''])[0];
-            var months = 0;
-            var m = line.match(/(\d+)\s*(mois|ans?)/i);
-            if (m) months = /an/i.test(m[2]) ? parseInt(m[1], 10) * 12 : parseInt(m[1], 10);
-            if (/nouveau|nouvelle|new/i.test(line)) months = 0;
-            var rest = line.replace(email, ' ').replace(phone, ' ').replace(/depuis|since|nouveau|nouvelle|new|\d+\s*(mois|ans?)/gi, ' ').replace(/[,()]/g, ' ').replace(/\s+/g, ' ').trim();
-            var parts = rest.split(' ').filter(Boolean);
-            var given = parts.shift() || '';
-            var family = parts.join(' ');
-            if (given || phone || email) people.push({ given: given, family: family, phone: formatPhone(phone), email: email, months: months });
+    (function () {
+        var s = TSS.requireSession(); if (!s) return;
+        if (s.partner) document.getElementById("pname").textContent = s.partner.name;
+        var parsed = [];
+        function show(id) { ["paste", "review", "done"].forEach(function (x) { document.getElementById(x).hidden = x !== id; }); window.scrollTo(0, 0); }
+        document.getElementById("file").addEventListener("change", function () {
+            var f = this.files[0]; if (!f) return;
+            var r = new FileReader(); r.onload = function () { document.getElementById("raw").value = String(r.result).replace(/\t/g, " "); }; r.readAsText(f);
         });
-        return people;
-    }
-    function formatPhone(p) { var d = p.replace(/\D/g, ''); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d.length === 10 ? d.slice(0, 3) + ' ' + d.slice(3, 6) + '-' + d.slice(6) : p; }
-    var SEATS_FREE = 2;
-    var parsed = [];
-    document.getElementById('parse').addEventListener('click', function () {
-        parsed = parseList(document.getElementById('raw').value);
-        var tb = document.getElementById('rows'); tb.innerHTML = '';
-        parsed.forEach(function (p, i) {
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td><input value="' + p.given + '"></td><td><input value="' + p.family + '"></td><td><input value="' + p.phone + '"></td><td><input value="' + p.email + '"></td><td><input value="' + p.months + '" style="width:80px"></td><td><select><option>Indéterminée</option><option>3 mois</option><option>6 mois</option><option>12 mois</option></select></td>';
-            tb.appendChild(tr);
+        document.getElementById("parse").addEventListener("click", function () {
+            parsed = TSS.parseList(document.getElementById("raw").value);
+            if (!parsed.length) { alert("Aucune personne reconnue. Une personne par ligne : prénom nom, cellulaire, courriel."); return; }
+            var tb = document.getElementById("rows"); tb.innerHTML = "";
+            parsed.forEach(function (p) {
+                var tr = document.createElement("tr");
+                tr.innerHTML = '<td><input name="first_name" value="' + TSS.esc(p.first_name) + '"></td><td><input name="last_name" value="' + TSS.esc(p.last_name) + '"></td><td><input name="phone" value="' + TSS.esc(p.phone) + '"></td><td><input name="email" value="' + TSS.esc(p.email) + '"></td><td><input name="since_months" value="' + p.since_months + '" style="width:80px"></td><td><select name="coverage"><option value="indeterminee">Indéterminée</option><option value="3">3 mois</option><option value="6">6 mois</option><option value="12">12 mois</option></select></td><td><input name="family_of" placeholder="(si famille)"></td>';
+                tb.appendChild(tr);
+            });
+            document.getElementById("count").textContent = parsed.length + " personne(s) reconnue(s). Corrigez au besoin, tout est modifiable.";
+            document.getElementById("seats").innerHTML = "Chaque personne ajoutée est couverte immédiatement et facturée le mois suivant, <b>8 $ par mois</b>.";
+            document.getElementById("d2").classList.add("on"); document.getElementById("s2").innerHTML = "<b>2. Vérifiez</b>";
+            show("review");
         });
-        document.getElementById('count').textContent = parsed.length + ' personne(s) reconnue(s). Corrigez au besoin, tout est modifiable.';
-        var need = parsed.length - SEATS_FREE;
-        document.getElementById('seats').innerHTML = need > 0 ? 'Il vous manque <b>' + need + ' place(s)</b> : elles seront ajoutées à votre abonnement Stripe (8 $/mois chacune) au moment de l’envoi.' : 'Vous avez assez de places dans votre abonnement.';
-        document.getElementById('paste').hidden = true; document.getElementById('review').hidden = false;
-        document.getElementById('d2').classList.add('on'); document.getElementById('s2').innerHTML = '<b>2. Vérifiez</b>';
-        window.scrollTo(0, 0);
-    });
-    document.getElementById('back').addEventListener('click', function () { document.getElementById('review').hidden = true; document.getElementById('paste').hidden = false; });
-    document.getElementById('send').addEventListener('click', function () {
-        var tb = document.getElementById('donerows'); tb.innerHTML = '';
-        var rows = document.querySelectorAll('#rows tr');
-        rows.forEach(function (tr) {
-            var v = tr.querySelectorAll('input');
-            var x = document.createElement('tr');
-            x.innerHTML = '<td><b>' + v[0].value + ' ' + v[1].value + '</b></td><td>' + v[2].value + '</td><td>' + v[3].value + '</td><td><span class="tag ok">Texto + courriel envoyés</span></td><td><span class="tag ok">Ligne ajoutée</span></td>';
-            tb.appendChild(x);
+        document.getElementById("back").addEventListener("click", function () { show("paste"); });
+        document.getElementById("again").addEventListener("click", function () { document.getElementById("raw").value = ""; show("paste"); });
+        document.getElementById("send").addEventListener("click", function () {
+            var rows = [].map.call(document.querySelectorAll("#rows tr"), function (tr) {
+                var o = {}; tr.querySelectorAll("input,select").forEach(function (i) { o[i.name] = i.value.trim(); }); return o;
+            });
+            var bad = rows.filter(function (r) { return !r.first_name || !r.last_name || r.phone.replace(/\D/g, "").length < 10 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email); });
+            if (bad.length) { alert(bad.length + " ligne(s) incomplète(s) : il faut prénom, nom, un cellulaire à 10 chiffres et un courriel."); return; }
+            var btn = document.getElementById("send"); btn.disabled = true; btn.textContent = "Envoi en cours…";
+            TSS.api("/members/bulk", { members: rows }).then(function (j) {
+                btn.disabled = false; btn.textContent = "Envoyer les invitations Spruce";
+                if (!j.ok) { alert("Envoi impossible : " + (j.error || "erreur")); return; }
+                var tb = document.getElementById("donerows"); tb.innerHTML = "";
+                j.results.forEach(function (r, i) {
+                    var row = rows[i]; var tr = document.createElement("tr");
+                    var tag = !r.ok ? '<span class="tag grace">' + (r.error === "duplicate" ? "Déjà dans votre liste" : r.error === "bad_phone" ? "Cellulaire invalide" : r.error === "bad_email" ? "Courriel invalide" : "Rejeté") + "</span>" : TSS.spruceTag(r.member);
+                    tr.innerHTML = "<td><b>" + TSS.esc(row.first_name + " " + row.last_name) + "</b></td><td>" + TSS.esc(row.phone) + "</td><td>" + TSS.esc(row.email) + "</td><td>" + tag + "</td>";
+                    tb.appendChild(tr);
+                });
+                var rs = j.resume;
+                document.getElementById("okmsg").textContent = rs.added + " personne(s) ajoutée(s). Invitations Spruce envoyées : " + rs.invited + (rs.already ? ", déjà sur Spruce : " + rs.already : "") + (rs.failed ? ", rejetées : " + rs.failed : "") + ". Personnes couvertes : " + j.actifs + " (" + (j.actifs * 8) + " $/mois).";
+                document.getElementById("d3").classList.add("on"); document.getElementById("s3").innerHTML = "<b>3. Invitations envoyées</b>";
+                show("done");
+            }).catch(function () { btn.disabled = false; btn.textContent = "Envoyer les invitations Spruce"; alert("Connexion impossible pour le moment. Réessayez."); });
         });
-        document.getElementById('okmsg').textContent = rows.length + ' invitation(s) Spruce envoyée(s). Registre mis à jour. Abonnement : ' + Math.max(0, rows.length - SEATS_FREE) + ' place(s) ajoutée(s).';
-        document.getElementById('review').hidden = true; document.getElementById('done').hidden = false;
-        document.getElementById('d3').classList.add('on'); document.getElementById('s3').innerHTML = '<b>3. Invitations envoyées</b>';
-        window.scrollTo(0, 0);
-    });
+    })();
     </script>
 </body>
 </html>

@@ -14,16 +14,38 @@
         <div class="login">
             <h1>Connexion</h1>
             <p class="sub">Gérez vos personnes couvertes, vos invitations et votre facture, comme n’importe quel abonnement.</p>
-            <button class="btn google" id="google"><span class="g"></span>Se connecter avec Google</button>
-            <div class="or">ou recevez un code par courriel</div>
-            <input type="email" id="email" placeholder="courriel de l’entreprise" value="">
-            <button class="btn secondary" id="code">Recevoir mon code</button>
+            <form id="form">
+                <input type="text" id="code" placeholder="votre code d’accès (ex. DALTON-7K2M9P)" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+                <label style="display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:0.9rem;margin:2px 0 12px"><input type="checkbox" id="remember" style="width:auto;margin:0"> Rester connecté sur cet appareil</label>
+                <button class="btn" type="submit" id="go" style="width:100%;justify-content:center">Entrer</button>
+            </form>
+            <p class="hint" id="msg" style="min-height:1.4em;margin-top:12px"></p>
+            <div class="or">Pas encore de code ? Il arrive avec votre abonnement.</div>
+            <div class="row" style="justify-content:center"><a class="btn secondary" href="https://truckstopsante.com/#prix">Inscrire mes chauffeurs</a><a class="btn secondary" href="mailto:cff@centremedicalfont.ca?subject=Code%20portail%20Truck%20Stop%20Sant%C3%A9">Demander mon code</a></div>
             <p class="fine">Réservé aux entreprises et associations abonnées. Identité et coordonnées seulement — aucune donnée de santé ne passe par ce portail (Loi 25).</p>
         </div>
     </div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
     <script>
-    document.getElementById('google').addEventListener('click', function () { window.location.href = 'tableau.html'; });
-    document.getElementById('code').addEventListener('click', function () { window.location.href = 'tableau.html'; });
+    (function () {
+        var s = TSS.session(); if (s && s.code) { window.location.replace("tableau.html"); return; }
+        var form = document.getElementById("form"), msg = document.getElementById("msg"), go = document.getElementById("go");
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var code = document.getElementById("code").value.trim().toUpperCase();
+            if (code.length < 8) { msg.textContent = "Le code a au moins 8 caractères."; return; }
+            go.disabled = true; msg.textContent = "Vérification…";
+            fetch(TSS.API + "/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: code }) })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (!j.ok) { msg.textContent = "Code inconnu. Vérifiez la lettre et les chiffres, ou demandez votre code."; go.disabled = false; return; }
+                    TSS.saveSession({ code: code, role: j.role, partner: j.partner || null, at: Date.now() }, document.getElementById("remember").checked);
+                    window.location.href = j.role === "admin" ? "admin.html" : "tableau.html";
+                })
+                .catch(function () { msg.textContent = "Connexion impossible pour le moment. Réessayez dans une minute."; go.disabled = false; });
+        });
+    })();
     </script>
 </body>
 </html>

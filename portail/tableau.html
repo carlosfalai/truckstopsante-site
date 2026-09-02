@@ -7,39 +7,103 @@
     <title>Truck Stop Santé — Mon entreprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="portail.css">
+    <style>
+        .actions button { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; font-size: 0.85rem; margin-right: 4px; }
+        .actions button:hover { border-color: var(--navy); }
+        .muted { color: var(--muted); }
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
+        .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+    </style>
 </head>
 <body>
-    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Les Frères Dalton inc</span><div class="av">LD</div></div></header>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="pname"></span><div class="av" id="pav"></div><button id="logout" style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
     <main>
-        <h1>Les Frères Dalton inc</h1>
+        <h1 id="h1">Mon entreprise</h1>
         <p class="sub">Votre couverture santé en un coup d’œil. La clinique vous facture 8 $ par personne couverte, par mois. Vos gens ne paient jamais rien.</p>
         <div class="grid">
-            <div class="stat"><div class="k">Places payées</div><div class="v">5</div><div class="d">abonnement Stripe, 40 $/mois</div></div>
-            <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber">3</div><div class="d">2 places libres</div></div>
-            <div class="stat"><div class="k">Invitations en attente</div><div class="v">1</div><div class="d">relance automatique à 48 h</div></div>
-            <div class="stat"><div class="k">Consultations gratuites</div><div class="v">0</div><div class="d">à partir de 100 personnes couvertes</div></div>
+            <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber" id="s-actifs">–</div><div class="d" id="s-montant"></div></div>
+            <div class="stat"><div class="k">Sur Spruce</div><div class="v" id="s-spruce">–</div><div class="d" id="s-spruce-d"></div></div>
+            <div class="stat"><div class="k">Prochaine facture</div><div class="v" id="s-facture">–</div><div class="d" id="s-facture-d"></div></div>
+            <div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="s-banque">–</div><div class="d">par mois, à partir de 100 personnes couvertes</div></div>
         </div>
         <div class="card">
             <div class="row" style="justify-content: space-between;">
                 <h2 style="margin:0">Personnes couvertes</h2>
                 <div class="row">
                     <a class="btn" href="ajouter.html" id="add">Ajouter des personnes</a>
-                    <a class="btn secondary" href="#" id="stripe">Gérer mon abonnement</a>
+                    <button class="btn secondary" id="stripe">Facture et paiement</button>
                 </div>
             </div>
             <table style="margin-top: 16px;">
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Dans l’entreprise depuis</th><th>Couverture</th><th>Statut Spruce</th></tr></thead>
-                <tbody>
-                    <tr><td><b>Dave Riopel</b></td><td>873 657-7775</td><td>lfdinc2022@icloud.com</td><td>36 mois</td><td>Indéterminée</td><td><span class="tag ok">Actif</span></td></tr>
-                    <tr><td><b>Martin Tremblay</b></td><td>418 555-0142</td><td>m.tremblay@exemple.com</td><td>14 mois</td><td>Indéterminée</td><td><span class="tag ok">Actif</span></td></tr>
-                    <tr><td><b>Josée Lavoie</b></td><td>514 555-0187</td><td>josee.l@exemple.com</td><td>3 mois</td><td>6 mois</td><td><span class="tag wait">Invitée, en attente</span></td></tr>
-                </tbody>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Chez vous depuis</th><th>Couvert depuis</th><th>Couverture</th><th>Statut</th><th></th></tr></thead>
+                <tbody id="rows"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
             </table>
+            <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
         </div>
         <div class="card">
             <h2>Votre code pour la banque de consultations gratuites</h2>
-            <div class="row"><span class="code">LFDALTON-SANTE</span><span class="hint" style="margin:0">La banque s’active à 100 personnes couvertes : 5 consultations gratuites par mois, pour qui vous voulez, famille incluse, sans abonnement.</span></div>
+            <div class="row"><span class="code" id="bank">–</span><span class="hint" style="margin:0">La banque s’active à 100 personnes couvertes : 5 consultations gratuites par mois par tranche de 100, pour qui vous voulez, famille incluse, sans abonnement. La personne nous écrit avec ce code.</span></div>
         </div>
     </main>
+    <div class="toast" id="toast"></div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+    (function () {
+        var s = TSS.requireSession(); if (!s) return;
+        var toast = document.getElementById("toast");
+        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+        document.getElementById("logout").addEventListener("click", function () { TSS.clearSession(); window.location.href = "index.html"; });
+        var state = null;
+        function render() {
+            var p = state.partner, r = state.resume, ms = state.members;
+            document.getElementById("pname").textContent = p.name; document.getElementById("h1").textContent = p.name;
+            document.getElementById("pav").textContent = (p.name || "?").replace(/[^A-Za-z0-9 ]/g, "").split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase();
+            document.getElementById("s-actifs").textContent = r.actifs;
+            document.getElementById("s-montant").textContent = r.montant + " $/mois" + (r.pause ? " · " + r.pause + " en pause" : "");
+            var onSpruce = ms.filter(function (m) { return m.status === "actif" && m.spruce === "compte"; }).length;
+            document.getElementById("s-spruce").textContent = onSpruce + " / " + r.actifs;
+            document.getElementById("s-spruce-d").textContent = (r.invitations_en_attente ? r.invitations_en_attente + " invitation(s) en attente" : "") + (r.a_inviter ? (r.invitations_en_attente ? " · " : "") + r.a_inviter + " à envoyer" : "") || "tout le monde est connecté";
+            document.getElementById("s-facture").textContent = r.prochaine_facture ? r.prochaine_facture.slice(5).split("-").reverse().join("/") : "–";
+            document.getElementById("s-facture-d").textContent = r.facturation_active ? r.actifs + " personnes x 8 $" : "facturation à activer";
+            document.getElementById("s-banque").textContent = r.banque_consultations;
+            document.getElementById("bank").textContent = p.bank_code || p.code;
+            var tb = document.getElementById("rows"); tb.innerHTML = "";
+            var live = ms.filter(function (m) { return m.status !== "retire"; });
+            if (!live.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Aucune personne couverte pour l’instant. Cliquez sur « Ajouter des personnes ».</td></tr>'; return; }
+            live.forEach(function (m) {
+                var tr = document.createElement("tr");
+                var act = m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
+                tr.innerHTML = "<td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b>" + (m.family_of ? '<div class="muted" style="font-size:.85rem">famille de ' + TSS.esc(m.family_of) + "</div>" : "") + "</td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + (m.since_months ? m.since_months + " mois" : "–") + "</td><td>" + (m.months_covered ? m.months_covered + " mois" : "ce mois-ci") + "</td><td>" + TSS.coverageLabel(m.coverage) + "</td><td>" + TSS.spruceTag(m) + "</td><td class=\"actions\">" + act + "</td>";
+                tb.appendChild(tr);
+            });
+        }
+        function load() {
+            TSS.api("/state").then(function (j) {
+                if (!j.ok) { if (j._status === 401) { TSS.clearSession(); window.location.href = "index.html"; } else say("Impossible de charger pour le moment."); return; }
+                state = j; render();
+            });
+        }
+        document.getElementById("rows").addEventListener("click", function (e) {
+            var b = e.target.closest("button[data-a]"); if (!b) return;
+            var a = b.getAttribute("data-a"), id = b.getAttribute("data-id");
+            var m = state.members.find(function (x) { return x.id === id; });
+            var label = a === "pause" ? "mettre en pause" : a === "retire" ? "retirer" : "réactiver";
+            if (!confirm("Voulez-vous " + label + " " + m.first_name + " " + m.last_name + " ?")) return;
+            b.disabled = true;
+            TSS.api("/member/status", { id: id, status: a }).then(function (j) {
+                if (!j.ok) { say("Changement impossible : " + (j.error || "erreur")); b.disabled = false; return; }
+                say(m.first_name + " " + m.last_name + " : " + (a === "pause" ? "en pause" : a === "retire" ? "retiré" : "réactivé") + ". Facture ajustée.");
+                load();
+            });
+        });
+        document.getElementById("stripe").addEventListener("click", function () {
+            TSS.api("/billing/portal", {}).then(function (j) {
+                if (j.ok && j.url) window.location.href = j.url; else say("Votre facturation n’est pas encore reliée à Stripe. Écrivez à cff@centremedicalfont.ca.");
+            });
+        });
+        load();
+    })();
+    </script>
 </body>
 </html>
