@@ -78,7 +78,7 @@ catch (e) {
 }
 await iam.send(new PutRolePolicyCommand({
   RoleName: ROLE, PolicyName: "tss-portail-dynamodb",
-  PolicyDocument: JSON.stringify({ Version: "2012-10-17", Statement: [{ Effect: "Allow", Action: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query", "dynamodb:Scan"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_PARTNERS}`, `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_MEMBERS}`] }] }),
+  PolicyDocument: JSON.stringify({ Version: "2012-10-17", Statement: [{ Effect: "Allow", Action: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:Scan"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_PARTNERS}`, `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_MEMBERS}`] }] }),
 }));
 
 /* 3. Lambda */
