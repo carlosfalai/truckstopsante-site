@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Administration du portail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+    <style>
+        .partner { margin-bottom: 18px; }
+        .partner .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .partner .meta { color: var(--muted); font-size: 0.9rem; }
+        .mini { font-size: 0.85rem; }
+        .mini button { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; cursor: pointer; font: inherit; font-size: 0.8rem; }
+        form.new { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        form.new input, form.new select { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Administration</span><button id="logout" style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
+    <main>
+        <h1>Partenaires</h1>
+        <p class="sub">Chaque entreprise ou association a son code d’accès (à lui remettre), son code de banque de consultations, ses personnes couvertes et son lien Stripe. Total personnes couvertes : <b id="total">–</b>, soit <b id="mrr">–</b> par mois.</p>
+        <div id="list"></div>
+        <div class="card">
+            <h2>Nouveau partenaire</h2>
+            <form class="new" id="new">
+                <input name="name" placeholder="Nom (entreprise ou association)" required>
+                <select name="type"><option value="entreprise">Entreprise</option><option value="association">Association</option></select>
+                <input name="contact_name" placeholder="Personne-ressource">
+                <input name="contact_email" placeholder="Courriel" type="email">
+                <input name="contact_phone" placeholder="Téléphone">
+                <input name="stripe_subscription_id" placeholder="sub_… (si déjà abonné via Stripe)">
+                <button class="btn" type="submit">Créer et générer le code</button>
+            </form>
+            <p class="hint">Si le partenaire a payé par le site (lien Stripe), collez son identifiant d’abonnement sub_… : sa facture suivra alors le nombre de personnes couvertes. Sinon, une fois ses premières personnes ajoutées, cliquez « Activer la facturation » : Stripe lui enverra une facture mensuelle à 30 jours.</p>
+        </div>
+    </main>
+    <div class="toast" id="toast"></div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+    (function () {
+        var s = TSS.session(); if (!s || s.role !== "admin") { window.location.href = "index.html"; return; }
+        var toast = document.getElementById("toast");
+        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+        document.getElementById("logout").addEventListener("click", function () { TSS.clearSession(); window.location.href = "index.html"; });
+        var state = null;
+        function render() {
+            var list = document.getElementById("list"); list.innerHTML = "";
+            var total = 0;
+            state.partners.forEach(function (p) {
+                total += p.resume.actifs;
+                var card = document.createElement("div"); card.className = "card partner";
+                var members = p.members.filter(function (m) { return m.status !== "retire"; });
+                var rows = members.map(function (m) {
+                    var inv = (m.status === "actif" && m.spruce !== "compte") ? ' <button data-inv="' + m.id + '" data-p="' + p.code + '">' + (m.spruce === "invite" ? "Réinviter" : "Inviter sur Spruce") + "</button>" : "";
+                    return "<tr><td><b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + (m.since_months ? m.since_months + " mois" : "–") + "</td><td>" + TSS.spruceTag(m) + "<span class=\"mini\">" + inv + "</span></td><td class=\"muted mini\">" + TSS.esc(m.spruce_detail || "") + "</td></tr>";
+                }).join("");
+                card.innerHTML = '<div class="head"><div><h2 style="margin:0">' + TSS.esc(p.name) + ' <span class="meta">(' + p.type + ")</span></h2><div class=\"meta\">" + TSS.esc(p.contact_name || "") + (p.contact_email ? " · " + TSS.esc(p.contact_email) : "") + (p.contact_phone ? " · " + TSS.esc(p.contact_phone) : "") + "</div></div><div class=\"row\"><span class=\"code\" title=\"code d’accès du partenaire\">" + p.code + '</span><span class="code" style="background:#EEF2FF;border-color:#6366F1" title="code banque consultations">' + TSS.esc(p.bank_code || "") + "</span></div></div>" +
+                    '<div class="meta" style="margin:10px 0">' + p.resume.actifs + " personne(s) couverte(s) · " + p.resume.montant + " $/mois · Spruce à inviter : " + p.resume.a_inviter + " · Stripe : " + (p.stripe_subscription_id ? p.stripe_subscription_id : '<button data-bill="' + p.code + '">Activer la facturation</button>') + "</div>" +
+                    (members.length ? "<table><thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Depuis</th><th>Spruce</th><th></th></tr></thead><tbody>" + rows + "</tbody></table>" : '<div class="meta">Aucune personne pour l’instant.</div>');
+                list.appendChild(card);
+            });
+            document.getElementById("total").textContent = total; document.getElementById("mrr").textContent = (total * state.prix) + " $";
+        }
+        function load() { TSS.api("/admin/state").then(function (j) { if (!j.ok) { say("Chargement impossible"); return; } state = j; render(); }); }
+        document.getElementById("list").addEventListener("click", function (e) {
+            var b = e.target.closest("button"); if (!b) return;
+            if (b.dataset.inv) { b.disabled = true; TSS.api("/admin/member/spruce", { partner_code: b.dataset.p, id: b.dataset.inv, action: "inviter" }).then(function (j) { say(j.ok ? "Spruce : " + j.spruce.statut + " — " + j.spruce.detail : "Échec : " + (j.error || "")); load(); }); }
+            if (b.dataset.bill) { if (!confirm("Créer l’abonnement Stripe (facture mensuelle à 30 jours) pour ce partenaire ?")) return; b.disabled = true; TSS.api("/admin/billing/activate", { partner_code: b.dataset.bill }).then(function (j) { say(j.ok ? "Facturation activée : " + j.subscription : "Échec : " + (j.error || "")); load(); }); }
+        });
+        document.getElementById("new").addEventListener("submit", function (e) {
+            e.preventDefault();
+            var o = {}; new FormData(e.target).forEach(function (v, k) { o[k] = v.trim(); });
+            TSS.api("/admin/partner", o).then(function (j) { if (!j.ok) { say("Création impossible : " + (j.error || "")); return; } say("Créé. Code d’accès : " + j.partner.code); e.target.reset(); load(); });
+        });
+        load();
+    })();
+    </script>
+</body>
+</html>
