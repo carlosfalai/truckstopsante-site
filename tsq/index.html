@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Stop Santé × Truck Stop Québec — Un médecin pour la route, 8 $/mois par chauffeur</title>
+    <meta name="description" content="La couverture santé d'entreprise à 8 $/mois par chauffeur, sur Spruce (télémédecine 100 % asynchrone). Urgences mineures, dépistage, santé mentale, documents — le chauffeur ne paie jamais rien.">
+    <link rel="canonical" href="https://truckstopsante.com/tsq/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2314264A'/><text x='50' y='74' font-size='64' text-anchor='middle' fill='%23F59E0B' font-family='Arial,sans-serif' font-weight='bold'>T</text></svg>">
+    <meta name="theme-color" content="#0B1220">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:site_name" content="Truck Stop Santé">
+    <meta property="og:title" content="Truck Stop Santé — 8 $/mois par chauffeur">
+    <meta property="og:description" content="La couverture santé d'entreprise à 8 $/mois par chauffeur, sur Spruce (télémédecine 100 % asynchrone). Le chauffeur ne paie jamais rien.">
+    <meta property="og:url" content="https://truckstopsante.com/">
+    <meta property="og:image" content="https://truckstopsante.com/hero-poster.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-asphalt: #0B1220;
+            --bg-light: #F6F8FB;
+            --primary-navy: #14264A;
+            --text-dark: #101828;
+            --text-muted: #5B6779;
+            --text-muted-dark: #8b95a5;
+            --accent-amber: #F59E0B;
+            --surface-white: #FFFFFF;
+            --border-color: #D9E0EA;
+            --success-green: #059669;
+
+            --font-heading: 'Barlow Condensed', sans-serif;
+            --font-body: 'Barlow', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            line-height: 1.1;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+
+        .m28-lead { max-width: 780px; margin: 0 auto 30px; text-align: center; font-size: 1.12rem; line-height: 1.6; color: var(--text-muted); }
+        .m28-lead strong { color: var(--text-dark); }
+        .m28-lead p { margin-bottom: 10px; }
+        .m28-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 920px; margin: 0 auto; }
+        .m28-col { border: 1px solid var(--border-color); border-radius: 8px; padding: 22px 24px; background: var(--bg-light); }
+        .m28-col h3 { font-size: 1.2rem; margin-bottom: 14px; letter-spacing: .03em; }
+        .m28-col ul { list-style: none; margin: 0; padding: 0; }
+        .m28-col li { padding: 7px 0 7px 30px; position: relative; line-height: 1.45; border-bottom: 1px solid rgba(0,0,0,.05); }
+        .m28-col li:last-child { border-bottom: none; }
+        .m28-yes { border-left: 5px solid var(--success-green); }
+        .m28-no  { border-left: 5px solid #B91C1C; }
+        .m28-yes li::before { content: '\2713'; position: absolute; left: 4px; color: var(--success-green); font-weight: 700; font-size: 1.1rem; }
+        .m28-no li::before  { content: '\2715'; position: absolute; left: 4px; color: #B91C1C; font-weight: 700; font-size: 1.05rem; }
+        .m28-note { max-width: 780px; margin: 22px auto 0; text-align: center; font-size: .95rem; color: var(--text-muted); font-style: italic; }
+        .m28-free { display:inline-block; background: var(--success-green); color:#fff; font-weight:700; padding:3px 12px; border-radius:4px; letter-spacing:.04em; }
+        @media (max-width: 720px) { .m28-grid { grid-template-columns: 1fr; } }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 72px;
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 16px;
+        }
+
+        .brand {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--primary-navy);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .brand-partner { font-size: 0.8rem; font-weight: 500; color: var(--text-muted, #6b7280); letter-spacing: 0.02em; }
+
+        .brand .accent {
+            color: var(--accent-amber);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--primary-navy);
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-amber);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: none;
+        }
+
+        .lang-toggle {
+            display: flex;
+            flex: none;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .lang-toggle button {
+            flex: none;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .lang-toggle button[aria-pressed="true"] {
+            background-color: var(--accent-amber);
+            color: var(--text-dark);
+        }
+
+        .lang-toggle button:focus-visible {
+            outline: 2px solid var(--accent-amber);
+            outline-offset: 2px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.125rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            text-align: center;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-amber);
+            color: var(--text-dark);
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(245, 158, 11, 0.3);
+            background-color: #fbbf24;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        header {
+            transition: box-shadow 0.25s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 4px 16px rgba(16, 24, 40, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--surface-white);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--surface-white);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-cta {
+            font-size: 1rem;
+            padding: 10px 20px;
+            white-space: nowrap;
+        }
+
+        .nav-cta .cta-short {
+            display: none;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-media {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-media video,
+        .hero-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(11,18,32,.82) 0%, rgba(11,18,32,.68) 45%, rgba(11,18,32,.88) 100%);
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero entrance animation (staggered fade-up) */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1,
+        .hero h2,
+        .hero .offer-line,
+        .hero .support-line,
+        .hero-actions,
+        .hero-badges {
+            opacity: 0;
+            animation: fadeUp .55s cubic-bezier(.16,1,.3,1) forwards;
+        }
+
+        .hero h2 { animation-delay: .08s; }
+        .hero .offer-line { animation-delay: .16s; }
+        .hero .support-line { animation-delay: .24s; }
+        .hero-actions { animation-delay: .32s; }
+        .hero-badges { animation-delay: .4s; }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
+        }
+
+        .reveal.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-kicker { color: var(--accent-amber); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 14px; }
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            color: var(--surface-white);
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto 40px;
+            text-transform: none;
+            font-family: var(--font-body);
+            letter-spacing: normal;
+        }
+
+        .hero .offer-line {
+            margin-bottom: 24px;
+        }
+
+        .hero .price-huge {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--accent-amber);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .hero .offer-sub {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero .support-line {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin: 0 auto 48px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .scarcity-line {
+            font-size: 0.875rem;
+            color: var(--accent-amber);
+            font-weight: 500;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* Highway Divider (animated lane dashes) */
+        .highway-divider {
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(to right, var(--accent-amber), var(--accent-amber) 32px, transparent 32px, transparent 64px);
+            opacity: 0.9;
+            background-color: var(--bg-asphalt);
+            animation: laneScroll 1.6s linear infinite;
+        }
+
+        @keyframes laneScroll {
+            from { background-position-x: 0; }
+            to   { background-position-x: -64px; }
+        }
+
+        /* Proof strip (Google rating) */
+        .proof {
+            background-color: var(--surface-white);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .proof .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px 40px;
+            padding-top: 28px;
+            padding-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .proof-main {
+            display: flex;
+            align-items: center;
+            gap: 20px 32px;
+            flex-wrap: wrap;
+            flex: 1 1 480px;
+        }
+
+        .proof-score {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: none;
+        }
+
+        .proof-rating {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--primary-navy);
+        }
+
+        .proof-stars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .proof-stars svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+
+        .proof-count {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary-navy);
+        }
+
+        .proof-text {
+            max-width: 460px;
+        }
+
+        .proof-attr {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .proof-src {
+            margin-top: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted-dark);
+        }
+
+        .proof-receipt {
+            flex: none;
+            margin-left: auto;
+        }
+
+        .proof-receipt img {
+            display: block;
+            max-height: 180px;
+            width: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface-white);
+            padding: 6px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06);
+        }
+
+        @media (max-width: 860px) {
+            .proof-receipt { margin: 0 auto; }
+        }
+
+        /* Sections General */
+        section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            color: var(--primary-navy);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-sub {
+            text-align: center;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: -32px auto 48px;
+        }
+
+        /* Story Section */
+        .story-card {
+            background-color: var(--surface-white);
+            border-radius: 12px;
+            padding: 48px;
+            box-shadow: 0 4px 6px rgba(16, 24, 40, 0.08);
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .story-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--primary-navy);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .story-followup {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .story-followup svg {
+            color: var(--accent-amber);
+            flex-shrink: 0;
+        }
+
+        /* Steps Section */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px 28px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.04);
+            border-top: 4px solid var(--accent-amber);
+        }
+
+        .step-number {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-amber);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            color: var(--primary-navy);
+            margin-bottom: 8px;
+        }
+
+        .step-card p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Inclus Section */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+            max-width: 980px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            background-color: var(--surface-white);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .checklist-item.item-wide {
+            grid-column: 1 / -1;
+        }
+
+        .checklist-item svg {
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .checklist-label {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .checklist-det {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .confidentiality-notice {
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 48px;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .confidentiality-notice svg {
+            color: var(--primary-navy);
+        }
+
+        /* Calc Section (the arithmetic) */
+        .calc-section {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+        }
+
+        .calc-section .section-title {
+            color: var(--surface-white);
+        }
+
+        .calc-kicker {
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .calc-section .section-title {
+            margin-bottom: 56px;
+        }
+
+        .calc-ledger {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            max-width: 980px;
+            margin: 0 auto;
+            border-top: 3px solid var(--accent-amber);
+        }
+
+        .calc-cell {
+            padding: 32px 28px 0 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .calc-cell:not(:first-child) {
+            padding-left: 28px;
+        }
+
+        .calc-cell:last-child {
+            border-right: 0;
+        }
+
+        .calc-figure {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-amber);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .calc-cell h3 {
+            font-size: 1.35rem;
+            color: var(--surface-white);
+            margin-bottom: 8px;
+        }
+
+        .calc-cell p {
+            font-size: 1rem;
+            color: var(--text-muted-dark);
+            line-height: 1.5;
+        }
+
+        .calc-note {
+            max-width: 760px;
+            margin: 48px auto 0;
+            text-align: center;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .calc-note strong {
+            color: var(--accent-amber);
+        }
+
+        .calc-fine {
+            max-width: 760px;
+            margin: 16px auto 0;
+            text-align: center;
+            font-size: 0.875rem;
+            font-style: italic;
+            color: var(--text-muted-dark);
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            background-color: var(--bg-light);
+        }
+
+        .pricing-card {
+            background-color: var(--surface-white);
+            border-radius: 12px;
+            padding: 56px 40px;
+            box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: var(--accent-amber);
+        }
+
+        .pricing-title {
+            font-size: 2rem;
+            color: var(--primary-navy);
+            margin-bottom: 24px;
+        }
+
+        .pricing-amount {
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .pricing-period {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            display: block;
+        }
+
+        .pricing-desc {
+            font-size: 1.125rem;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .pricing-family {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .pricing-card .btn-primary {
+            width: 100%;
+            font-size: 1.25rem;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .pricing-contact {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .pricing-contact a {
+            color: var(--primary-navy);
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: var(--accent-amber);
+            text-underline-offset: 4px;
+        }
+
+        /* FAQ Section */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        details {
+            background-color: var(--surface-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(16, 24, 40, 0.02);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 24px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--accent-amber);
+            font-weight: 400;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        details[open] summary::after {
+            content: '−';
+        }
+
+        .faq-answer {
+            padding: 0 24px 24px;
+            font-size: 1.125rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Contact / clinic block */
+        .contact-block {
+            background-color: var(--bg-asphalt);
+            color: var(--surface-white);
+            padding: 80px 0;
+        }
+
+        .contact-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-label {
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+            margin-bottom: 20px;
+        }
+
+        .contact-email {
+            display: inline-block;
+            font-family: var(--font-heading);
+            font-size: 2.6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--surface-white);
+            word-break: break-word;
+        }
+
+        .contact-email:hover {
+            color: var(--accent-amber);
+        }
+
+        .contact-note {
+            margin-top: 16px;
+            font-size: 1rem;
+            color: var(--text-muted-dark);
+        }
+
+        .contact-note a {
+            color: var(--surface-white);
+            text-decoration: underline;
+            text-decoration-color: var(--text-muted-dark);
+            text-underline-offset: 4px;
+        }
+
+        .contact-note a:hover {
+            color: var(--accent-amber);
+        }
+
+        .doctor-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .doctor-row img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-amber);
+            flex-shrink: 0;
+        }
+
+        .doctor-id {
+            text-align: left;
+        }
+
+        .doctor-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--surface-white);
+        }
+
+        .doctor-cred {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted-dark);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-asphalt);
+            color: var(--text-muted-dark);
+            padding: 48px 0 40px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .footer-compliance {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 24px;
+        }
+
+        .footer-disclaimer {
+            font-style: italic;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 24px;
+        }
+
+        .footer-links a {
+            color: var(--surface-white);
+            text-decoration: underline;
+            text-decoration-color: var(--text-muted-dark);
+            text-underline-offset: 4px;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-amber);
+            text-decoration-color: var(--accent-amber);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+
+            .hero .price-huge {
+                font-size: 4rem;
+            }
+
+            .hero .offer-sub {
+                font-size: 1.25rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .story-card {
+                padding: 32px 24px;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checklist-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calc-ledger {
+                grid-template-columns: 1fr;
+            }
+
+            .calc-cell {
+                border-right: 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+                padding: 28px 0;
+            }
+
+            .calc-cell:not(:first-child) {
+                padding-left: 0;
+            }
+
+            .calc-cell:last-child {
+                border-bottom: 0;
+            }
+
+            .pricing-card {
+                padding: 40px 24px;
+            }
+
+            .pricing-amount {
+                font-size: 4.5rem;
+            }
+
+            summary {
+                font-size: 1.125rem;
+                padding: 20px;
+            }
+
+            .faq-answer {
+                padding: 0 20px 20px;
+                font-size: 1rem;
+            }
+
+            .contact-email {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 560px) {
+            header {
+                height: 60px;
+            }
+
+            .container.nav-container {
+                padding: 0 12px;
+                gap: 6px;
+            }
+
+            .brand {
+                font-size: 1.02rem;
+                letter-spacing: 0;
+                gap: 4px;
+            }
+
+            .nav-cta {
+                font-size: 0.78rem;
+                padding: 8px 12px;
+            }
+
+            .nav-cta .cta-full {
+                display: none;
+            }
+
+            .nav-cta .cta-short {
+                display: inline;
+            }
+
+            .lang-toggle button {
+                padding: 6px 8px;
+                font-size: 0.68rem;
+            }
+
+            .nav-right {
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .brand {
+                font-size: 0.92rem;
+            }
+
+            .lang-toggle button {
+                padding: 5px 6px;
+                font-size: 0.64rem;
+            }
+
+            .nav-cta {
+                font-size: 0.72rem;
+                padding: 7px 9px;
+            }
+        }
+
+        /* Reduced motion: kill all animation, show content immediately */
+        @media (prefers-reduced-motion: reduce) {
+            .hero h1, .hero h2, .hero .offer-line, .hero .support-line,
+            .hero-actions, .hero-badges {
+                animation: none;
+                opacity: 1;
+            }
+            .highway-divider { animation: none; }
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            html { scroll-behavior: auto; }
+            .btn, .btn-primary:hover { transition: none; transform: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container">
+            <div class="brand">Truck Stop <span class="accent">Santé</span> <span class="brand-partner">· Truck Stop Québec</span></div>
+            <nav class="nav-links">
+                <a href="#programme" data-fr="Le programme" data-en="The program">Le programme</a>
+                <a href="#m28" data-fr="Examen M28" data-en="M28 exam">Examen M28</a>
+                <a href="#inclus" data-fr="Inclus" data-en="Included">Inclus</a>
+                <a href="#calcul" data-fr="Le calcul" data-en="The math">Le calcul</a>
+                <a href="#prix" data-fr="Prix" data-en="Pricing">Prix</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <div class="nav-right">
+                <div class="lang-toggle" role="group" aria-label="Langue / Language">
+                    <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+                    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+                </div>
+                <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary nav-cta"><span class="cta-full" data-fr="Inscrire mes chauffeurs" data-en="Enrol my drivers">Inscrire mes chauffeurs</span><span class="cta-short" data-fr="Inscrire" data-en="Enrol">Inscrire</span></a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-media" aria-hidden="true">
+            <video id="heroVideo" muted loop playsinline preload="none" poster="/hero-poster.jpg">
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="container">
+            <p class="hero-kicker" data-fr="Pour la communauté Truck Stop Québec" data-en="For the Truck Stop Québec community">Pour la communauté Truck Stop Québec</p>
+            <h1 data-fr="« Ton camion a un garage attitré. »" data-en="“Your truck has its own garage.”">« Ton camion a un garage attitré. »</h1>
+            <h2 data-fr="« Mais tes camionneurs ont de la difficulté à trouver un service en santé. Donne-leur un accès santé direct, de partout sur la route. »" data-en="“But your truckers struggle to find health care. Give them direct access to care, from anywhere on the road.”">« Mais tes camionneurs ont de la difficulté à trouver un service en santé. Donne-leur un accès santé direct, de partout sur la route. »</h2>
+
+            <div class="offer-line">
+                <span class="price-huge" data-fr="8 $/mois" data-en="$8/month">8 $/mois</span>
+                <span class="offer-sub" data-fr="par chauffeur. Le chauffeur ne paie jamais rien." data-en="per driver. The driver never pays a thing.">par chauffeur. Le chauffeur ne paie jamais rien.</span>
+            </div>
+
+            <p class="support-line" data-fr="Service aux entreprises : sans-rendez-vous — urgences mineures ponctuelles en médecine familiale. Télémédecine et asynchrone, sur Spruce." data-en="A service for businesses: walk-in care — episodic minor urgent care in family medicine. Telemedicine, fully asynchronous, on Spruce.">Service aux entreprises : sans-rendez-vous — urgences mineures ponctuelles en médecine familiale. Télémédecine et asynchrone, sur Spruce.</p>
+
+            <div class="hero-actions">
+                <div class="hero-buttons">
+                    <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary" data-fr="Inscrire mes chauffeurs" data-en="Enrol my drivers">Inscrire mes chauffeurs</a>
+                    <a href="mailto:cff@centremedicalfont.ca" class="btn btn-secondary js-mail" data-fr="Écrire à la clinique" data-en="Write to the clinic">Écrire à la clinique</a>
+                </div>
+                <div class="scarcity-line" data-fr="Capacité limitée : 10 000 chauffeurs. Les premières flottes gardent leur place." data-en="Limited capacity: 10,000 drivers. The first fleets keep their place.">Capacité limitée : 10 000 chauffeurs. Les premières flottes gardent leur place.</div>
+                <div class="solo-line">
+                    <span data-fr="Chauffeur solo ou propriétaire-exploitant ? Ton entreprise t’abonne en un clic." data-en="Solo driver or owner-operator? Your company subscribes in one click.">Chauffeur solo ou propriétaire-exploitant ? Ton entreprise t’abonne en un clic.</span>
+                    <a href="https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t" class="btn btn-primary" data-fr="M’abonner — 8 $/mois" data-en="Subscribe — $8/month">M’abonner — 8 $/mois</a>
+                </div>
+            </div>
+
+            <div class="hero-badges">
+                <div class="badge" data-fr="100 % asynchrone" data-en="100% asynchronous">100 % asynchrone</div>
+                <div class="badge" data-fr="Sur Spruce" data-en="On Spruce">Sur Spruce</div>
+                <div class="badge">Français · Español · English</div>
+                <div class="badge" data-fr="Permis CMQ 16812" data-en="CMQ Licence 16812">Permis CMQ 16812</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <div class="proof">
+        <div class="container">
+            <div class="proof-main">
+                <div class="proof-score">
+                    <span class="proof-rating" data-fr="4,4" data-en="4.4">4,4</span>
+                    <span class="proof-stars" role="img" aria-label="4,4 / 5">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F59E0B" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="star44"><stop offset="40%" stop-color="#F59E0B"/><stop offset="40%" stop-color="#D9E0EA"/></linearGradient></defs><path fill="url(#star44)" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+                    </span>
+                </div>
+                <div class="proof-text">
+                    <div class="proof-count" data-fr="183 avis Google" data-en="183 Google reviews">183 avis Google</div>
+                    <p class="proof-attr" data-fr="Note obtenue au Centre Médical Font, la clinique d’origine derrière Truck Stop Santé." data-en="Rating earned at Centre Médical Font, the original clinic behind Truck Stop Santé.">Note obtenue au Centre Médical Font, la clinique d’origine derrière Truck Stop Santé.</p>
+                    <p class="proof-src">Centre Médical M28 · m28.ca</p>
+                </div>
+            </div>
+            <div class="proof-receipt">
+                <img src="/google-reviews.jpg" alt="Avis Google — Truck Stop Santé, 4,4 sur 5, 183 avis" loading="lazy" width="520" height="520">
+            </div>
+        </div>
+    </div>
+
+    <section id="programme">
+        <div class="container">
+            <h2 class="section-title" data-fr="Pourquoi ça marche" data-en="Why it works">Pourquoi ça marche</h2>
+            <div class="story-card">
+                <p class="story-text" data-fr="« Un chauffeur, une infection urinaire, un mardi soir à Rivière-du-Loup. Évalué sur Spruce, prescription envoyée à la pharmacie la plus proche — traité sans quitter la route. Aucune journée perdue. »" data-en="“A driver, a urinary infection, a Tuesday night in Rivière-du-Loup. Assessed on Spruce, prescription sent to the nearest pharmacy — treated without leaving the road. Not a day lost.”">« Un chauffeur, une infection urinaire, un mardi soir à Rivière-du-Loup. Évalué sur Spruce, prescription envoyée à la pharmacie la plus proche — traité sans quitter la route. Aucune journée perdue. »</p>
+                <div class="story-followup">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                    <span data-fr="Sans absence. Sans déplacement. Sans quitter la route." data-en="No absence. No travel. No leaving the road.">Sans absence. Sans déplacement. Sans quitter la route.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="etapes" style="background-color: var(--surface-white); padding-top: 0;">
+        <div class="container">
+            <h2 class="section-title" style="padding-top: 100px;" data-fr="Comment ça marche" data-en="How it works">Comment ça marche</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <h3 data-fr="Vous inscrivez vos chauffeurs" data-en="You enrol your drivers">Vous inscrivez vos chauffeurs</h3>
+                    <p data-fr="Un courriel suffit. Chaque chauffeur inscrit reçoit son invitation Spruce." data-en="One email is all it takes. Every enrolled driver receives their Spruce invitation.">Un courriel suffit. Chaque chauffeur inscrit reçoit son invitation Spruce.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <h3 data-fr="Le chauffeur écrit" data-en="The driver writes">Le chauffeur écrit</h3>
+                    <p data-fr="Il décrit son problème sur Spruce quand ça lui convient. Jour, soir ou fin de semaine." data-en="They describe their problem on Spruce whenever it suits them. Day, evening or weekend.">Il décrit son problème sur Spruce quand ça lui convient. Jour, soir ou fin de semaine.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">3</span>
+                    <h3 data-fr="Le médecin répond" data-en="The doctor replies">Le médecin répond</h3>
+                    <p data-fr="Évaluation, puis ordonnance envoyée directement à sa pharmacie — où qu’il soit sur la route." data-en="Assessment, then the prescription goes straight to their pharmacy — wherever they are on the road.">Évaluation, puis ordonnance envoyée directement à sa pharmacie — où qu’il soit sur la route.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="m28" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title" data-fr="Examen M28 de la SAAQ — gratuit" data-en="SAAQ M28 medical — free">Examen M28 de la SAAQ — gratuit</h2>
+            <div class="m28-lead">
+                <p data-fr="L'examen médical exigé par la SAAQ pour un permis de <strong>classe 1, 2, 3 ou 4 requis aux fins d'emploi</strong> est un service assuré. Il est <strong>facturé directement à la RAMQ</strong>. Le chauffeur ne paie rien. L'entreprise ne paie rien." data-en="The medical exam required by the SAAQ for a <strong>Class 1, 2, 3 or 4 licence needed for employment</strong> is an insured service. It is <strong>billed directly to the RAMQ</strong>. The driver pays nothing. The company pays nothing.">L'examen médical exigé par la SAAQ pour un permis de <strong>classe 1, 2, 3 ou 4 requis aux fins d'emploi</strong> est un service assuré. Il est <strong>facturé directement à la RAMQ</strong>. Le chauffeur ne paie rien. L'entreprise ne paie rien.</p>
+                <p data-fr="Vos chauffeurs n'ont plus à chercher une clinique ni à payer de leur poche pour rester sur la route." data-en="Your drivers no longer have to find a clinic or pay out of pocket to stay on the road.">Vos chauffeurs n'ont plus à chercher une clinique ni à payer de leur poche pour rester sur la route.</p>
+            </div>
+
+            <div class="m28-grid">
+                <div class="m28-col m28-yes">
+                    <h3 data-fr="Admissible" data-en="Eligible">Admissible</h3>
+                    <ul>
+                        <li data-fr="Permis de classe 1, 2, 3 ou 4" data-en="Class 1, 2, 3 or 4 licence">Permis de classe 1, 2, 3 ou 4</li>
+                        <li data-fr="Exigé aux fins d'emploi" data-en="Required for employment">Exigé aux fins d'emploi</li>
+                        <li data-fr="Chauffeur professionnel actif" data-en="Active professional driver">Chauffeur professionnel actif</li>
+                        <li data-fr="Moins de 70 ans" data-en="Under 70 years old">Moins de 70 ans</li>
+                        <li data-fr="Détenteur d'une carte RAMQ valide" data-en="Holds a valid RAMQ card">Détenteur d'une carte RAMQ valide</li>
+                    </ul>
+                </div>
+                <div class="m28-col m28-no">
+                    <h3 data-fr="Non admissible" data-en="Not eligible">Non admissible</h3>
+                    <ul>
+                        <li data-fr="Permis de classe 5 ou 6 (permis régulier)" data-en="Class 5 or 6 licence (regular licence)">Permis de classe 5 ou 6 (permis régulier)</li>
+                        <li data-fr="Examen lié à l'âge (75 ans et plus)" data-en="Age-related exam (75 and over)">Examen lié à l'âge (75 ans et plus)</li>
+                        <li data-fr="Réévaluation après sanction pour alcool ou drogue" data-en="Reassessment after an alcohol or drug sanction">Réévaluation après sanction pour alcool ou drogue</li>
+                        <li data-fr="Conduite non professionnelle ou de loisir" data-en="Non-professional or recreational driving">Conduite non professionnelle ou de loisir</li>
+                        <li data-fr="70 ans et plus" data-en="70 and over">70 ans et plus</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="m28-note" data-fr="Ces demandes ne sont pas traitées. Le service s'adresse exclusivement aux chauffeurs professionnels dont le permis est requis pour travailler." data-en="These requests are not processed. The service is exclusively for professional drivers whose licence is required for work.">Ces demandes ne sont pas traitées. Le service s'adresse exclusivement aux chauffeurs professionnels dont le permis est requis pour travailler.</p>
+            <div style="text-align:center; margin-top:26px;">
+                <a href="mailto:cff@centremedicalfont.ca?subject=Examen%20M28%20-%20mes%20chauffeurs" class="btn btn-primary" data-fr="Faire passer l'examen à mes chauffeurs" data-en="Book the exam for my drivers">Faire passer l'examen à mes chauffeurs</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <section id="inclus" style="background-color: var(--surface-white); padding-top: 0;">
+        <div class="container">
+            <h2 class="section-title" data-fr="Inclus dans le 8 $/mois" data-en="Included in the $8/month">Inclus dans le 8 $/mois</h2>
+            <p class="section-sub" data-fr="Un montant fixe, par chauffeur, par mois — sans frais additionnels." data-en="A flat rate, per driver, per month — no additional fees.">Un montant fixe, par chauffeur, par mois — sans frais additionnels.</p>
+
+            <div class="checklist-grid">
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Urgences mineures et dépistage" data-en="Minor urgent care and screening">Urgences mineures et dépistage</span>
+                        <span class="checklist-det" data-fr="Infections, cystite, sinusite, ITSS, problèmes de peau, allergies, reflux gastrique, contraception, renouvellement d’ordonnances, diabète, cholestérol, thyroïde, apnée du sommeil, ostéoporose, fatigue, sevrage tabagique, etc." data-en="Infections, cystitis, sinusitis, STIs, skin problems, allergies, acid reflux, contraception, prescription renewals, diabetes, cholesterol, thyroid, sleep apnea, osteoporosis, fatigue, smoking cessation, etc.">Infections, cystite, sinusite, ITSS, problèmes de peau, allergies, reflux gastrique, contraception, renouvellement d’ordonnances, diabète, cholestérol, thyroïde, apnée du sommeil, ostéoporose, fatigue, sevrage tabagique, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Douleur musculosquelettique" data-en="Musculoskeletal pain">Douleur musculosquelettique</span>
+                        <span class="checklist-det" data-fr="Lombalgie, cervicalgie, douleur à l’épaule, foulures, entorses, tendinites, sciatalgie, douleur au genou, etc." data-en="Low back pain, neck pain, shoulder pain, strains, sprains, tendinitis, sciatica, knee pain, etc.">Lombalgie, cervicalgie, douleur à l’épaule, foulures, entorses, tendinites, sciatalgie, douleur au genou, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Santé mentale" data-en="Mental health">Santé mentale</span>
+                        <span class="checklist-det" data-fr="Dépression, anxiété, épuisement professionnel, crises de panique, insomnie, stress, deuil, etc. Références en psychothérapie" data-en="Depression, anxiety, burnout, panic attacks, insomnia, stress, grief, etc. Psychotherapy referrals">Dépression, anxiété, épuisement professionnel, crises de panique, insomnie, stress, deuil, etc. Références en psychothérapie</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Partout sur la route" data-en="Anywhere on the road">Partout sur la route</span>
+                        <span class="checklist-det" data-fr="Du camion, de la maison ou d’ailleurs — aucun déplacement, aucune file" data-en="From the truck, from home or anywhere else — no travel, no queue">Du camion, de la maison ou d’ailleurs — aucun déplacement, aucune file</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Documents d’arrêt de travail (congés)" data-en="Sick-leave documentation">Documents d’arrêt de travail (congés)</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Formulaires d’assurance" data-en="Insurance forms">Formulaires d’assurance</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Attestations d’aptitude" data-en="Fitness-for-duty attestations">Attestations d’aptitude</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Évaluations de retour au travail" data-en="Return-to-work evaluations">Évaluations de retour au travail</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Références vers spécialistes" data-en="Referrals to specialists">Références vers spécialistes</span>
+                        <span class="checklist-det" data-fr="Physiothérapie, massothérapie, kinésithérapie, nutrition, orthopédie, chirurgie plastique, psychiatrie, rhumatologie, neurologie, cardiologie, etc." data-en="Physiotherapy, massage therapy, kinesitherapy, nutrition, orthopedics, plastic surgery, psychiatry, rheumatology, neurology, cardiology, etc.">Physiothérapie, massothérapie, kinésithérapie, nutrition, orthopédie, chirurgie plastique, psychiatrie, rhumatologie, neurologie, cardiologie, etc.</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Requêtes d’imagerie" data-en="Imaging requisitions">Requêtes d’imagerie</span>
+                        <span class="checklist-det" data-fr="Radiographie, échographie, mammographie, densitométrie osseuse (DEXA), TDM, IRM" data-en="X-ray, ultrasound, mammography, bone densitometry (DEXA), CT, MRI">Radiographie, échographie, mammographie, densitométrie osseuse (DEXA), TDM, IRM</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Prises de sang et laboratoires" data-en="Blood work and labs">Prises de sang et laboratoires</span>
+                        <span class="checklist-det" data-fr="Bilans sanguins, cultures, dépistage ITSS" data-en="Blood panels, cultures, STI screening">Bilans sanguins, cultures, dépistage ITSS</span>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Suivis" data-en="Follow-ups">Suivis</span>
+                    </div>
+                </div>
+                <div class="checklist-item item-wide">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div>
+                        <span class="checklist-label" data-fr="Famille sur demande" data-en="Family on request">Famille sur demande</span>
+                        <span class="checklist-det" data-fr="À la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés — 8 $/mois par personne" data-en="At the employee’s request, family members aged 18 and over can be added — $8/month per person">À la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés — 8 $/mois par personne</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confidentiality-notice">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span data-fr="Les documents sont remis au chauffeur, qui décide lui-même de ce qu’il transmet à son employeur. Confidentialité conforme à la Loi 25." data-en="Documents are given to the driver, who decides what to pass on to their employer. Confidentiality compliant with Quebec’s Law 25.">Les documents sont remis au chauffeur, qui décide lui-même de ce qu’il transmet à son employeur. Confidentialité conforme à la Loi 25.</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="calcul" class="calc-section">
+        <div class="container">
+            <p class="calc-kicker" data-fr="Le calcul" data-en="The arithmetic">Le calcul</p>
+            <h2 class="section-title" data-fr="Une demi-journée évitée par année, et le service est payé." data-en="One half-day avoided per year, and the service has paid for itself.">Une demi-journée évitée par année, et le service est payé.</h2>
+            <div class="calc-ledger">
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="4 h" data-en="4 h">4 h</span>
+                    <h3 data-fr="Une visite au sans-rendez-vous" data-en="One walk-in clinic visit">Une visite au sans-rendez-vous</h3>
+                    <p data-fr="Détour, attente, retour. Le chauffeur perd la demi-journée." data-en="A detour, waiting, the drive back. The driver loses the half-day.">Détour, attente, retour. Le chauffeur perd la demi-journée.</p>
+                </div>
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="0 h" data-en="0 h">0 h</span>
+                    <h3 data-fr="Une consultation asynchrone" data-en="One asynchronous consultation">Une consultation asynchrone</h3>
+                    <p data-fr="Le chauffeur écrit, le médecin répond. Aucune absence, aucun déplacement." data-en="The driver writes, the doctor replies. No absence, no travel.">Le chauffeur écrit, le médecin répond. Aucune absence, aucun déplacement.</p>
+                </div>
+                <div class="calc-cell">
+                    <span class="calc-figure" data-fr="96 $" data-en="$96">96 $</span>
+                    <h3 data-fr="Le coût annuel, par chauffeur" data-en="The annual cost, per driver">Le coût annuel, par chauffeur</h3>
+                    <p data-fr="8 $ par mois. Peu importe le nombre de consultations." data-en="$8 a month. However many consultations they need.">8 $ par mois. Peu importe le nombre de consultations.</p>
+                </div>
+            </div>
+            <p class="calc-note" data-fr="À 24 $ l’heure, quatre heures d’absence coûtent <strong>96 $</strong> — exactement une année de service pour ce chauffeur. Tout ce qui suit est un gain net." data-en="At $24 an hour, four hours of absence cost <strong>$96</strong> — exactly one year of service for that driver. Everything after that is net gain.">À 24 $ l’heure, quatre heures d’absence coûtent <strong>96 $</strong> — exactement une année de service pour ce chauffeur. Tout ce qui suit est un gain net.</p>
+            <p class="calc-fine" data-fr="Exemple illustratif, à ajuster selon votre masse salariale." data-en="Illustrative example; adjust to your own payroll.">Exemple illustratif, à ajuster selon votre masse salariale.</p>
+        </div>
+    </section>
+
+    <section id="prix" class="pricing-section">
+        <div class="container">
+            <div class="pricing-card">
+                <h2 class="pricing-title" data-fr="Couverture santé d’entreprise" data-en="Corporate health coverage">Couverture santé d’entreprise</h2>
+                <div class="pricing-amount" data-fr="8 $" data-en="$8">8 $</div>
+                <div class="pricing-period" data-fr="/ mois / employé" data-en="/ month / employee">/ mois / employé</div>
+
+                <p class="pricing-desc" data-fr="Service aux entreprises — l’employé ne paie jamais rien. Sans engagement. Quantité ajustable de 1 à 10 000 employés." data-en="A service for businesses — the employee never pays a thing. No commitment. Adjustable from 1 to 10,000 employees.">Service aux entreprises — l’employé ne paie jamais rien. Sans engagement. Quantité ajustable de 1 à 10 000 employés.</p>
+                <p class="pricing-family" data-fr="Famille (18 ans et plus) sur demande de l’employé — 8 $/mois par personne." data-en="Family (18 and over) at the employee’s request — $8/month per person.">Famille (18 ans et plus) sur demande de l’employé — 8 $/mois par personne.</p>
+
+                <a href="https://buy.stripe.com/7sY7sMa0Cgil5u84CjbMR0m" class="btn btn-primary" data-fr="Inscrire ma flotte" data-en="Enrol my fleet">Inscrire ma flotte</a>
+
+                <div class="pricing-solo">
+                    <span data-fr="Chauffeur solo, propriétaire-exploitant ou travailleur autonome incorporé : même service, même tarif, une seule personne." data-en="Solo driver, owner-operator or incorporated self-employed: same service, same price, one person.">Chauffeur solo, propriétaire-exploitant ou travailleur autonome incorporé : même service, même tarif, une seule personne.</span><br>
+                    <a href="https://buy.stripe.com/dRm3cwa0CaY1cWA1q7bMR0t" class="btn btn-primary" data-fr="M’abonner (solo) — 8 $/mois" data-en="Subscribe (solo) — $8/month">M’abonner (solo) — 8 $/mois</a>
+                    <span style="display:block;margin-top:8px;color:var(--text-muted,#6b7280)" data-fr="Lien court : truckstopsante.com/solo" data-en="Short link: truckstopsante.com/solo">Lien court : truckstopsante.com/solo</span>
+                </div>
+
+                <p class="pricing-contact">
+                    <span data-fr="Ou écrivez-nous :" data-en="Or write to us:">Ou écrivez-nous :</span> <a href="mailto:cff@centremedicalfont.ca" class="js-mail">cff@centremedicalfont.ca</a><br>
+                    <span data-fr="— envoyez simplement votre liste d’employés." data-en="— simply send your employee list.">— envoyez simplement votre liste d’employés.</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" style="background-color: var(--surface-white);">
+        <div class="container">
+            <h2 class="section-title" data-fr="Foire aux questions" data-en="Frequently asked questions">Foire aux questions</h2>
+            <div class="faq-container">
+                <details>
+                    <summary><span data-fr="Quels problèmes de santé sont couverts par le sans-rendez-vous?" data-en="What health problems does the walk-in service cover?">Quels problèmes de santé sont couverts par le sans-rendez-vous?</span></summary>
+                    <div class="faq-answer" data-fr="Les urgences mineures et le dépistage en médecine familiale : infections, blessures mineures, douleur musculosquelettique, santé mentale, renouvellements de médicaments stables, requêtes d’imagerie et de laboratoire, références vers spécialistes, et les suivis — tant que le médecin juge que la télémédecine convient à votre situation. S’il évalue qu’un suivi en personne est nécessaire, il vous y dirige. Sont exclus : les narcotiques. Le service ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence — en cas d’urgence, composez le 9-1-1." data-en="Minor urgent care and screening in family medicine: infections, minor injuries, musculoskeletal pain, mental health, stable prescription renewals, imaging and lab requisitions, referrals to specialists, and follow-ups — for as long as the doctor judges telemedicine appropriate for your situation. If they assess that in-person care is needed, they direct you there. Excluded: narcotics. The service does not replace enrolment with a family doctor or emergency care — in an emergency, call 9-1-1.">Les urgences mineures et le dépistage en médecine familiale : infections, blessures mineures, douleur musculosquelettique, santé mentale, renouvellements de médicaments stables, requêtes d’imagerie et de laboratoire, références vers spécialistes, et les suivis — tant que le médecin juge que la télémédecine convient à votre situation. S’il évalue qu’un suivi en personne est nécessaire, il vous y dirige. Sont exclus : les narcotiques. Le service ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence — en cas d’urgence, composez le 9-1-1.</div>
+                </details>
+                <details>
+                    <summary><span data-fr="Je suis chauffeur solo ou propriétaire-exploitant. Est-ce que je peux m’abonner?" data-en="I am a solo driver or owner-operator. Can I subscribe?">Je suis chauffeur solo ou propriétaire-exploitant. Est-ce que je peux m’abonner?</span></summary>
+                    <div class="faq-answer" data-fr="Oui. C’est un service aux entreprises : ton entreprise (ou toi, comme travailleur autonome) s’abonne pour une personne à 8 $/mois. Tu cliques sur M’abonner, tu entres le nom de l’entreprise, ton nom et ton cellulaire, et tu reçois ton invitation Spruce dans les 24 heures. Lien direct : truckstopsante.com/solo" data-en="Yes. This is a business service: your company (or you, as a self-employed worker) subscribes for one person at $8/month. Click Subscribe, enter the company name, your name and your cell number, and you receive your Spruce invitation within 24 hours. Direct link: truckstopsante.com/solo">Oui. C’est un service aux entreprises : ton entreprise (ou toi, comme travailleur autonome) s’abonne pour une personne à 8 $/mois. Tu cliques sur M’abonner, tu entres le nom de l’entreprise, ton nom et ton cellulaire, et tu reçois ton invitation Spruce dans les 24 heures. Lien direct : truckstopsante.com/solo</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="En quelles langues?" data-en="In which languages?">En quelles langues?</span></summary>
+                    <div class="faq-answer" data-fr="Français, español, English — le médecin est hispanophone natif. Vos travailleurs étrangers sont servis directement dans leur langue, sans interprète." data-en="French, Spanish, English — the doctor is a native Spanish speaker. Your foreign workers are served directly in their language, no interpreter needed.">Français, español, English — le médecin est hispanophone natif. Vos travailleurs étrangers sont servis directement dans leur langue, sans interprète.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Peut-on ajouter la famille d’un chauffeur?" data-en="Can a driver’s family be added?">Peut-on ajouter la famille d’un chauffeur?</span></summary>
+                    <div class="faq-answer" data-fr="Oui — à la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés, au même tarif de 8 $/mois par personne." data-en="Yes — at the employee’s request, family members aged 18 and over can be added, at the same $8/month per person.">Oui — à la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés, au même tarif de 8 $/mois par personne.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Et les examens SAAQ des chauffeurs?" data-en="What about drivers’ SAAQ exams?">Et les examens SAAQ des chauffeurs?</span></summary>
+                    <div class="faq-answer" data-fr="Service régulier de la clinique, hors forfait et sans frais — voir <a href='https://m28.ca' target='_blank' rel='noopener' style='text-decoration: underline; color: var(--primary-navy); font-weight: 700;'>m28.ca</a>." data-en="A regular service of the clinic, outside this plan and at no charge — see <a href='https://m28.ca' target='_blank' rel='noopener' style='text-decoration: underline; color: var(--primary-navy); font-weight: 700;'>m28.ca</a>.">Service régulier de la clinique, hors forfait et sans frais — voir <a href="https://m28.ca" target="_blank" rel="noopener" style="text-decoration: underline; color: var(--primary-navy); font-weight: 700;">m28.ca</a>.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Offrez-vous des examens de préembauche?" data-en="Do you offer pre-employment exams?">Offrez-vous des examens de préembauche?</span></summary>
+                    <div class="faq-answer" data-fr="Non. La pratique est 100 % télémédecine asynchrone, sans examen physique." data-en="No. The practice is 100% asynchronous telemedicine, with no physical exams.">Non. La pratique est 100 % télémédecine asynchrone, sans examen physique.</div>
+                </details>
+
+                <details>
+                    <summary><span data-fr="Comment ça démarre?" data-en="How does it start?">Comment ça démarre?</span></summary>
+                    <div class="faq-answer" data-fr="Vous vous inscrivez, vous envoyez votre liste d’employés à cff@centremedicalfont.ca, et vos employés reçoivent leur invitation Spruce. C’est tout." data-en="You sign up, you send your employee list to cff@centremedicalfont.ca, and your employees receive their Spruce invitation. That’s it.">Vous vous inscrivez, vous envoyez votre liste d’employés à cff@centremedicalfont.ca, et vos employés reçoivent leur invitation Spruce. C’est tout.</div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <div class="highway-divider"></div>
+
+    <div class="contact-block">
+        <div class="container contact-inner">
+            <p class="contact-label" data-fr="Inscrire vos chauffeurs ou poser une question" data-en="Enrol your drivers or ask a question">Inscrire vos chauffeurs ou poser une question</p>
+            <a class="contact-email js-mail" href="mailto:cff@centremedicalfont.ca">cff@centremedicalfont.ca</a>
+            <p class="contact-note" data-fr="La clinique derrière le service : Centre Médical Font — <a href='https://m28.ca' target='_blank' rel='noopener'>m28.ca</a>" data-en="The clinic behind the service: Centre Médical Font — <a href='https://m28.ca' target='_blank' rel='noopener'>m28.ca</a>">La clinique derrière le service : Centre Médical Font — <a href="https://m28.ca" target="_blank" rel="noopener">m28.ca</a></p>
+            <div class="doctor-row">
+                <img src="/dr-carlos-font.jpg" alt="Dr Carlos Font" loading="lazy" width="200" height="200">
+                <div class="doctor-id">
+                    <div class="doctor-name">D<sup>r</sup> Carlos Font</div>
+                    <div class="doctor-cred" data-fr="Médecin de famille · Permis CMQ 16812" data-en="Family physician · CMQ Licence 16812">Médecin de famille · Permis CMQ 16812</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-compliance" data-fr="Les services assurés par la RAMQ (consultations, traitements, prescriptions, suivis) sont facturés à la RAMQ et ne font l’objet d’aucuns frais pour l’employeur ni pour l’employé. Le présent forfait couvre exclusivement des services non assurés." data-en="Services insured by the RAMQ (consultations, treatments, prescriptions, follow-ups) are billed to the RAMQ and involve no charge to the employer or the employee. This plan covers exclusively uninsured services.">
+                Les services assurés par la RAMQ (consultations, traitements, prescriptions, suivis) sont facturés à la RAMQ et ne font l’objet d’aucuns frais pour l’employeur ni pour l’employé. Le présent forfait couvre exclusivement des services non assurés.
+            </div>
+            <div class="footer-disclaimer" data-fr="Le service couvre les urgences mineures, le dépistage et les suivis ponctuels. Il ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence. En cas d’urgence, composez le 9-1-1." data-en="The service covers minor urgent care, screening and episodic follow-up. It does not replace enrolment with a family doctor or emergency care. In an emergency, call 9-1-1.">
+                Le service couvre les urgences mineures, le dépistage et les suivis ponctuels. Il ne remplace pas la prise en charge par un médecin de famille ni les soins d’urgence. En cas d’urgence, composez le 9-1-1.
+            </div>
+            <div>
+                <span data-fr="Dr Carlos Font, médecin de famille — Truck Stop Santé — permis CMQ 16812 —" data-en="Dr Carlos Font, family physician — Truck Stop Santé — CMQ licence 16812 —">Dr Carlos Font, médecin de famille — Truck Stop Santé — permis CMQ 16812 —</span> <a href="mailto:cff@centremedicalfont.ca" style="color: inherit; text-decoration: underline;">cff@centremedicalfont.ca</a>
+            </div>
+            <div class="footer-links">
+                <span data-fr="Examens SAAQ :" data-en="SAAQ exams:">Examens SAAQ :</span> <a href="https://m28.ca" target="_blank" rel="noopener">m28.ca</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        var header = document.querySelector('header');
+        var onScroll = function () { header.classList.toggle('scrolled', window.scrollY > 8); };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Language toggle — French default, English on demand (persisted).
+        var i18nNodes = document.querySelectorAll('[data-fr][data-en]');
+        var langButtons = document.querySelectorAll('.lang-toggle button');
+        var MAIL = {
+            fr: 'mailto:cff@centremedicalfont.ca?subject=' +
+                encodeURIComponent('Inscription — Truck Stop Santé') + '&body=' +
+                encodeURIComponent('Bonjour Dr Font,\n\nNous souhaitons inscrire nos chauffeurs au service Truck Stop Santé.\n\nEntreprise : \nNombre de chauffeurs : \nPersonne-ressource : \nCourriel ou téléphone : \n\nMerci !'),
+            en: 'mailto:cff@centremedicalfont.ca?subject=' +
+                encodeURIComponent('Enrolment — Truck Stop Santé') + '&body=' +
+                encodeURIComponent('Hello Dr Font,\n\nWe would like to enrol our drivers in the Truck Stop Santé service.\n\nCompany: \nNumber of drivers: \nContact person: \nEmail or phone: \n\nThank you!')
+        };
+
+        function setLang(lang) {
+            document.documentElement.lang = lang === 'en' ? 'en-CA' : 'fr';
+            i18nNodes.forEach(function (n) { n.innerHTML = n.getAttribute('data-' + lang); });
+            langButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+            document.querySelectorAll('.js-mail').forEach(function (a) { a.setAttribute('href', MAIL[lang]); });
+            try { localStorage.setItem('tss-lang', lang); } catch (e) {}
+        }
+
+        langButtons.forEach(function (b) {
+            b.addEventListener('click', function () { setLang(b.dataset.lang); });
+        });
+
+        var saved = null;
+        try { saved = localStorage.getItem('tss-lang'); } catch (e) {}
+        if (saved === 'en') { setLang('en'); } else { setLang('fr'); }
+
+        // Hero video: desktop only, motion OK, no data-saver — poster shows otherwise
+        var v = document.getElementById('heroVideo');
+        var conn = navigator.connection || {};
+        if (v && !reduced && window.innerWidth >= 768 && !conn.saveData) {
+            var s = document.createElement('source');
+            s.src = 'hero.mp4';
+            s.type = 'video/mp4';
+            v.appendChild(s);
+            v.load();
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+        }
+
+        if (reduced) return;
+
+        var groups = [
+            ['.proof-main', 0],
+            ['.proof-receipt', 0],
+            ['.section-title', 0],
+            ['.story-card', 0],
+            ['.step-card', 70],
+            ['.checklist-item', 40],
+            ['.confidentiality-notice', 0],
+            ['.calc-kicker', 0],
+            ['.calc-cell', 70],
+            ['.calc-note', 0],
+            ['.calc-fine', 0],
+            ['.pricing-card', 0],
+            ['#faq details', 60],
+            ['.contact-inner', 0]
+        ];
+        var targets = [];
+        groups.forEach(function (g) {
+            Array.prototype.forEach.call(document.querySelectorAll(g[0]), function (el, i) {
+                el.classList.add('reveal');
+                el.style.transitionDelay = (i * g[1]) + 'ms';
+                targets.push(el);
+            });
+        });
+
+        if (!('IntersectionObserver' in window)) {
+            targets.forEach(function (el) { el.classList.add('in'); });
+            return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        targets.forEach(function (el) { io.observe(el); });
+    })();
+    </script>
+
+</body>
+</html>
