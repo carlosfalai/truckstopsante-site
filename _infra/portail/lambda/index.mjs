@@ -5,7 +5,7 @@
 // après vérification sur Spruce (jamais de doublon), et une alerte Telegram à Carlos.
 // Carlos (code admin) crée les partenaires, active la facturation Stripe, suit les invitations.
 import {
-  DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand,
+  DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand, DeleteItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { randomUUID, randomBytes } from "node:crypto";
 
@@ -99,6 +99,7 @@ async function stripe(method, path, params) {
   return j;
 }
 async function syncStripeQuantity(partner, actifs) {
+  if (partner.demo === "oui") return { synced: false, reason: "demo" };
   if (!partner.stripe_subscription_id) return { synced: false, reason: "no_subscription" };
   const sub = await stripe("GET", "/v1/subscriptions/" + partner.stripe_subscription_id);
   const item = sub.items?.data?.[0];
@@ -193,8 +194,8 @@ async function spruceInvite(m) {
 }
 
 /* ---------- Telegram (alerte à Carlos) ---------- */
-async function telegram(text) {
-  if (!TG_TOKEN || !TG_CHAT) return;
+async function telegram(text, partner) {
+  if (!TG_TOKEN || !TG_CHAT || (partner && partner.demo === "oui")) return;
   try {
     await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -238,7 +239,7 @@ const publicPartner = (p) => ({
   code: p.code, name: p.name, type: p.type, contact_name: p.contact_name, contact_email: p.contact_email,
   contact_phone: p.contact_phone, billing_email: p.billing_email, created_at: p.created_at,
   stripe_subscription_id: p.stripe_subscription_id || "", stripe_customer_id: p.stripe_customer_id || "",
-  bank_code: p.bank_code || "",
+  bank_code: p.bank_code || "", demo: p.demo === "oui",
 });
 function makeCode(name) {
   const base = clean(name, 12).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "TSS";
@@ -267,7 +268,9 @@ async function addMember(partner, data, existingMembers) {
     spruce: "a_inviter", spruce_detail: "", spruce_invited_at: "",
     created_at: now(), updated_at: now(), paused_at: "", removed_at: "",
   };
-  if (AUTO_INVITE) {
+  if (partner.demo === "oui") {
+    item.spruce = data.spruce === "invite" ? "invite" : "compte"; item.spruce_detail = "démo (personne fictive)"; if (item.spruce === "invite") item.spruce_invited_at = now();
+  } else if (AUTO_INVITE) {
     try {
       const r = await spruceInvite(item);
       item.spruce = r.statut === "erreur" ? "a_inviter" : r.statut;
@@ -325,6 +328,7 @@ export const handler = async (event) => {
         contact_phone: clean(data.contact_phone, 40), billing_email: clean(data.billing_email || data.contact_email, 160),
         stripe_customer_id: clean(data.stripe_customer_id, 80), stripe_subscription_id: clean(data.stripe_subscription_id, 80),
         bank_code: clean(data.bank_code, 40) || (name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE"),
+        demo: data.demo === "oui" ? "oui" : "non",
         active: "oui", created_at: now(),
       };
       await putItem(T_PARTNERS, item);
@@ -335,7 +339,7 @@ export const handler = async (event) => {
       const p = await getPartner(clean(data.partner_code, 60));
       if (!p) return reply(404, { error: "unknown_partner" });
       const fields = {};
-      for (const k of ["name", "contact_name", "contact_email", "contact_phone", "billing_email", "stripe_customer_id", "stripe_subscription_id", "active", "type", "bank_code"]) {
+      for (const k of ["name", "contact_name", "contact_email", "contact_phone", "billing_email", "stripe_customer_id", "stripe_subscription_id", "active", "type", "bank_code", "demo"]) {
         if (data[k] !== undefined) fields[k] = clean(data[k], 160);
       }
       if (!Object.keys(fields).length) return reply(400, { error: "nothing_to_update" });
@@ -370,6 +374,14 @@ export const handler = async (event) => {
       });
       await updateFields(T_PARTNERS, { code: S(p.code) }, { stripe_customer_id: customerId, stripe_subscription_id: sub.id });
       return reply(200, { ok: true, customer: customerId, subscription: sub.id, quantite: actifs });
+    }
+    if (path === "/admin/member/delete" && method === "POST") {
+      if (!isAdmin) return reply(401, { error: "bad_code" });
+      const pcode = clean(data.partner_code, 60), id = clean(data.id, 80);
+      const m = await getMember(pcode, id);
+      if (!m) return reply(404, { error: "unknown_member" });
+      await db.send(new DeleteItemCommand({ TableName: T_MEMBERS, Key: { partner_code: S(pcode), id: S(id) } }));
+      return reply(200, { ok: true, deleted: id });
     }
     if (path === "/admin/member/spruce" && method === "POST") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
@@ -417,7 +429,7 @@ export const handler = async (event) => {
       let stripeSync = null;
       try { stripeSync = await syncStripeQuantity(partner, actifs); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
       const m = r.member;
-      await telegram(`Portail TSS — ${partner.name} a ajouté ${m.first_name} ${m.last_name}\n${m.phone} · ${m.email}${m.family_of ? "\n(famille de " + m.family_of + ")" : ""}\nSpruce : ${m.spruce} (${m.spruce_detail || "à faire"})\nActifs : ${actifs} → ${actifs * PRIX} $/mois`);
+      await telegram(`Portail TSS — ${partner.name} a ajouté ${m.first_name} ${m.last_name}\n${m.phone} · ${m.email}${m.family_of ? "\n(famille de " + m.family_of + ")" : ""}\nSpruce : ${m.spruce} (${m.spruce_detail || "à faire"})\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       return reply(200, { ok: true, member: m, actifs, stripe: stripeSync });
     }
 
@@ -435,7 +447,7 @@ export const handler = async (event) => {
       const invited = added.filter((r) => r.member.spruce === "invite").length;
       const already = added.filter((r) => r.member.spruce === "compte").length;
       const failed = results.length - added.length;
-      await telegram(`Portail TSS — ${partner.name} a ajouté ${added.length} personne(s) (liste collée)\nInvitations Spruce envoyées : ${invited} · déjà sur Spruce : ${already} · rejetées : ${failed}\nActifs : ${actifs} → ${actifs * PRIX} $/mois`);
+      await telegram(`Portail TSS — ${partner.name} a ajouté ${added.length} personne(s) (liste collée)\nInvitations Spruce envoyées : ${invited} · déjà sur Spruce : ${already} · rejetées : ${failed}\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       return reply(200, { ok: true, results, actifs, stripe: stripeSync, resume: { added: added.length, invited, already, failed } });
     }
 
@@ -456,7 +468,7 @@ export const handler = async (event) => {
       let stripeSync = null;
       try { stripeSync = await syncStripeQuantity(partner, actifs); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
       const verbe = status === "actif" ? "a réactivé" : status === "pause" ? "a mis en pause" : "a retiré";
-      await telegram(`Portail TSS — ${partner.name} ${verbe} ${m.first_name} ${m.last_name}. Actifs : ${actifs} → ${actifs * PRIX} $/mois`);
+      await telegram(`Portail TSS — ${partner.name} ${verbe} ${m.first_name} ${m.last_name}. Actifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       return reply(200, { ok: true, status, actifs, stripe: stripeSync });
     }
 
