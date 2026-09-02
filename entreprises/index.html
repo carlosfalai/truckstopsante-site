@@ -329,6 +329,21 @@ footer p{font-style:italic;font-size:.85rem;line-height:1.5;max-width:74ch}
  .lang button{padding:.4rem .6rem}
  .cta .btn{flex:1 1 100%;text-align:center}
 }
+
+        /* --- paliers: banque d'accès gratuits (paliers-2026-09-02.cjs) --- */
+        .paliers { padding: 72px 0; background: var(--surface-white, #fff); }
+        .paliers .wrap, .paliers .container { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+        .paliers h2 { text-align: center; margin: 0 0 12px; }
+        .paliers .paliers-sub { text-align: center; max-width: 760px; margin: 0 auto 32px; color: var(--text-muted, #6b7280); font-size: 1.1rem; line-height: 1.55; }
+        .paliers .paliers-sub strong { color: var(--text-dark, #14264A); }
+        .paliers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 920px; margin: 0 auto; }
+        .palier { border: 1px solid rgba(20,38,74,0.14); border-top: 4px solid var(--accent-amber, #F59E0B); border-radius: 10px; padding: 20px 18px; text-align: center; background: var(--bg-light, #f8fafc); }
+        .palier .p-n { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted, #6b7280); }
+        .palier .p-head { font-size: 1.4rem; font-weight: 700; color: var(--text-dark, #14264A); margin: 4px 0 10px; }
+        .palier .p-free { font-size: 2.4rem; font-weight: 800; color: var(--accent-amber, #F59E0B); line-height: 1; }
+        .palier .p-label { font-size: 0.9rem; color: var(--text-dark, #14264A); margin-top: 6px; font-weight: 600; }
+        .paliers-note { max-width: 860px; margin: 26px auto 0; text-align: center; font-size: 0.95rem; color: var(--text-muted, #6b7280); line-height: 1.55; }
+        @media (max-width: 760px) { .paliers-grid { grid-template-columns: 1fr 1fr; } }
 </style>
 
 <header>
@@ -476,6 +491,40 @@ footer p{font-style:italic;font-size:.85rem;line-height:1.5;max-width:74ch}
  data-en="Illustrative example; adjust to your own payroll.">Exemple illustratif, à ajuster selon votre masse salariale.</p>
  </div>
 </section>
+
+    <section id="paliers" class="paliers">
+        <div class="container">
+            <h2 class="section-title" data-fr="Plus vous couvrez de monde, plus vous en offrez." data-en="The more people you cover, the more you can give away.">Plus vous couvrez de monde, plus vous en offrez.</h2>
+            <p class="paliers-sub" data-fr="Le tarif ne bouge pas : <strong>8 $ par personne couverte, par mois</strong>. Ce qui grandit avec vous, c’est une banque de consultations gratuites — pour qui vous voulez : la famille, les saisonniers, les nouveaux, les membres à convaincre. Pas besoin de s’abonner. Un code, et on s’en occupe." data-en="The price never moves: <strong>$8 per covered person, per month</strong>. What grows with you is a bank of free consultations — for whoever you want: family, seasonal workers, new hires, members to win over. No subscription needed. One code, and we take it from there.">Le tarif ne bouge pas : <strong>8 $ par personne couverte, par mois</strong>. Ce qui grandit avec vous, c’est une banque de consultations gratuites — pour qui vous voulez : la famille, les saisonniers, les nouveaux, les membres à convaincre. Pas besoin de s’abonner. Un code, et on s’en occupe.</p>
+            <div class="paliers-grid">
+                <div class="palier">
+                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
+                    <div class="p-head" data-fr="100 personnes couvertes" data-en="100 covered persons">100 personnes couvertes</div>
+                    <div class="p-free">5</div>
+                    <div class="p-label" data-fr="accès gratuits par mois" data-en="free consultations a month">accès gratuits par mois</div>
+                </div>
+                <div class="palier">
+                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
+                    <div class="p-head" data-fr="500 personnes couvertes" data-en="500 covered persons">500 personnes couvertes</div>
+                    <div class="p-free">25</div>
+                    <div class="p-label" data-fr="accès gratuits par mois" data-en="free consultations a month">accès gratuits par mois</div>
+                </div>
+                <div class="palier">
+                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
+                    <div class="p-head" data-fr="1 000 personnes couvertes" data-en="1,000 covered persons">1 000 personnes couvertes</div>
+                    <div class="p-free">50</div>
+                    <div class="p-label" data-fr="accès gratuits par mois" data-en="free consultations a month">accès gratuits par mois</div>
+                </div>
+                <div class="palier">
+                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
+                    <div class="p-head" data-fr="2 000 personnes couvertes" data-en="2,000 covered persons">2 000 personnes couvertes</div>
+                    <div class="p-free">100</div>
+                    <div class="p-label" data-fr="accès gratuits par mois" data-en="free consultations a month">accès gratuits par mois</div>
+                </div>
+            </div>
+            <p class="paliers-note" data-fr="Comment ça marche : vous recevez un code. La personne nous écrit avec le code, par texto ou par courriel, et chaque consultation est déduite de la banque, jusqu’à zéro. Quelqu’un qui a besoin de 5 consultations dans le mois en utilise 5. Les membres de la famille peuvent s’en servir sans s’abonner. La banque se renouvelle chaque mois et n’est pas cumulable." data-en="How it works: you receive a code. The person writes to us with the code, by text or email, and each consultation is deducted from the bank, down to zero. Someone who needs 5 consultations in a month uses 5. Family members can use it without subscribing. The bank renews every month and does not accumulate.">Comment ça marche : vous recevez un code. La personne nous écrit avec le code, par texto ou par courriel, et chaque consultation est déduite de la banque, jusqu’à zéro. Quelqu’un qui a besoin de 5 consultations dans le mois en utilise 5. Les membres de la famille peuvent s’en servir sans s’abonner. La banque se renouvelle chaque mois et n’est pas cumulable.</p>
+        </div>
+    </section>
 
 <section>
  <div class="wrap privacy">
