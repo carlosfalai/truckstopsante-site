@@ -3,3 +3,6 @@ _*.png
 
 # --- Portail partenaire (Lambda + Stripe + Spruce, ne pas publier) ---
 _infra/portail/lambda.zip
+
+# plaintext sources of code-locked pages (never deploy)
+_private/
