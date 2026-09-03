@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Truck Stop Santé — Tableau de bord CMF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/portail/portail.css">
+    <style>
+        main { max-width: 1240px; }
+        .gwrap { display: flex; justify-content: center; margin: 8px 0 14px; min-height: 44px; }
+        .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; margin: 6px 0 12px; }
+        .sep::before, .sep::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 14px 0 22px; }
+        .kpi { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+        .kpi b { display: block; font-family: "Barlow Condensed", sans-serif; font-size: 2.1rem; line-height: 1; color: var(--navy); }
+        .kpi.money b { color: #B45309; }
+        .kpi span { color: var(--muted); font-size: 0.85rem; }
+        .kpi small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 4px; }
+        .bars { display: flex; align-items: flex-end; gap: 14px; height: 150px; padding: 10px 6px 0; }
+        .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 0.8rem; color: var(--muted); }
+        .bar i { display: block; width: 100%; max-width: 70px; background: #F5A623; border-radius: 6px 6px 0 0; min-height: 2px; }
+        .bar b { color: var(--navy); font-size: 0.9rem; margin-bottom: 4px; }
+        .bar.cur i { background: var(--navy); }
+        table td, table th { vertical-align: top; }
+        .muted { color: var(--muted); }
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .tag.demo { background: #FFF4E5; color: #92400E; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 6px 0 14px; }
+        .toolbar a.btn { font-size: 0.9rem; }
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="who">Centre Médical Font</span><button id="logout" hidden style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
+
+    <div class="login-wrap" id="loginView">
+        <div class="login">
+            <h1>Tableau de bord CMF</h1>
+            <p class="sub">Réservé à la clinique. Entrez avec votre compte Google cff@centremedicalfont.ca.</p>
+            <div class="gwrap" id="gbtn"></div>
+            <div class="sep">ou avec le code administrateur</div>
+            <form id="form">
+                <input type="password" id="code" placeholder="code administrateur" autocomplete="off" required>
+                <button class="btn" type="submit" id="go" style="width:100%;justify-content:center;margin-top:10px">Entrer</button>
+            </form>
+            <p class="hint" id="msg" style="min-height:1.4em;margin-top:12px"></p>
+        </div>
+    </div>
+
+    <main id="appView" hidden>
+        <h1>Truck Stop Santé, en un coup d’œil</h1>
+        <p class="sub" id="asof"></p>
+        <div class="toolbar"><a class="btn secondary" href="/portail/admin.html">Gestion des partenaires, invitations, codes</a><a class="btn secondary" href="https://dashboard.stripe.com/" target="_blank" rel="noopener">Ouvrir Stripe</a><button class="btn secondary" id="refresh" style="font: inherit">Rafraîchir</button></div>
+
+        <h2 style="margin:6px 0 0">L’argent</h2>
+        <div class="kpis" id="money"></div>
+        <div class="card">
+            <h2>Encaissé par mois (Stripe, net des remboursements)</h2>
+            <div class="bars" id="bars"></div>
+            <p class="hint" id="barsnote"></p>
+        </div>
+
+        <h2 style="margin:6px 0 0">Les gens</h2>
+        <div class="kpis" id="people"></div>
+
+        <div class="card">
+            <h2>Les compagnies et associations</h2>
+            <table>
+                <thead><tr><th>Partenaire</th><th class="num">Personnes</th><th class="num">$/mois</th><th class="num">Ce mois-ci</th><th>Stripe</th><th class="num">Banque</th><th class="num">Codes utilisés</th><th>Code d’accès</th></tr></thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </div>
+
+        <div class="two">
+            <div class="card">
+                <h2>Abonnements Stripe actifs</h2>
+                <table><thead><tr><th>Client</th><th class="num">Places</th><th class="num">$/mois</th><th>Prochaine facture</th><th>Depuis</th></tr></thead><tbody id="subs"></tbody></table>
+            </div>
+            <div class="card">
+                <h2>Médecins et consultations gratuites</h2>
+                <table><thead><tr><th>Médecin</th><th class="num">Ce mois-ci</th><th class="num">Total</th></tr></thead><tbody id="docs"></tbody></table>
+                <p class="hint" id="codesnote"></p>
+            </div>
+        </div>
+    </main>
+    <div class="toast" id="toast"></div>
+
+    <script src="/portail/config.js"></script>
+    <script src="/portail/app.js"></script>
+    <script>
+    (function () {
+        var toast = document.getElementById("toast"), msg = document.getElementById("msg");
+        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+        function show(v) { document.getElementById("loginView").hidden = v !== "login"; document.getElementById("appView").hidden = v !== "app"; document.getElementById("logout").hidden = v !== "app"; }
+        function money(n) { return (Math.round(n * 100) / 100).toLocaleString("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }); }
+        function monthName(k) { var d = new Date(k + "-01T12:00:00Z"); return d.toLocaleDateString("fr-CA", { month: "short", year: "2-digit" }); }
+        function kpi(host, v, label, sub, cls) { var d = document.createElement("div"); d.className = "kpi" + (cls ? " " + cls : ""); d.innerHTML = "<b>" + v + "</b><span>" + label + "</span>" + (sub ? "<small>" + sub + "</small>" : ""); host.appendChild(d); }
+
+        function render(st, fin) {
+            var real = st.partners.filter(function (p) { return !p.demo && p.type !== "medecin"; });
+            var docs = st.partners.filter(function (p) { return p.type === "medecin"; });
+            var month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
+            var k = { personnes: 0, familles: 0, nouveaux: 0, pause: 0, retires: 0, spruceOk: 0, spruceAttente: 0, aInviter: 0, banque: 0, codesEmis: 0, codesUtilises: 0, codesUtilisesMois: 0, sansStripe: 0 };
+            var mk = new Date().toISOString().slice(0, 7);
+            real.forEach(function (p) {
+                if (!p.stripe_subscription_id) k.sansStripe++;
+                if (p.banque) k.banque += p.banque.restantes;
+                (p.codes || []).forEach(function (c) { k.codesEmis++; if (c.status === "utilise") { k.codesUtilises++; if ((c.used_at || "").slice(0, 7) === mk) k.codesUtilisesMois++; } });
+                p.members.forEach(function (m) {
+                    if (m.status === "retire") { k.retires++; return; }
+                    if (m.status === "pause") { k.pause++; return; }
+                    k.personnes++; if (m.family_of) k.familles++;
+                    if (m.spruce === "compte") k.spruceOk++; else if (m.spruce === "invite") k.spruceAttente++; else k.aInviter++;
+                    if (m.created_at && new Date(m.created_at).getTime() >= month.getTime()) k.nouveaux++;
+                });
+            });
+            var mrrPortail = k.personnes * st.prix;
+            document.getElementById("asof").textContent = "Au " + new Date().toLocaleDateString("fr-CA", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ", sans compter les partenaires démo.";
+
+            var m = document.getElementById("money"); m.innerHTML = "";
+            kpi(m, money(mrrPortail), "par mois, selon le portail", k.personnes + " personnes couvertes × " + st.prix + " $ · " + money(mrrPortail * 12) + " par an", "money");
+            if (fin && fin.ok) {
+                kpi(m, money(fin.mrr_stripe), "par mois, abonnements Stripe actifs", fin.abonnements_actifs + " abonnement(s) · " + fin.places_stripe + " place(s) facturée(s)", "money");
+                kpi(m, money(fin.encaisse_mois), "encaissé ce mois-ci", "mois dernier : " + money(fin.encaisse_mois_dernier), "money");
+                var diff = fin.encaisse_mois - fin.encaisse_mois_dernier;
+                kpi(m, (diff >= 0 ? "+" : "") + money(diff), "vs mois dernier", fin.encaisse_mois_dernier ? Math.round(diff / fin.encaisse_mois_dernier * 100) + " %" : "", "money");
+            } else {
+                kpi(m, "–", "Stripe indisponible", fin && fin.error ? fin.error : "", "money");
+            }
+            kpi(m, k.sansStripe, "partenaire(s) sans facturation Stripe", k.sansStripe ? "à activer dans la gestion" : "tout est facturé");
+
+            var bars = document.getElementById("bars"); bars.innerHTML = "";
+            if (fin && fin.ok) {
+                var max = Math.max.apply(null, fin.par_mois.map(function (x) { return x.net; }).concat([1]));
+                fin.par_mois.forEach(function (x, i) {
+                    var d = document.createElement("div"); d.className = "bar" + (i === fin.par_mois.length - 1 ? " cur" : "");
+                    d.innerHTML = "<b>" + money(x.net) + "</b><i style=\"height:" + Math.max(2, Math.round(x.net / max * 100)) + "px\"></i><span>" + monthName(x.mois) + "</span>";
+                    bars.appendChild(d);
+                });
+                document.getElementById("barsnote").textContent = "Paiements réussis sur Stripe, remboursements déduits. Le mois en cours est partiel.";
+            }
+
+            var pp = document.getElementById("people"); pp.innerHTML = "";
+            kpi(pp, real.filter(function (p) { return p.type !== "association"; }).length, "entreprise(s)");
+            kpi(pp, real.filter(function (p) { return p.type === "association"; }).length, "association(s)");
+            kpi(pp, k.personnes, "personnes couvertes", k.familles + " membre(s) de famille");
+            kpi(pp, k.nouveaux, "ajoutées ce mois-ci", k.pause + " en pause · " + k.retires + " retirée(s)");
+            kpi(pp, k.spruceOk, "actives sur Spruce", k.spruceAttente + " invitée(s) en attente · " + k.aInviter + " à inviter");
+            kpi(pp, k.banque, "consultations gratuites en banque", k.codesEmis + " code(s) émis · " + k.codesUtilises + " utilisé(s)");
+            kpi(pp, k.codesUtilisesMois, "consultations gratuites ce mois-ci", "toutes compagnies");
+
+            var tb = document.getElementById("rows"); tb.innerHTML = "";
+            st.partners.filter(function (p) { return p.type !== "medecin"; }).sort(function (a, b) { return b.resume.actifs - a.resume.actifs; }).forEach(function (p) {
+                var nouveaux = p.members.filter(function (x) { return x.status === "actif" && x.created_at && new Date(x.created_at).getTime() >= month.getTime(); }).length;
+                var used = (p.codes || []).filter(function (c) { return c.status === "utilise"; }).length;
+                var tr = document.createElement("tr");
+                tr.innerHTML = "<td><b>" + TSS.esc(p.name) + "</b>" + (p.demo ? ' <span class="tag demo">démo</span>' : "") + '<div class="muted" style="font-size:.8rem">' + TSS.esc(p.type) + (p.contact_name ? " · " + TSS.esc(p.contact_name) : "") + "</div></td>" +
+                    '<td class="num">' + p.resume.actifs + (p.resume.pause ? ' <span class="muted">(+' + p.resume.pause + " pause)</span>" : "") + "</td>" +
+                    '<td class="num">' + (p.demo ? "–" : money(p.resume.montant)) + "</td>" +
+                    '<td class="num">' + (nouveaux ? "+" + nouveaux : "–") + "</td>" +
+                    "<td>" + (p.stripe_subscription_id ? '<span class="tag ok">abonné</span>' : (p.demo ? '<span class="muted">démo</span>' : '<span class="tag wait">à activer</span>')) + "</td>" +
+                    '<td class="num">' + (p.banque ? p.banque.restantes + ' <span class="muted">/ ' + p.banque.accumulees + "</span>" : "–") + "</td>" +
+                    '<td class="num">' + used + "</td>" +
+                    '<td><span class="code" style="font-size:.8rem">' + TSS.esc(p.code) + "</span></td>";
+                tb.appendChild(tr);
+            });
+
+            var sb = document.getElementById("subs"); sb.innerHTML = "";
+            if (fin && fin.ok) {
+                if (!fin.abonnements.length) sb.innerHTML = '<tr><td colspan="5" class="muted">Aucun abonnement actif.</td></tr>';
+                fin.abonnements.sort(function (a, b) { return b.mensuel - a.mensuel; }).forEach(function (s) {
+                    var tr = document.createElement("tr");
+                    tr.innerHTML = "<td><b>" + TSS.esc(s.client) + "</b>" + (s.courriel ? '<div class="muted" style="font-size:.8rem">' + TSS.esc(s.courriel) + "</div>" : "") + '</td><td class="num">' + s.quantite + '</td><td class="num">' + money(s.mensuel) + "</td><td>" + TSS.esc(s.prochaine_facture || "–") + (s.mode === "send_invoice" ? ' <span class="muted">(facture)</span>' : "") + "</td><td>" + TSS.esc(s.depuis || "") + "</td>";
+                    sb.appendChild(tr);
+                });
+            } else sb.innerHTML = '<tr><td colspan="5" class="muted">Stripe indisponible.</td></tr>';
+
+            var db = document.getElementById("docs"); db.innerHTML = "";
+            if (!docs.length) db.innerHTML = '<tr><td colspan="3" class="muted">Aucun médecin inscrit.</td></tr>';
+            docs.forEach(function (d) { var tr = document.createElement("tr"); tr.innerHTML = "<td><b>" + TSS.esc(d.name) + "</b></td><td class=\"num\">" + d.rachats_mois + "</td><td class=\"num\">" + d.rachats + "</td>"; db.appendChild(tr); });
+            document.getElementById("codesnote").textContent = "Une consultation gratuite = un code généré par un membre, utilisé par le médecin. La banque de chaque compagnie baisse à ce moment-là seulement.";
+        }
+
+        function load() {
+            var s = TSS.session(); if (!s || s.role !== "admin") { show("login"); return; }
+            show("app");
+            Promise.all([TSS.api("/admin/state"), TSS.api("/admin/finance")]).then(function (r) {
+                if (!r[0].ok) { if (r[0]._status === 401) { TSS.clearSession(); show("login"); msg.textContent = "Session expirée."; } else say("Chargement impossible"); return; }
+                render(r[0], r[1]);
+            }).catch(function () { say("Connexion impossible pour le moment."); });
+        }
+        function enter(j, code) { if (j.role !== "admin") { msg.textContent = "Ce compte n’est pas celui de la clinique."; return; } TSS.saveSession({ code: code, role: "admin", at: Date.now() }, true); load(); }
+
+        document.getElementById("form").addEventListener("submit", function (e) {
+            e.preventDefault(); var code = document.getElementById("code").value.trim();
+            fetch(TSS.API + "/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: code }) }).then(function (r) { return r.json(); })
+                .then(function (j) { if (!j.ok) { msg.textContent = "Code refusé."; return; } enter(j, code); })
+                .catch(function () { msg.textContent = "Connexion impossible pour le moment."; });
+        });
+        window.onGoogleCredential = function (resp) {
+            if (!resp || !resp.credential) return; msg.textContent = "Vérification du compte Google…";
+            fetch(TSS.API + "/login/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ credential: resp.credential }) }).then(function (r) { return r.json(); })
+                .then(function (j) { if (!j.ok) { msg.textContent = "Compte Google refusé. Utilisez cff@centremedicalfont.ca."; return; } enter(j, j.code); })
+                .catch(function () { msg.textContent = "Connexion impossible pour le moment."; });
+        };
+        document.getElementById("logout").addEventListener("click", function () { TSS.clearSession(); show("login"); });
+        document.getElementById("refresh").addEventListener("click", load);
+        if (window.TSS_GOOGLE_CLIENT_ID) {
+            var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = function () {
+                google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup", hosted_domain: "centremedicalfont.ca" });
+                google.accounts.id.renderButton(document.getElementById("gbtn"), { theme: "filled_blue", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
+            };
+            document.head.appendChild(sc);
+        }
+        load();
+    })();
+    </script>
+</body>
+</html>

@@ -200,6 +200,54 @@ async function stripe(method, path, params) {
   if (!r.ok) throw new Error("stripe: " + (j.error?.message || r.status));
   return j;
 }
+async function stripeGet(path, params) {
+  if (!STRIPE_KEY) return null;
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  const r = await fetch("https://api.stripe.com" + path + qs, { headers: { Authorization: "Bearer " + STRIPE_KEY } });
+  const j = await r.json();
+  if (!r.ok) throw new Error("stripe: " + (j.error?.message || r.status));
+  return j;
+}
+async function stripeListAll(path, params, max = 500) {
+  const out = []; let starting_after;
+  while (out.length < max) {
+    const j = await stripeGet(path, { ...params, limit: "100", ...(starting_after ? { starting_after } : {}) });
+    if (!j) break;
+    out.push(...(j.data || []));
+    if (!j.has_more || !j.data?.length) break;
+    starting_after = j.data[j.data.length - 1].id;
+  }
+  return out;
+}
+// Argent réel : encaissé par mois (6 derniers mois), abonnements actifs et leur MRR, prochaines factures.
+async function financeSnapshot() {
+  const now_ = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) { const d = new Date(Date.UTC(now_.getUTCFullYear(), now_.getUTCMonth() - i, 1)); months.push(d.toISOString().slice(0, 7)); }
+  const since = Math.floor(Date.UTC(now_.getUTCFullYear(), now_.getUTCMonth() - 5, 1) / 1000);
+  const charges = await stripeListAll("/v1/charges", { "created[gte]": String(since) });
+  const parMois = {}; for (const m of months) parMois[m] = { brut: 0, rembourse: 0, net: 0, n: 0 };
+  for (const c of charges) {
+    if (!c.paid || c.status !== "succeeded") continue;
+    const m = new Date(c.created * 1000).toISOString().slice(0, 7); if (!parMois[m]) continue;
+    parMois[m].brut += c.amount; parMois[m].rembourse += c.amount_refunded || 0; parMois[m].net += c.amount - (c.amount_refunded || 0); parMois[m].n += 1;
+  }
+  const subs = await stripeListAll("/v1/subscriptions", { status: "active", "expand[]": "data.customer" });
+  const abonnements = subs.map((sub) => {
+    const it = sub.items?.data?.[0]; const unit = it?.price?.unit_amount || 0; const q = it?.quantity || 0;
+    const cust = sub.customer && typeof sub.customer === "object" ? sub.customer : {};
+    return { id: sub.id, client: cust.name || cust.email || sub.customer, courriel: cust.email || "", quantite: q, mensuel: (unit * q) / 100, prochaine_facture: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null, statut: sub.status, mode: sub.collection_method, depuis: sub.start_date ? new Date(sub.start_date * 1000).toISOString().slice(0, 10) : null };
+  });
+  const mrr = abonnements.reduce((a, b) => a + b.mensuel, 0);
+  const cur = months[months.length - 1], prev = months[months.length - 2];
+  return {
+    mois: cur,
+    encaisse_mois: parMois[cur].net / 100, encaisse_mois_dernier: parMois[prev].net / 100,
+    par_mois: months.map((m) => ({ mois: m, net: parMois[m].net / 100, brut: parMois[m].brut / 100, paiements: parMois[m].n })),
+    mrr_stripe: mrr, abonnements_actifs: abonnements.length, places_stripe: abonnements.reduce((a, b) => a + b.quantite, 0),
+    abonnements,
+  };
+}
 async function syncStripeQuantity(partner, actifs) {
   if (partner.demo === "oui") return { synced: false, reason: "demo" };
   if (!partner.stripe_subscription_id) return { synced: false, reason: "no_subscription" };
@@ -548,6 +596,11 @@ export const handler = async (event) => {
       });
       await updateFields(T_PARTNERS, { code: S(p.code) }, { stripe_customer_id: customerId, stripe_subscription_id: sub.id });
       return reply(200, { ok: true, customer: customerId, subscription: sub.id, quantite: actifs });
+    }
+    if (path === "/admin/finance" && method === "GET") {
+      if (!isAdmin) return reply(401, { error: "bad_code" });
+      try { return reply(200, { ok: true, ...(await financeSnapshot()) }); }
+      catch (e) { return reply(200, { ok: false, error: e.message }); }
     }
     if (path === "/admin/code/redeem" && method === "POST") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
