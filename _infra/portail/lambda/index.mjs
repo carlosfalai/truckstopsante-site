@@ -7,7 +7,7 @@
 import {
   DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand, DeleteItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { randomUUID, randomBytes } from "node:crypto";
+import { randomUUID, randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
@@ -21,6 +21,7 @@ const TG_CHAT = process.env.TELEGRAM_CHAT_ID || "";
 const SPRUCE_AUTH = process.env.SPRUCE_AUTH || "";
 const SPRUCE_INTERNAL_ENDPOINT_ID = process.env.SPRUCE_INTERNAL_ENDPOINT_ID || ""; // ligne Spruce de la clinique (même valeur que spruce-invite-today.js) // "Basic …" — même valeur que spruce-invite-today.js
 const AUTO_INVITE = (process.env.AUTO_INVITE || "oui") === "oui";
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 const COVERAGES = ["indeterminee", "3", "6", "12"];
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const ADMIN_GOOGLE_EMAILS = (process.env.ADMIN_GOOGLE_EMAILS || "").toLowerCase().split(",").map((e) => e.trim()).filter(Boolean);
@@ -350,6 +351,58 @@ async function spruceInvite(m) {
   return ok ? { statut: "invite", detail: "texto + courriel envoyés", contact_id: contact.id } : { statut: "erreur", detail: "invitation HTTP " + results.join("/") };
 }
 
+/* ---------- Inscription automatique après paiement (lien Stripe -> partenaire + première personne + invitation Spruce) ---------- */
+const splitName = (full) => { const p = String(full || "").trim().split(/\s+/); return { first_name: p.shift() || "", last_name: p.join(" ") || "" }; };
+async function findPartnerBySubscription(subId) {
+  if (!subId) return null;
+  return (await listPartners()).find((p) => p.stripe_subscription_id === subId) || null;
+}
+// session = objet Checkout Session Stripe (avec customer_details, custom_fields, subscription, customer). Retourne le partenaire (créé ou existant) et la première personne.
+async function completeEnrolment(session, opts = {}) {
+  const subId = typeof session.subscription === "object" ? session.subscription?.id : session.subscription;
+  const custId = typeof session.customer === "object" ? session.customer?.id : session.customer;
+  if (session.payment_status && session.payment_status !== "paid" && session.status !== "complete") return { ok: false, error: "not_paid" };
+  const existing = await findPartnerBySubscription(subId);
+  const cd = session.customer_details || {};
+  const fields = {}; for (const cf of session.custom_fields || []) fields[cf.key] = (cf.text || cf.numeric || cf.dropdown || {}).value || "";
+  const entreprise = clean(fields.entreprise || fields.company || fields.compagnie, 120) || clean(cd.name, 120) || "Entreprise";
+  // Première personne couverte seulement si le champ "chauffeur" est rempli (le payeur d'une flotte n'est pas forcément un chauffeur).
+  const chauffeur = clean(fields.chauffeur || fields.driver || fields.personne, 120);
+  const email = clean(cd.email, 160).toLowerCase(), phone = clean(cd.phone, 40);
+  let partner = existing;
+  let created = false;
+  if (!partner) {
+    let pcode = makeCode(entreprise); while (await getPartner(pcode)) pcode = makeCode(entreprise);
+    const item = {
+      code: pcode, name: entreprise, type: "entreprise",
+      contact_name: clean(cd.name, 120), contact_email: email, contact_phone: phone, billing_email: email,
+      stripe_customer_id: custId || "", stripe_subscription_id: subId || "",
+      bank_code: entreprise.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE",
+      demo: opts.demo ? "oui" : "non", google_emails: email, active: "oui", created_at: now(), source: "stripe:" + (session.id || ""),
+    };
+    await putItem(T_PARTNERS, item); partner = item; created = true;
+  }
+  const members = await listMembers(partner.code);
+  let member = null, added = false;
+  if (chauffeur && validPhone(phone) && validEmail(email)) {
+    const nm = splitName(chauffeur);
+    if (!nm.last_name) nm.last_name = entreprise;
+    const r = await addMember(partner, { first_name: nm.first_name, last_name: nm.last_name, phone, email, codes: "oui" }, members);
+    if (r.ok) { member = r.member; added = true; }
+    else if (r.error === "duplicate") member = r.member;
+  }
+  if (added && partner.demo !== "oui") await telegram(`Portail TSS — nouvel abonnement Stripe : ${partner.name} (${email}, ${phone})\nCode d'accès ${partner.code} · ${member ? member.first_name + " " + member.last_name + " : Spruce " + (member.spruce || "?") : "aucune personne"}`, partner);
+  return { ok: true, created, added, partner: publicPartner(partner), member: member ? { first_name: member.first_name, last_name: member.last_name, phone: member.phone, email: member.email } : null, actifs: members.length + (added ? 1 : 0) };
+}
+function verifyStripeSignature(rawBody, header) {
+  if (!STRIPE_WEBHOOK_SECRET || !header) return false;
+  const parts = Object.fromEntries(header.split(",").map((kv) => kv.split("=").map((x) => x.trim())));
+  const t = parts.t, v1 = parts.v1; if (!t || !v1) return false;
+  if (Math.abs(Date.now() / 1000 - Number(t)) > 600) return false;
+  const expected = createHmac("sha256", STRIPE_WEBHOOK_SECRET).update(t + "." + rawBody).digest("hex");
+  try { return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(v1, "hex")); } catch { return false; }
+}
+
 /* ---------- Telegram (alerte à Carlos) ---------- */
 async function telegram(text, partner) {
   if (!TG_TOKEN || !TG_CHAT || (partner && partner.demo === "oui")) return;
@@ -421,7 +474,7 @@ async function addMember(partner, data, existingMembers) {
   const coverage = COVERAGES.includes(String(data.coverage)) ? String(data.coverage) : "indeterminee";
   const item = {
     partner_code: partner.code, id: randomUUID(), first_name, last_name, phone, email,
-    status: "actif", family_of: clean(data.family_of, 80), note: clean(data.note, 300),
+    status: "actif", family_of: clean(data.family_of, 80), note: clean(data.note, 300), codes: data.codes === "oui" ? "oui" : "non",
     since_months: String(since), coverage,
     spruce: "a_inviter", spruce_detail: "", spruce_invited_at: "",
     created_at: now(), updated_at: now(), paused_at: "", removed_at: "",
@@ -447,9 +500,10 @@ export const handler = async (event) => {
   const path = (event.rawPath || "/").replace(/\/+$/, "") || "/";
   if (method === "OPTIONS") return reply(200, { ok: true });
   const q = event.queryStringParameters || {};
+  const rawBody = event.isBase64Encoded ? Buffer.from(event.body || "", "base64").toString("utf8") : (event.body || "");
   let data = {};
   if (method === "POST") {
-    try { data = JSON.parse(event.body || "{}"); } catch { return reply(400, { error: "invalid_json" }); }
+    try { data = JSON.parse(rawBody || "{}"); } catch { return reply(400, { error: "invalid_json" }); }
   }
   const code = clean(method === "GET" ? q.code : data.code, 60);
   const isAdmin = ADMIN_CODE && code === ADMIN_CODE;
@@ -481,6 +535,36 @@ export const handler = async (event) => {
       if (!emails.includes(g.email)) { emails.push(g.email); await updateFields(T_PARTNERS, { code: S(p.code) }, { google_emails: emails.join(",") }); p.google_emails = emails.join(","); }
       await telegram(`Portail TSS — ${p.name} a lié le compte Google ${g.email}`, p);
       return reply(200, { ok: true, role: "partner", code: p.code, partner: publicPartner(p), google: { email: g.email, name: g.name } });
+    }
+
+    /* ----- Inscription automatique après paiement ----- */
+    if (path === "/stripe/webhook" && method === "POST") {
+      const sig = event.headers?.["stripe-signature"] || event.headers?.["Stripe-Signature"] || "";
+      if (!verifyStripeSignature(rawBody, sig)) return reply(400, { error: "bad_signature" });
+      if (data.type !== "checkout.session.completed") return reply(200, { ok: true, ignored: data.type });
+      let session = data.data?.object || {};
+      try { session = await stripeGet("/v1/checkout/sessions/" + session.id, { "expand[]": "subscription" }); } catch { /* on garde l'objet de l'événement */ }
+      const sub = session.subscription && typeof session.subscription === "object" ? session.subscription : null;
+      const products = await stripeListAll("/v1/products", { active: "true" });
+      const tss = new Set(products.filter((p) => /truck\s*stop\s*sant/i.test(p.name || "")).map((p) => p.id));
+      const isTss = sub ? (sub.items?.data || []).some((it) => tss.has(it.price?.product)) : true;
+      if (!isTss) return reply(200, { ok: true, ignored: "other_product" });
+      const r = await completeEnrolment(session);
+      return reply(200, r);
+    }
+    if (path === "/enrol/complete" && method === "POST") {
+      const sid = clean(data.session_id, 120);
+      if (!/^cs_/.test(sid)) return reply(400, { error: "bad_session" });
+      let session;
+      try { session = await stripeGet("/v1/checkout/sessions/" + sid, { "expand[]": "subscription" }); } catch (e) { return reply(404, { error: "unknown_session" }); }
+      if (session.payment_status !== "paid" && session.status !== "complete") return reply(409, { error: "not_paid", status: session.payment_status });
+      const r = await completeEnrolment(session);
+      return reply(200, r);
+    }
+    if (path === "/admin/enrol/simulate" && method === "POST") {
+      if (!isAdmin) return reply(401, { error: "bad_code" });
+      const r = await completeEnrolment(data.session || {}, { demo: true });
+      return reply(200, r);
     }
 
     /* ----- Espace membre (chauffeurs) : Google, puis vérification contre la liste fournie par la compagnie ----- */
