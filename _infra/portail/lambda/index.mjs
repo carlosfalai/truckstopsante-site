@@ -362,7 +362,11 @@ async function completeEnrolment(session, opts = {}) {
   const subId = typeof session.subscription === "object" ? session.subscription?.id : session.subscription;
   const custId = typeof session.customer === "object" ? session.customer?.id : session.customer;
   if (session.payment_status && session.payment_status !== "paid" && session.status !== "complete") return { ok: false, error: "not_paid" };
-  const existing = await findPartnerBySubscription(subId);
+  let existing = await findPartnerBySubscription(subId);
+  if (!existing && session.client_reference_id) {
+    const ref = await getPartner(clean(session.client_reference_id, 60));
+    if (ref) { await updateFields(T_PARTNERS, { code: S(ref.code) }, { stripe_customer_id: custId || ref.stripe_customer_id || "", stripe_subscription_id: subId || ref.stripe_subscription_id || "", verifie: "stripe" }); ref.stripe_customer_id = custId || ref.stripe_customer_id; ref.stripe_subscription_id = subId || ref.stripe_subscription_id; existing = ref; }
+  }
   const cd = session.customer_details || {};
   const fields = {}; for (const cf of session.custom_fields || []) fields[cf.key] = (cf.text || cf.numeric || cf.dropdown || {}).value || "";
   const entreprise = clean(fields.entreprise || fields.company || fields.compagnie, 120) || clean(cd.name, 120) || "Entreprise";
@@ -450,7 +454,7 @@ const publicPartner = (p) => ({
   code: p.code, name: p.name, type: p.type, contact_name: p.contact_name, contact_email: p.contact_email,
   contact_phone: p.contact_phone, billing_email: p.billing_email, created_at: p.created_at,
   stripe_subscription_id: p.stripe_subscription_id || "", stripe_customer_id: p.stripe_customer_id || "",
-  bank_code: p.bank_code || "", demo: p.demo === "oui", google_emails: splitEmails(p.google_emails),
+  bank_code: p.bank_code || "", demo: p.demo === "oui", google_emails: splitEmails(p.google_emails), verifie: p.verifie || "",
 });
 function makeCode(name) {
   const base = clean(name, 12).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "TSS";
@@ -565,6 +569,45 @@ export const handler = async (event) => {
       if (!isAdmin) return reply(401, { error: "bad_code" });
       const r = await completeEnrolment(data.session || {}, { demo: true });
       return reply(200, r);
+    }
+
+    /* ----- Création de compte entreprise (une étape) ----- */
+    if (path === "/partner/create" && method === "POST") {
+      const name = clean(data.name, 120), contact_name = clean(data.contact_name, 120), phone = clean(data.contact_phone, 40);
+      let email = clean(data.contact_email, 160).toLowerCase(), verifie = "non", google_email = "";
+      const g = data.credential ? await verifyGoogle(clean(data.credential, 4000)) : null;
+      if (g) { google_email = g.email; if (!email) email = g.email; verifie = "google"; }
+      if (!name || !validEmail(email)) return reply(400, { error: "missing" });
+      const all = await listPartners();
+      if (all.some((p) => p.active !== "non" && ((p.contact_email || "").toLowerCase() === email || splitEmails(p.google_emails).includes(email) || (google_email && splitEmails(p.google_emails).includes(google_email))))) return reply(409, { error: "email_exists" });
+      let pcode = makeCode(name); while (await getPartner(pcode)) pcode = makeCode(name);
+      const item = {
+        code: pcode, name, type: data.type === "association" ? "association" : "entreprise",
+        contact_name, contact_email: email, contact_phone: phone, billing_email: email,
+        stripe_customer_id: "", stripe_subscription_id: "",
+        bank_code: name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE",
+        demo: "non", google_emails: [email, google_email].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(","),
+        verifie, active: "oui", created_at: now(), source: "portail:creer",
+      };
+      await putItem(T_PARTNERS, item);
+      await telegram(`Portail TSS — nouveau compte entreprise : ${name} (${contact_name || "?"}, ${email}, ${phone || "sans tél."}) · vérifié : ${verifie} · code ${pcode}`, item);
+      return reply(200, { ok: true, role: "partner", code: pcode, partner: publicPartner(item) });
+    }
+    if (path === "/billing/checkout" && method === "POST") {
+      const p0 = await getPartner(code);
+      if (!p0) return reply(401, { error: "bad_code" });
+      if (p0.stripe_subscription_id) { const url = await stripePortalLink(p0); return reply(200, { ok: true, url, deja: true }); }
+      const members = await listMembers(p0.code);
+      const qty = Math.max(1, members.filter((m) => m.status === "actif").length);
+      const params = {
+        mode: "subscription", "line_items[0][price]": STRIPE_PRICE, "line_items[0][quantity]": String(qty),
+        client_reference_id: p0.code, success_url: "https://truckstopsante.com/bienvenue/?session_id={CHECKOUT_SESSION_ID}", cancel_url: "https://truckstopsante.com/portail/tableau.html",
+        "metadata[partner_code]": p0.code, locale: "fr-CA", "phone_number_collection[enabled]": "true",
+        "custom_fields[0][key]": "entreprise", "custom_fields[0][label][type]": "custom", "custom_fields[0][label][custom]": "Nom de l'entreprise", "custom_fields[0][type]": "text",
+      };
+      if (p0.stripe_customer_id) params.customer = p0.stripe_customer_id; else if (p0.contact_email) params.customer_email = p0.contact_email;
+      try { const s = await stripe("POST", "/v1/checkout/sessions", params); return reply(200, { ok: true, url: s.url }); }
+      catch (e) { return reply(400, { error: "stripe", detail: e.message }); }
     }
 
     /* ----- Espace membre (chauffeurs) : Google, puis vérification contre la liste fournie par la compagnie ----- */

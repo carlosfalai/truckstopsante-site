@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Truck Stop Santé — Créer mon compte entreprise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portail.css">
+    <style>
+        .gwrap { display: flex; justify-content: center; margin: 4px 0 10px; min-height: 44px; }
+        .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; margin: 6px 0 12px; }
+        .sep::before, .sep::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+        form input, form select { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .login { max-width: 520px; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Portail entreprise</div></header>
+    <div class="login-wrap">
+        <div class="login">
+            <h1>Créer mon compte entreprise</h1>
+            <p class="sub">Une étape. Votre code d’accès vous est donné tout de suite et reste dans votre tableau de bord.</p>
+            <div class="gwrap" id="gbtn" hidden></div>
+            <div class="sep" id="gsep" hidden>ou remplissez le formulaire</div>
+            <form id="form">
+                <input type="text" id="name" placeholder="Nom de l’entreprise ou de l’association" required>
+                <select id="type"><option value="entreprise">Entreprise</option><option value="association">Association</option></select>
+                <input type="text" id="contact_name" placeholder="Votre nom (personne-ressource)" autocomplete="name">
+                <input type="email" id="email" placeholder="Votre courriel (servira aussi à la connexion Google)" autocomplete="email" required>
+                <input type="tel" id="phone" placeholder="Votre cellulaire" autocomplete="tel">
+                <button class="btn" type="submit" id="go" style="width:100%;justify-content:center">Créer mon compte</button>
+            </form>
+            <p class="hint" id="msg" style="min-height:1.4em;margin-top:12px"></p>
+            <div class="or">Déjà un compte ? <a href="index.html">Connexion</a></div>
+            <p class="fine">Identité et coordonnées seulement, jamais de données de santé (Loi 25). Le paiement par carte s’active depuis votre tableau de bord, 8 $ par personne couverte par mois.</p>
+        </div>
+    </div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+    (function () {
+        var msg = document.getElementById("msg"), go = document.getElementById("go"), credential = "";
+        function create(extra) {
+            var body = Object.assign({ name: document.getElementById("name").value.trim(), type: document.getElementById("type").value, contact_name: document.getElementById("contact_name").value.trim(), contact_email: document.getElementById("email").value.trim(), contact_phone: document.getElementById("phone").value.trim(), credential: credential }, extra || {});
+            if (!body.name) { msg.textContent = "Le nom de l’entreprise est requis."; document.getElementById("name").focus(); return; }
+            if (!body.contact_email) { msg.textContent = "Le courriel est requis."; document.getElementById("email").focus(); return; }
+            go.disabled = true; msg.textContent = "Création du compte…";
+            fetch(TSS.API + "/partner/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (!j.ok) { go.disabled = false; msg.textContent = j.error === "email_exists" ? "Un compte existe déjà avec ce courriel : entrez avec Google sur la page de connexion." : "Création impossible pour le moment."; return; }
+                    TSS.saveSession({ code: j.code, role: "partner", partner: j.partner, at: Date.now() }, true);
+                    window.location.href = "tableau.html";
+                })
+                .catch(function () { go.disabled = false; msg.textContent = "Connexion impossible pour le moment. Réessayez."; });
+        }
+        document.getElementById("form").addEventListener("submit", function (e) { e.preventDefault(); create(); });
+        // Google: prefills the contact and links the Google email to the new account (verified)
+        window.onGoogleCredential = function (resp) {
+            credential = resp && resp.credential || "";
+            try {
+                var payload = JSON.parse(atob(credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+                if (payload.email && !document.getElementById("email").value) document.getElementById("email").value = payload.email;
+                if (payload.name && !document.getElementById("contact_name").value) document.getElementById("contact_name").value = payload.name;
+            } catch (e) {}
+            msg.textContent = "Compte Google reconnu. Complétez le nom de l’entreprise et cliquez sur Créer mon compte.";
+            document.getElementById("name").focus();
+        };
+        if (window.TSS_GOOGLE_CLIENT_ID) {
+            var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = function () {
+                google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
+                var host = document.getElementById("gbtn"); host.hidden = false; document.getElementById("gsep").hidden = false;
+                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "continue_with", locale: "fr_CA", width: 320 });
+            };
+            document.head.appendChild(sc);
+        }
+    })();
+    </script>
+</body>
+</html>
