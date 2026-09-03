@@ -43,6 +43,8 @@ if (!TG_TOKEN) console.log("avertissement : aucun jeton Telegram (CARLOS_CLAUDE_
 const spruceSrc = readFileSync(HOME + "/spruce-invite-today.js", "utf8");
 const SPRUCE_AUTH = (spruceSrc.match(/SPRUCE_AUTH = "([^"]+)"/) || [])[1] || "";
 if (!SPRUCE_AUTH) throw new Error("SPRUCE_AUTH introuvable dans spruce-invite-today.js");
+const SPRUCE_INTERNAL_ENDPOINT_ID = (spruceSrc.match(/INTERNAL_ENDPOINT_ID = "([^"]+)"/) || [])[1] || "";
+if (!SPRUCE_INTERNAL_ENDPOINT_ID) throw new Error("INTERNAL_ENDPOINT_ID introuvable dans spruce-invite-today.js");
 
 const lambda = new LambdaClient({ region: REGION });
 const db = new DynamoDBClient({ region: REGION });
@@ -89,7 +91,7 @@ const zip = readFileSync(zipPath);
 const Variables = {
   ADMIN_CODE: adminCode, STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY, STRIPE_PRICE_ID,
   TELEGRAM_BOT_TOKEN: TG_TOKEN, TELEGRAM_CHAT_ID: "1889374592",
-  SPRUCE_AUTH, AUTO_INVITE: env.TSS_PORTAIL_AUTO_INVITE || "oui",
+  SPRUCE_AUTH, SPRUCE_INTERNAL_ENDPOINT_ID, AUTO_INVITE: env.TSS_PORTAIL_AUTO_INVITE || "oui",
     GOOGLE_CLIENT_ID: env.TSS_GOOGLE_CLIENT_ID || "",
     ADMIN_GOOGLE_EMAILS: env.TSS_ADMIN_GOOGLE_EMAILS || "cff@centremedicalfont.ca,info@centremedicalfont.ca",
 };

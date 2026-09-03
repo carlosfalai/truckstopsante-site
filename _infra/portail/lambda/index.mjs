@@ -18,7 +18,8 @@ const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_PRICE = process.env.STRIPE_PRICE_ID || "";
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TG_CHAT = process.env.TELEGRAM_CHAT_ID || "";
-const SPRUCE_AUTH = process.env.SPRUCE_AUTH || ""; // "Basic …" — même valeur que spruce-invite-today.js
+const SPRUCE_AUTH = process.env.SPRUCE_AUTH || "";
+const SPRUCE_INTERNAL_ENDPOINT_ID = process.env.SPRUCE_INTERNAL_ENDPOINT_ID || ""; // ligne Spruce de la clinique (même valeur que spruce-invite-today.js) // "Basic …" — même valeur que spruce-invite-today.js
 const AUTO_INVITE = (process.env.AUTO_INVITE || "oui") === "oui";
 const COVERAGES = ["indeterminee", "3", "6", "12"];
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
@@ -225,14 +226,20 @@ async function financeSnapshot() {
   const months = [];
   for (let i = 5; i >= 0; i--) { const d = new Date(Date.UTC(now_.getUTCFullYear(), now_.getUTCMonth() - i, 1)); months.push(d.toISOString().slice(0, 7)); }
   const since = Math.floor(Date.UTC(now_.getUTCFullYear(), now_.getUTCMonth() - 5, 1) / 1000);
-  const charges = await stripeListAll("/v1/charges", { "created[gte]": String(since) });
+  // Only Truck Stop Santé products count (same Stripe account as other projects).
+  const products = await stripeListAll("/v1/products", { active: "true" });
+  const tss = new Set(products.filter((p) => /truck\s*stop\s*sant/i.test(p.name || "")).map((p) => p.id));
+  const isTss = (priceOrLine) => { const pr = priceOrLine?.price || priceOrLine; const pid = pr?.product && (typeof pr.product === "object" ? pr.product.id : pr.product); return pid ? tss.has(pid) : false; };
+  const invoices = await stripeListAll("/v1/invoices", { status: "paid", "created[gte]": String(since) });
   const parMois = {}; for (const m of months) parMois[m] = { brut: 0, rembourse: 0, net: 0, n: 0 };
-  for (const c of charges) {
-    if (!c.paid || c.status !== "succeeded") continue;
-    const m = new Date(c.created * 1000).toISOString().slice(0, 7); if (!parMois[m]) continue;
-    parMois[m].brut += c.amount; parMois[m].rembourse += c.amount_refunded || 0; parMois[m].net += c.amount - (c.amount_refunded || 0); parMois[m].n += 1;
+  for (const inv of invoices) {
+    if (!(inv.lines?.data || []).some(isTss)) continue;
+    const paidAt = inv.status_transitions?.paid_at || inv.created;
+    const m = new Date(paidAt * 1000).toISOString().slice(0, 7); if (!parMois[m]) continue;
+    const refunded = 0;
+    parMois[m].brut += inv.amount_paid || 0; parMois[m].rembourse += refunded; parMois[m].net += (inv.amount_paid || 0) - refunded; parMois[m].n += 1;
   }
-  const subs = await stripeListAll("/v1/subscriptions", { status: "active", "expand[]": "data.customer" });
+  const subs = (await stripeListAll("/v1/subscriptions", { status: "active", "expand[]": "data.customer" })).filter((sub) => (sub.items?.data || []).some(isTss));
   const abonnements = subs.map((sub) => {
     const it = sub.items?.data?.[0]; const unit = it?.price?.unit_amount || 0; const q = it?.quantity || 0;
     const cust = sub.customer && typeof sub.customer === "object" ? sub.customer : {};
@@ -336,10 +343,10 @@ async function spruceInvite(m) {
   const results = [];
   for (const dest of [...(contact.phoneNumbers || []).slice(0, 1), ...(contact.emailAddresses || []).slice(0, 1)]) {
     if (!dest.id) continue;
-    const ir = await spruce("POST", `/v1/contacts/${contact.id}/invite`, { destinationId: dest.id });
+    const ir = await spruce("POST", `/v1/contacts/${contact.id}/invite`, { destinationId: dest.id, internalEndpointId: SPRUCE_INTERNAL_ENDPOINT_ID });
     results.push(ir.s);
   }
-  const ok = results.some((s) => s === 200 || s === 201);
+  const ok = results.some((s) => s === 200 || s === 201 || s === 204);
   return ok ? { statut: "invite", detail: "texto + courriel envoyés", contact_id: contact.id } : { statut: "erreur", detail: "invitation HTTP " + results.join("/") };
 }
 
@@ -527,7 +534,7 @@ export const handler = async (event) => {
     /* ----- Admin : vue globale ----- */
     if (path === "/admin/state" && method === "GET") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
-      const partners = await listPartners();
+      const partners = (await listPartners()).filter((p) => p.active !== "non");
       const allCodes = (await scanAll(T_MEMBERS)).filter((x) => x.kind === "code");
       const out = [];
       for (const p of partners) {
