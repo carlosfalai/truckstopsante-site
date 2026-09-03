@@ -215,6 +215,7 @@
                 google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup", hosted_domain: "centremedicalfont.ca" });
                 google.accounts.id.renderButton(document.getElementById("gbtn"), { theme: "filled_blue", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
             };
+            sc.onerror = function () { msg.textContent = "La connexion Google n’a pas pu se charger. Vérifiez votre connexion ou désactivez le bloqueur de publicité, puis rechargez la page. Le code administrateur fonctionne quand même."; };
             document.head.appendChild(sc);
         }
         load();

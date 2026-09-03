@@ -47,3 +47,22 @@ textarea:focus { outline: none; border-color: var(--amber); }
 .steps .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
 .steps .dot.on { background: var(--amber); }
 [hidden] { display: none !important; }
+
+/* --- mobile (audit 2026-09-03) --- */
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+  main { padding: 20px 14px 40px; }
+  header.top { padding: 12px 16px; }
+  .login { padding: 28px 20px; }
+  form.new { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .card { overflow-x: auto; }
+  .card table { min-width: 640px; }
+  .hint, .sub, .fine { overflow-wrap: anywhere; }
+  h1 { font-size: 1.8rem; }
+}
+@media (max-width: 520px) {
+  .grid { grid-template-columns: 1fr; }
+  .row .btn { width: 100%; justify-content: center; }
+}

@@ -45,7 +45,7 @@
             </div>
             <table style="margin-top: 16px;">
                 <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th>Codes</th><th></th></tr></thead>
-                <tbody id="rows"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
+                <tbody id="rows"><tr><td colspan="7" class="empty">Chargement…</td></tr></tbody>
             </table>
             <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
         </div>
@@ -81,7 +81,7 @@
             document.getElementById("b-rest").textContent = bk.restantes; document.getElementById("b-mois").textContent = "+" + bk.mensuel; document.getElementById("b-acc").textContent = bk.accumulees; document.getElementById("b-emis").textContent = bk.emis;
             var tb = document.getElementById("rows"); tb.innerHTML = "";
             var live = ms.filter(function (m) { return m.status !== "retire"; });
-            if (!live.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Aucune personne couverte pour l’instant. Cliquez sur « Ajouter des personnes ».</td></tr>'; return; }
+            if (!live.length) { tb.innerHTML = '<tr><td colspan="7" class="empty">Aucune personne couverte pour l’instant. Cliquez sur « Ajouter des personnes ».</td></tr>'; return; }
             var norm = function (s) { return String(s || "").toLowerCase().replace(/[^a-z0-9À-ſ]/g, ""); };
             var principals = live.filter(function (m) { return !m.family_of; });
             var orphans = live.filter(function (m) { return m.family_of && !principals.some(function (p) { return norm(p.first_name + p.last_name) === norm(m.family_of); }); });
