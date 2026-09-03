@@ -29,6 +29,13 @@
     <main>
         <h1 id="h1">Mon entreprise</h1>
         <p class="sub">Votre couverture santé en un coup d’œil. La clinique vous facture 8 $ par personne couverte, par mois. Vos gens ne paient jamais rien.</p>
+        <div class="card" id="account" style="margin-bottom:18px">
+            <div class="row" style="justify-content: space-between; align-items: flex-start;">
+                <div><h2 style="margin:0 0 6px">Mon compte</h2><div class="hint" id="acc-contact" style="margin:0"></div><div class="hint" id="acc-google" style="margin:4px 0 0"></div></div>
+                <div style="text-align:right"><div class="hint" style="margin:0 0 4px">Votre code d’accès</div><span class="code" id="acc-code" style="font-size:1.3rem">–</span></div>
+            </div>
+            <div class="row" style="margin-top:12px" id="acc-pay"></div>
+        </div>
         <div class="grid">
             <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber" id="s-actifs">–</div><div class="d" id="s-montant"></div></div>
             <div class="stat"><div class="k">Ajoutées ce mois-ci</div><div class="v" id="s-mois">–</div><div class="d" id="s-mois-d"></div></div>
@@ -69,6 +76,13 @@
             var p = state.partner, r = state.resume, ms = state.members;
             document.getElementById("pname").textContent = p.name; document.getElementById("h1").textContent = p.name;
             document.getElementById("pav").textContent = (p.name || "?").replace(/[^A-Za-z0-9 ]/g, "").split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase();
+            document.getElementById("acc-code").textContent = p.code;
+            document.getElementById("acc-contact").textContent = (p.contact_name ? p.contact_name + " · " : "") + (p.contact_email || "");
+            document.getElementById("acc-google").textContent = "Connexion Google : " + ((p.google_emails && p.google_emails.length) ? p.google_emails.join(", ") : "aucun courriel lié");
+            var pay = document.getElementById("acc-pay");
+            pay.innerHTML = p.stripe_subscription_id ? '<span class="tag ok">Paiement actif</span><button class="btn secondary" id="acc-portal" style="font:inherit">Facture et carte</button>' : '<span class="tag wait">Paiement à activer</span><button class="btn" id="acc-checkout" style="font:inherit">Activer le paiement par carte (8 $ / personne / mois)</button><span class="hint" style="margin:0">Vos gens sont couverts dès maintenant; la facture suit le nombre de personnes.</span>';
+            var co = document.getElementById("acc-checkout"); if (co) co.addEventListener("click", function () { co.disabled = true; TSS.api("/billing/checkout", {}).then(function (j) { if (j.ok && j.url) window.location.href = j.url; else { say("Paiement indisponible pour le moment."); co.disabled = false; } }); });
+            var po = document.getElementById("acc-portal"); if (po) po.addEventListener("click", function () { TSS.api("/billing/portal", {}).then(function (j) { if (j.ok && j.url) window.location.href = j.url; else say("Portail Stripe indisponible."); }); });
             document.getElementById("s-actifs").textContent = r.actifs;
             document.getElementById("s-montant").textContent = r.montant + " $/mois" + (r.pause ? " · " + r.pause + " en pause" : "");
             document.getElementById("s-mois").textContent = r.ajouts_mois || 0;
