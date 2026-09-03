@@ -96,6 +96,7 @@
                 var host = document.getElementById("gbtn"); host.hidden = false; document.getElementById("gsep").hidden = false;
                 google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
             };
+            sc.onerror = function () { msg.textContent = "La connexion Google n’a pas pu se charger. Vérifiez votre connexion ou désactivez le bloqueur de publicité, puis rechargez la page. Votre code d’accès fonctionne quand même."; };
             document.head.appendChild(sc);
         }
     })();

@@ -66,7 +66,7 @@
         <div class="card">
             <h2>Comment votre proche l’utilise</h2>
             <ol class="hint" style="margin:0;padding-left:20px;line-height:1.7">
-                <li>Il ouvre le lien Spruce de la clinique : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a> (ou passe par m28.ca).</li>
+                <li>Il ouvre le lien Spruce de la clinique : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a>.</li>
                 <li>Il écrit au médecin avec son code de consultation.</li>
                 <li>La clinique retire une consultation de la banque de votre compagnie. Personne d’autre n’est informé.</li>
             </ol>
@@ -101,7 +101,7 @@
         function render() {
             var m = state.membre, e = state.entreprise, b = state.banque;
             document.getElementById("h1").textContent = "Bonjour " + m.first_name;
-            document.getElementById("sub").textContent = "Couvert par " + e.name + ". Votre médecin est à un texto : " + "spruce.care/centremdicalfont";
+            document.getElementById("sub").textContent = "Couvert par " + e.name + ". Votre médecin est sur Spruce : spruce.care/centremdicalfont";
             document.getElementById("av").textContent = (m.first_name[0] || "") + (m.last_name[0] || "");
             var st = sinceText(m.created_at); document.getElementById("since").textContent = st.v; document.getElementById("since-d").textContent = st.d;
             document.getElementById("rest").textContent = b.restantes;
@@ -172,6 +172,7 @@
                 google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
                 google.accounts.id.renderButton(document.getElementById("gbtn"), { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
             };
+            sc.onerror = function () { msg.textContent = "La connexion Google n’a pas pu se charger. Vérifiez votre connexion ou désactivez le bloqueur de publicité, puis rechargez la page."; };
             document.head.appendChild(sc);
         } else {
             document.getElementById("gbtn").innerHTML = '<span class="hint">La connexion Google s’active sous peu.</span>';
