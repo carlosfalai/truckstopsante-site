@@ -535,12 +535,13 @@ export const handler = async (event) => {
     if (path === "/admin/state" && method === "GET") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
       const partners = (await listPartners()).filter((p) => p.active !== "non");
+      const demoCodes = new Set(partners.filter((p) => p.demo === "oui").map((p) => p.code));
       const allCodes = (await scanAll(T_MEMBERS)).filter((x) => x.kind === "code");
       const out = [];
       for (const p of partners) {
         const members = await listMembers(p.code);
         const codes = allCodes.filter((c) => c.partner_code === p.code).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
-        const rachats = allCodes.filter((c) => c.redeemed_by === p.code);
+        const rachats = allCodes.filter((c) => c.redeemed_by === p.code && !demoCodes.has(c.partner_code));
         out.push({ ...publicPartner(p), active: p.active !== "non", banque_bonus: parseInt(p.banque_bonus, 10) || 0, banque_ajust: parseInt(p.banque_ajust, 10) || 0, banque: await bankOf(p, members, codes), codes: codes.map(publicCode), rachats: rachats.length, rachats_mois: rachats.filter((c) => (c.used_at || "").startsWith(now().slice(0, 7))).length, resume: summary(members, null, true), members: members.map((m) => publicMember(m, true)) });
       }
       return reply(200, { ok: true, partners: out, prix: PRIX });
