@@ -93,6 +93,7 @@ const Variables = {
   TELEGRAM_BOT_TOKEN: TG_TOKEN, TELEGRAM_CHAT_ID: "1889374592",
   SPRUCE_AUTH, SPRUCE_INTERNAL_ENDPOINT_ID, AUTO_INVITE: env.TSS_PORTAIL_AUTO_INVITE || "oui",
     GOOGLE_CLIENT_ID: env.TSS_GOOGLE_CLIENT_ID || "",
+    STRIPE_WEBHOOK_SECRET: env.TSS_STRIPE_WEBHOOK_SECRET || "",
     ADMIN_GOOGLE_EMAILS: env.TSS_ADMIN_GOOGLE_EMAILS || "cff@centremedicalfont.ca,info@centremedicalfont.ca",
 };
 let exists = true;

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Truck Stop Santé — Bienvenue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/portail/portail.css">
+    <style>
+        main { max-width: 860px; }
+        .big { font-family: "Barlow Condensed", sans-serif; font-size: 2.4rem; letter-spacing: 2px; color: var(--navy); background: #FFF7E6; border: 2px dashed #F5A623; border-radius: 12px; padding: 10px 18px; display: inline-block; }
+        .step { display: flex; gap: 14px; align-items: flex-start; margin: 14px 0; }
+        .step b.n { flex: 0 0 34px; height: 34px; border-radius: 50%; background: var(--navy); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-family: "Barlow Condensed", sans-serif; font-size: 1.2rem; }
+        .muted { color: var(--muted); }
+        .spruce { background: #ECFDF3; border: 1px solid #ABEFC6; border-radius: 12px; padding: 14px 16px; }
+        .wait { background: #F6F8FB; border: 1px solid var(--line); border-radius: 12px; padding: 18px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Bienvenue</div></header>
+    <main>
+        <div class="wait" id="wait"><h1>Merci, votre paiement est reçu.</h1><p class="sub">On prépare votre accès… quelques secondes.</p></div>
+
+        <div id="done" hidden>
+            <h1 id="h1">Bienvenue</h1>
+            <p class="sub">Votre couverture est active dès maintenant. Voici les deux choses à faire, dans cet ordre.</p>
+
+            <div class="card spruce">
+                <div class="step"><b class="n">1</b><div><b>Votre médecin, tout de suite : ouvrez l’invitation Spruce.</b><p class="hint" id="sprucemsg" style="margin:6px 0 0"></p><p class="hint" style="margin:6px 0 0">Pas reçue ? Le lien direct : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a>. Créez votre compte en une minute et écrivez au médecin quand vous voulez.</p></div></div>
+            </div>
+
+            <div class="card">
+                <div class="step"><b class="n">2</b><div><b>Votre portail entreprise.</b><p class="hint" style="margin:6px 0 10px">Gardez ce code : c’est votre clé. Vous pouvez aussi entrer avec le compte Google de l’adresse utilisée pour payer.</p><div class="big" id="code">–</div><div class="row" style="margin-top:14px"><button class="btn" id="open">Ouvrir mon portail</button><a class="btn secondary" href="/portail/">Page de connexion</a></div><p class="hint" style="margin-top:10px">Dans le portail : ajoutez vos chauffeurs ou votre famille (18 ans et plus) en collant leur nom, cellulaire et courriel, 8 $ par personne par mois. Chaque personne ajoutée reçoit son invitation Spruce par texto. Votre facture suit automatiquement.</p></div></div>
+            </div>
+            <p class="fine">Une confirmation vous a été envoyée par Stripe. Question ? cff@centremedicalfont.ca</p>
+        </div>
+
+        <div id="err" hidden class="card"><h2>On n’a pas pu terminer automatiquement</h2><p class="hint" id="errmsg"></p><p class="hint">Votre paiement est bien passé. Écrivez à cff@centremedicalfont.ca avec le nom de votre entreprise : votre accès vous sera envoyé dans la journée.</p></div>
+    </main>
+    <script src="/portail/config.js"></script>
+    <script src="/portail/app.js"></script>
+    <script>
+    (function () {
+        var sid = new URLSearchParams(location.search).get("session_id") || "";
+        var tries = 0;
+        function fail(m) { document.getElementById("wait").hidden = true; document.getElementById("err").hidden = false; document.getElementById("errmsg").textContent = m || ""; }
+        function show(j) {
+            document.getElementById("wait").hidden = true; document.getElementById("done").hidden = false;
+            document.getElementById("h1").textContent = "Bienvenue, " + j.partner.name;
+            document.getElementById("code").textContent = j.partner.code;
+            var m = j.member;
+            document.getElementById("sprucemsg").textContent = m ? (m.first_name + " " + m.last_name + " : invitation envoyée par texto au " + TSS.fmtPhone(m.phone) + " et par courriel à " + m.email + ".") : "Ajoutez votre première personne dans le portail : son invitation Spruce part aussitôt.";
+            document.getElementById("open").addEventListener("click", function () { TSS.saveSession({ code: j.partner.code, role: "partner", partner: j.partner, at: Date.now() }, true); window.location.href = "/portail/tableau.html"; });
+        }
+        function go() {
+            if (!sid) { fail("Aucun identifiant de paiement dans l’adresse."); return; }
+            fetch(TSS.API + "/enrol/complete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: sid }) })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (j.ok) { show(j); return; }
+                    if (j.error === "not_paid" && tries++ < 6) { setTimeout(go, 3000); return; }
+                    fail(j.error === "unknown_session" ? "Paiement introuvable." : "Erreur : " + (j.error || ""));
+                })
+                .catch(function () { if (tries++ < 6) setTimeout(go, 3000); else fail("Connexion impossible."); });
+        }
+        go();
+    })();
+    </script>
+</body>
+</html>
