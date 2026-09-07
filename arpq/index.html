@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Accès réservé — Truck Stop Santé</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/portail/portail.css">
+    <style>
+        .login input#code { text-align: center; font-family: "Barlow Condensed", sans-serif; font-size: 2rem; letter-spacing: 10px; }
+        .lock { width: 44px; height: 44px; border-radius: 50%; background: var(--navy); color: #F5A623; display: inline-flex; align-items: center; justify-content: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Accès réservé</div></header>
+    <div class="login-wrap">
+        <div class="login">
+            <div class="lock">TSS</div>
+            <h1>Page privée</h1>
+            <p class="sub">Cette page est réservée à un partenaire. Entrez le code qui vous a été remis.</p>
+            <form id="form">
+                <input type="password" id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="••••" required>
+                <button class="btn" type="submit" id="go" style="width:100%;justify-content:center;margin-top:10px">Ouvrir</button>
+            </form>
+            <p class="hint" id="msg" style="min-height:1.4em;margin-top:12px"></p>
+            <p class="fine">Le contenu est chiffré et n’est déverrouillé que dans votre navigateur, avec votre code.</p>
+        </div>
+    </div>
+    <script>
+    (function () {
+        var SALT = "truckstopsante.com/arpq", ITER = 310000, KEY = "tss_arpq_code";
+        var msg = document.getElementById("msg"), go = document.getElementById("go");
+        function deriveKey(code) {
+            var enc = new TextEncoder();
+            return crypto.subtle.importKey("raw", enc.encode(code), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+                return crypto.subtle.deriveKey({ name: "PBKDF2", salt: enc.encode(SALT), iterations: ITER, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+            });
+        }
+        function decrypt(key, buf) { var u = new Uint8Array(buf); return crypto.subtle.decrypt({ name: "AES-GCM", iv: u.slice(0, 12) }, key, u.slice(12)); }
+        function helper(code) {
+            return "<script>(function(){var SALT=" + JSON.stringify(SALT) + ",ITER=" + ITER + ",code=" + JSON.stringify(code) + ",keyP=null;" +
+                "function key(){if(!keyP){var e=new TextEncoder();keyP=crypto.subtle.importKey('raw',e.encode(code),'PBKDF2',false,['deriveKey']).then(function(b){return crypto.subtle.deriveKey({name:'PBKDF2',salt:e.encode(SALT),iterations:ITER,hash:'SHA-256'},b,{name:'AES-GCM',length:256},false,['decrypt']);});}return keyP;}" +
+                "var cache={};function blob(url,type){if(cache[url])return cache[url];cache[url]=fetch(url).then(function(r){return r.arrayBuffer();}).then(function(buf){return key().then(function(k){var u=new Uint8Array(buf);return crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},k,u.slice(12));});}).then(function(plain){return URL.createObjectURL(new Blob([plain],{type:type||(/\\.mp4/.test(url)?'video/mp4':'application/octet-stream')}));});return cache[url];}" +
+                "window.ARPQ={blob:blob};" +
+                "document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[data-enc]');if(!a)return;e.preventDefault();var t=a.textContent;a.textContent='Déverrouillage…';blob(a.getAttribute('data-enc'),a.getAttribute('data-type')).then(function(u){a.textContent=t;var l=document.createElement('a');l.href=u;l.download=a.getAttribute('data-name')||'fichier';l.target='_blank';document.body.appendChild(l);l.click();l.remove();}).catch(function(){a.textContent=t;alert('Fichier indisponible.');});});" +
+                "})();<\/script>";
+        }
+        function unlock(code, silent) {
+            go.disabled = true; if (!silent) msg.textContent = "Déverrouillage…";
+            var keyP = deriveKey(code);
+            Promise.all([keyP, fetch("/arpq/page.enc?v=" + Date.now()).then(function (r) { if (!r.ok) throw new Error("fetch"); return r.arrayBuffer(); })])
+                .then(function (r) { return decrypt(r[0], r[1]); })
+                .then(function (plain) {
+                    try { sessionStorage.setItem(KEY, code); } catch (e) {}
+                    var html = new TextDecoder().decode(plain).replace("<head>", "<head>" + helper(code));
+                    document.open(); document.write(html); document.close();
+                })
+                .catch(function () { go.disabled = false; msg.textContent = silent ? "" : "Code incorrect."; try { sessionStorage.removeItem(KEY); } catch (e) {} });
+        }
+        document.getElementById("form").addEventListener("submit", function (e) { e.preventDefault(); unlock(document.getElementById("code").value.trim(), false); });
+        var saved = null; try { saved = sessionStorage.getItem(KEY); } catch (e) {}
+        if (saved) unlock(saved, true);
+    })();
+    </script>
+</body>
+</html>
