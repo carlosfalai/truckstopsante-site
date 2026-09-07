@@ -475,7 +475,7 @@ async function checkoutForPartnerLocked(partner) {
   const params = {
     mode: "subscription", "line_items[0][price]": STRIPE_PRICE, "line_items[0][quantity]": String(quantity), client_reference_id: partner.code,
     success_url: "https://truckstopsante.com/bienvenue/?session_id={CHECKOUT_SESSION_ID}", cancel_url: "https://truckstopsante.com/portail/tableau.html",
-    "metadata[partner_code]": partner.code, locale: "fr-CA", "phone_number_collection[enabled]": "true",
+    "metadata[partner_code]": partner.code, locale: "fr-CA", "phone_number_collection[enabled]": "true", "adaptive_pricing[enabled]": "false",
     "custom_fields[0][key]": "entreprise", "custom_fields[0][label][type]": "custom", "custom_fields[0][label][custom]": "Nom de l'entreprise", "custom_fields[0][type]": "text",
   };
   if (partner.stripe_customer_id) params.customer = partner.stripe_customer_id; else if (partner.contact_email) params.customer_email = partner.contact_email;
