@@ -9,3 +9,9 @@ _infra/portail/lambda/legal-documents.json
 
 # plaintext sources of code-locked pages (never deploy)
 _private/
+
+# Local authoring and operational files must not be published to GitHub Pages.
+_scripts/
+/gen-with-gemini.cjs
+/screenshot-verify.cjs
+/dns-backup-*.json
