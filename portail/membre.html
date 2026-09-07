@@ -1,183 +1,115 @@
 <!DOCTYPE html>
 <html lang="fr-CA">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
-    <title>Truck Stop Santé — Espace membre</title>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="portail.css">
-    <style>
-        .gwrap { display: flex; justify-content: center; margin: 8px 0 14px; min-height: 44px; }
-        .link-box { background: #F6F8FB; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 12px; text-align: left; }
-        .link-box p { margin: 0 0 10px; font-size: 0.92rem; }
-        .link-box input { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
-        .hello { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .bigcode { font-family: "Barlow Condensed", sans-serif; font-size: 2.6rem; letter-spacing: 3px; color: var(--navy); background: #FFF7E6; border: 2px dashed var(--amber, #F59E0B); border-radius: 12px; padding: 12px 20px; display: inline-block; }
-        .share { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .mycodes span { display: inline-block; margin: 4px 8px 4px 0; padding: 4px 10px; border-radius: 8px; background: #F6F8FB; border: 1px solid var(--line); font-size: 0.9rem; }
-        .mycodes span.used { background: #ECFDF3; border-color: #ABEFC6; }
-        .off { background: #FFF4E5; border: 1px solid #FCD9A8; border-radius: 10px; padding: 12px 14px; color: #92400E; }
-        textarea.msg { width: 100%; box-sizing: border-box; min-height: 120px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 0.95rem; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Truck Stop Santé — Espace membre</title>
+<link rel="stylesheet" href="portail.css">
+<style>
+:root{--spacing-unit:4px;--radius-md:6px;--radius-lg:8px;--radius-xl:12px;--shadow-xs:0 1px 2px rgba(0,0,0,.05)}
+body{font-family:system-ui,sans-serif}main,.member-wrap{max-width:880px;margin:auto;padding:32px 24px}.login-wrap{min-height:0}.login{padding:32px}.gwrap{display:flex;justify-content:center;margin:16px 0}.legal-nav{padding:16px 24px;text-align:center;font-size:.92rem}.legal-nav a{display:inline-block;margin:4px 10px;color:var(--navy)}.legal-text{max-width:72ch;line-height:1.65}.legal-text h3{margin-top:28px}.legal-text p{margin:10px 0 16px}.choice{display:flex;align-items:flex-start;gap:12px;margin:18px 0;line-height:1.5}.choice input{flex:0 0 auto;width:20px;height:20px;margin:3px 0 0;accent-color:var(--navy)}fieldset{padding:0;border:0;margin:20px 0}legend{font-weight:700}.signature{display:block;width:100%;max-width:480px;padding:12px;margin:8px 0 16px;border:1px solid var(--muted);border-radius:var(--radius-md);font:inherit}.btn:disabled{cursor:wait;opacity:.65}:focus-visible{outline:3px solid var(--navy);outline-offset:4px}.status{padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--bg);line-height:1.5}.hint,.sub,.fine{color:#475467}.receipt-row{padding:14px 0;border-bottom:1px solid var(--line)}.receipt-row p{margin:0 0 8px}.hello{display:flex;justify-content:space-between;gap:16px}.bigcode{font-size:1.7rem;letter-spacing:2px;padding:12px;border:2px dashed var(--amber);display:inline-block}.mycodes span{display:block;padding:8px 0}.share{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}.off{padding:14px;margin:14px 0;background:#FFF4E5;color:#92400E;border-radius:var(--radius-lg)}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.msg{min-height:120px}.assist{border-top:1px solid var(--line);padding-top:18px;margin-top:24px}
+h1,.card h2{font-family:inherit;line-height:1.3}
+@media(max-width:560px){header.top{padding:14px 16px;flex-wrap:wrap;gap:12px}.login{padding:24px 20px}main,.member-wrap{padding:24px 16px}.card{padding:20px 16px}.grid{grid-template-columns:1fr}h1{font-size:1.8rem}}
+</style>
 </head>
 <body>
-    <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Espace membre</span><button id="logout" hidden style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
-
-    <div class="login-wrap" id="loginView">
-        <div class="login">
-            <h1>Espace membre</h1>
-            <p class="sub">Pour les chauffeurs et employés couverts par leur compagnie ou leur association. Connectez-vous avec Google : on vous reconnaît à partir de la liste fournie par votre compagnie.</p>
-            <div class="gwrap" id="gbtn"></div>
-            <p class="hint" id="msg" style="min-height:1.4em"></p>
-            <div class="link-box" id="verifybox" hidden>
-                <p><b id="gemail"></b> n’est pas dans la liste de votre compagnie. Confirmez avec le cellulaire et le nom de famille que votre compagnie nous a donnés, une seule fois.</p>
-                <form id="verifyform">
-                    <input type="tel" id="vphone" placeholder="votre cellulaire (ex. 418 555-0199)" autocomplete="tel" required>
-                    <input type="text" id="vname" placeholder="votre nom de famille" autocomplete="family-name" required>
-                    <button class="btn" type="submit" id="vgo" style="width:100%;justify-content:center">Me reconnaître</button>
-                </form>
-            </div>
-            <p class="fine">Aucune donnée de santé ici : votre nom, votre cellulaire et votre courriel seulement. Votre compagnie ne voit jamais si vous avez consulté.</p>
-        </div>
-    </div>
-
-    <main id="appView" hidden>
-        <div class="hello"><div><h1 id="h1">Bonjour</h1><p class="sub" id="sub"></p></div><div class="av" id="av"></div></div>
-        <div class="grid">
-            <div class="stat"><div class="k">Couvert depuis</div><div class="v" id="since">–</div><div class="d" id="since-d"></div></div>
-            <div class="stat"><div class="k">Consultations gratuites</div><div class="v amber" id="rest">–</div><div class="d">disponibles dans la banque de votre compagnie, pour votre famille</div></div>
-        </div>
-
-        <div class="card">
-            <h2>Une consultation gratuite pour un proche</h2>
-            <p class="hint">Conjoint, conjointe, enfant, parent : générez un code et envoyez-le-lui. Un code = une consultation avec le médecin, sans abonnement. La banque de votre compagnie ne baisse que lorsque le médecin utilise le code.</p>
-            <div id="offbox" class="off" hidden>Votre compagnie n’a pas encore activé la génération de codes pour vous. Demandez-lui de l’activer dans son portail (colonne « Codes »).</div>
-            <div id="emptybox" class="off" hidden>La banque de votre compagnie est vide pour l’instant. Elle se remplit chaque mois : le code restera valide et sera couvert quand la banque aura des consultations.</div>
-            <div class="row" id="genrow"><button class="btn" id="gen">Générer un code pour un proche</button></div>
-            <div id="newcode" hidden style="margin-top:14px">
-                <div class="bigcode" id="codeval">–</div>
-                <p class="hint" style="margin:10px 0 4px">Envoyez ce message à votre proche (copiez-le ou textez-le) :</p>
-                <textarea class="msg" id="msgtext" readonly></textarea>
-                <div class="share"><a class="btn" id="smsbtn" href="#">Envoyer par texto</a><button class="btn secondary" id="copybtn">Copier le message</button><a class="btn secondary" id="mailbtn" href="#">Envoyer par courriel</a></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Comment votre proche l’utilise</h2>
-            <ol class="hint" style="margin:0;padding-left:20px;line-height:1.7">
-                <li>Il ouvre le lien Spruce de la clinique : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a> (ou passe par m28.ca).</li>
-                <li>Il écrit au médecin avec son code de consultation.</li>
-                <li>La clinique retire une consultation de la banque de votre compagnie. Personne d’autre n’est informé.</li>
-            </ol>
-        </div>
-
-        <div class="card">
-            <h2>Mes codes</h2>
-            <div class="mycodes" id="mycodes"><span class="muted">Aucun code généré pour l’instant.</span></div>
-        </div>
-    </main>
-    <div class="toast" id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;display:none"></div>
-
-    <script src="config.js"></script>
-    <script src="app.js"></script>
-    <script>
-    (function () {
-        var KEY = "tss_membre";
-        var API = window.TSS_API || "";
-        var toast = document.getElementById("toast"), msg = document.getElementById("msg");
-        function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
-        function token() { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
-        function post(path, body) { return fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }).then(function (r) { return r.json(); }); }
-        function show(view) { document.getElementById("loginView").hidden = view !== "login"; document.getElementById("appView").hidden = view !== "app"; document.getElementById("logout").hidden = view !== "app"; window.scrollTo(0, 0); }
-        var state = null, lastCredential = "";
-
-        function sinceText(created) {
-            if (!created) return { v: "–", d: "" };
-            var days = Math.max(0, Math.floor((Date.now() - new Date(created).getTime()) / 86400000)), months = Math.floor(days / 30.44), rest = Math.floor(days - months * 30.44);
-            var d = new Date(created).toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
-            return { v: months ? months + " mois" + (rest ? " " + rest + " j" : "") : (days ? days + " j" : "aujourd’hui"), d: "depuis le " + d };
-        }
-        function render() {
-            var m = state.membre, e = state.entreprise, b = state.banque;
-            document.getElementById("h1").textContent = "Bonjour " + m.first_name;
-            document.getElementById("sub").textContent = m.status === "actif" ? "Couvert par " + e.name + ". Votre médecin est à un texto : spruce.care/centremdicalfont" : m.status === "en_attente_paiement" ? "Inscription en attente de paiement ou d’activation par " + e.name + ". Votre couverture n’est pas encore active." : "Votre inscription auprès de " + e.name + " est " + (m.status === "pause" ? "en pause." : "inactive.");
-            document.getElementById("av").textContent = (m.first_name[0] || "") + (m.last_name[0] || "");
-            var st = sinceText(m.status === "en_attente_paiement" ? "" : (m.activated_at || m.created_at)); document.getElementById("since").textContent = st.v; document.getElementById("since-d").textContent = st.d;
-            document.getElementById("rest").textContent = b.restantes;
-            var can = m.status === "actif" && m.codes;
-            document.getElementById("offbox").hidden = !(m.status === "actif" && !m.codes);
-            document.getElementById("emptybox").hidden = !(can && b.restantes <= 0);
-            document.getElementById("genrow").hidden = !can;
-            var mc = document.getElementById("mycodes"); mc.innerHTML = "";
-            if (!state.mes_codes.length) mc.innerHTML = '<span class="muted">Aucun code généré pour l’instant.</span>';
-            state.mes_codes.forEach(function (c) { var s = document.createElement("span"); s.className = c.status === "utilise" ? "used" : ""; s.textContent = c.code + " · " + c.created_at.slice(0, 10) + (c.status === "utilise" ? " · utilisé" : " · à utiliser"); mc.appendChild(s); });
-        }
-        function load() {
-            var t = token(); if (!t) { show("login"); return; }
-            post("/membre/state", { token: t }).then(function (j) {
-                if (!j.ok) { try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {} show("login"); return; }
-                state = j; render(); show("app");
-            }).catch(function () { show("login"); msg.textContent = "Connexion impossible pour le moment."; });
-        }
-        function enter(j) { try { localStorage.setItem(KEY, j.token); } catch (e) { sessionStorage.setItem(KEY, j.token); } load(); }
-
-        window.onGoogleCredential = function (resp) {
-            lastCredential = resp && resp.credential; if (!lastCredential) return;
-            msg.textContent = "Vérification du compte Google…";
-            post("/membre/login", { credential: lastCredential }).then(function (j) {
-                if (j.ok) { enter(j); return; }
-                if (j.error === "unknown_member") { document.getElementById("gemail").textContent = j.email; document.getElementById("verifybox").hidden = false; msg.textContent = ""; document.getElementById("vphone").focus(); return; }
-                msg.textContent = "Compte Google refusé. Réessayez.";
-            }).catch(function () { msg.textContent = "Connexion impossible pour le moment."; });
-        };
-        document.getElementById("verifyform").addEventListener("submit", function (e) {
-            e.preventDefault();
-            var b = document.getElementById("vgo"); b.disabled = true; msg.textContent = "Vérification…";
-            post("/membre/verify", { credential: lastCredential, phone: document.getElementById("vphone").value, last_name: document.getElementById("vname").value }).then(function (j) {
-                b.disabled = false;
-                if (j.ok) { enter(j); return; }
-                msg.textContent = j.error === "no_match" ? "On ne trouve pas cette personne dans les listes reçues. Vérifiez le cellulaire (celui donné à votre compagnie) et le nom, ou écrivez-nous à cff@centremedicalfont.ca." : "Vérification impossible.";
-            }).catch(function () { b.disabled = false; msg.textContent = "Connexion impossible pour le moment."; });
-        });
-        document.getElementById("gen").addEventListener("click", function () {
-            var b = this; b.disabled = true; b.textContent = "Génération…";
-            post("/membre/code", { token: token() }).then(function (j) {
-                b.disabled = false; b.textContent = "Générer un autre code";
-                if (!j.ok) { say(j.error === "banque_vide" ? "La banque de votre compagnie est vide." : j.error === "codes_off" ? "Votre compagnie n’a pas activé les codes pour vous." : "Impossible pour le moment."); load(); return; }
-                var code = j.code.code;
-                document.getElementById("codeval").textContent = code;
-                var text = "Bonjour ! Tu as droit à une consultation gratuite avec mon médecin (Truck Stop Santé). Ton code : " + code + ". Ouvre https://spruce.care/centremdicalfont et écris au médecin avec ce code. C’est payé par ma compagnie, rien à débourser.";
-                document.getElementById("msgtext").value = text;
-                document.getElementById("smsbtn").href = "sms:?&body=" + encodeURIComponent(text);
-                document.getElementById("mailbtn").href = "mailto:?subject=" + encodeURIComponent("Consultation gratuite avec mon médecin") + "&body=" + encodeURIComponent(text);
-                document.getElementById("newcode").hidden = false;
-                state.banque.restantes = j.banque.restantes; state.mes_codes.unshift(j.code); render();
-                document.getElementById("newcode").hidden = false;
-            }).catch(function () { b.disabled = false; b.textContent = "Générer un code pour un proche"; say("Connexion impossible pour le moment."); });
-        });
-        document.getElementById("copybtn").addEventListener("click", function () {
-            var t = document.getElementById("msgtext"); t.select();
-            try { navigator.clipboard.writeText(t.value).then(function () { say("Message copié."); }); } catch (e) { document.execCommand("copy"); say("Message copié."); }
-        });
-        document.getElementById("logout").addEventListener("click", function () {
-            var t = token(); post("/membre/logout", { token: t }).catch(function () {});
-            try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {}
-            show("login");
-        });
-
-        if (window.TSS_GOOGLE_CLIENT_ID) {
-            var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
-            sc.onload = function () {
-                google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
-                google.accounts.id.renderButton(document.getElementById("gbtn"), { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
-            };
-            document.head.appendChild(sc);
-        } else {
-            document.getElementById("gbtn").innerHTML = '<span class="hint">La connexion Google s’active sous peu.</span>';
-        }
-        load();
-    })();
-    </script>
+<header class="top"><a class="brand" href="/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span>Espace membre</span><button class="btn secondary" id="logout" hidden>Quitter</button></div></header>
+<nav class="legal-nav" aria-label="Confidentialité et consentement"><a href="/confidentialite/">Avis de confidentialité</a><a href="/consentement/">Information sur la télémédecine</a><a href="mailto:cff@centremedicalfont.ca">Aide de la clinique</a></nav>
+<div class="login-wrap" id="loginView">
+<div class="login">
+<h1>Espace membre</h1>
+<p class="sub">Pour les personnes inscrites par leur entreprise ou leur association. Utilisez le compte Google associé à votre inscription.</p>
+<p class="fine">Avant la connexion, consultez notre <a href="/confidentialite/">avis de confidentialité</a>. Google intervient lorsque vous ouvrez son bouton de connexion. Le portail conserve votre session dans cet onglet jusqu’à votre déconnexion ou son expiration.</p>
+<button class="btn" id="loadGoogle" type="button">Ouvrir la connexion Google</button><div class="gwrap" id="gbtn"></div>
+<p class="hint" id="msg" role="status" aria-live="polite"></p>
+<div id="matchingHelp" class="status" hidden>Votre compte n’a pas pu être associé à une inscription. Contactez la clinique pour vérifier votre accès. N’envoyez pas de renseignements médicaux par courriel.</div>
+<p class="fine">L’organisation voit les renseignements nécessaires à l’inscription et à la facturation. Les échanges cliniques se font avec la clinique sur Spruce. Les détails sont expliqués dans l’avis de confidentialité.</p>
+</div></div>
+<section class="member-wrap" id="consentView" hidden aria-labelledby="consentTitle">
+<h1 id="consentTitle">Votre choix de télémédecine</h1>
+<p class="sub">Prenez le temps de lire, puis faites votre choix. Vous pouvez demander des explications ou une autre façon de recevoir les soins.</p>
+<p class="status" id="identity"></p><p class="hint" id="consentVersion"></p>
+<div class="card legal-text" id="medicalDocument"></div>
+<details class="card"><summary>Lire l’avis de confidentialité complet</summary><div class="legal-text" id="privacyDocument"></div><p><a href="/confidentialite/" target="_blank" rel="noopener">Ouvrir l’avis dans une autre page</a></p></details>
+<p class="status" id="previewNotice" hidden>Consultation administrative : aucune signature ni aucun retrait de consentement ne peut être fait au nom de cette personne.</p>
+<form id="consentForm" class="card" hidden>
+<fieldset id="acknowledgements"><legend>À confirmer séparément</legend></fieldset>
+<label for="typedName"><strong>Votre nom complet, à titre de signature électronique</strong></label>
+<input class="signature" id="typedName" name="typed_name" type="text" autocomplete="name" required minlength="2" maxlength="160" aria-describedby="signatureHelp">
+<p class="hint" id="signatureHelp">Cette signature atteste votre choix pour la télémédecine décrit ci-dessus. Elle ne remplace pas votre consentement à chaque soin et n’autorise pas une communication générale de votre dossier.</p>
+<button class="btn" id="sign" type="submit">Signer et enregistrer mon consentement</button>
+</form>
+<p id="consentMessage" role="status" aria-live="polite" class="hint"></p>
+<div class="assist"><a class="btn secondary" href="mailto:cff@centremedicalfont.ca?subject=Aide%20pour%20mon%20consentement">Demander des explications ou une autre modalité</a><button class="btn secondary" type="button" id="decline" style="margin-top:12px">Ne pas consentir maintenant et quitter</button><p class="fine">Pour une personne de moins de 14 ans, une personne représentée ou toute difficulté de compréhension, la clinique vérifie la situation avec vous. Le choix de la télémédecine demeure volontaire. Urgence : 9-1-1.</p></div>
+</section>
+<main id="appView" hidden>
+<div class="hello"><div><h1 id="h1">Bonjour</h1><p class="sub" id="sub"></p></div><div id="av" aria-hidden="true"></div></div>
+<div class="grid"><div class="stat"><div class="k">Couvert depuis</div><div class="v" id="since">–</div><div class="d" id="since-d"></div></div><div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="rest">–</div><div class="d">dans la banque de votre organisation</div></div></div>
+<div class="card"><h2>Une consultation pour un proche</h2><p class="hint">Un code permet d’utiliser une consultation de la banque de votre organisation. Votre proche choisit lui-même s’il souhaite consulter et communique directement avec la clinique.</p><div id="offbox" class="off" hidden>Votre organisation doit activer la génération de codes pour vous.</div><div id="emptybox" class="off" hidden>La banque de votre organisation est vide. Vérifiez la disponibilité avec la clinique avant d’utiliser un code.</div><div id="genrow"><button class="btn" id="gen">Générer un code pour un proche</button></div><div id="newcode" hidden style="margin-top:16px"><div class="bigcode" id="codeval"></div><label for="msgtext"><p>Message à transmettre à votre proche :</p></label><textarea class="msg" id="msgtext" readonly></textarea><div class="share"><a class="btn" id="smsbtn" href="#">Envoyer par texto</a><button class="btn secondary" id="copybtn">Copier le message</button><a class="btn secondary" id="mailbtn" href="#">Envoyer par courriel</a></div></div></div>
+<div class="card"><h2>Communiquer avec la clinique</h2><p>Les échanges cliniques se font sur <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener noreferrer">Spruce</a>. La clinique confirme que la télémédecine convient à votre situation. Vous pouvez lui poser des questions ou demander une autre modalité.</p><p class="hint">L’organisation voit le solde de sa banque. Les données d’utilisation et leurs destinataires sont décrits dans l’<a href="/confidentialite/">avis de confidentialité</a>.</p></div>
+<div class="card"><h2>Mes codes</h2><div class="mycodes" id="mycodes"></div></div>
+</main>
+<section class="member-wrap" id="receiptsView" hidden aria-labelledby="receiptsTitle"><div class="card"><h2 id="receiptsTitle">Mon consentement et mes copies</h2><p id="consentSummary"></p><p id="syncState" role="status"></p><div class="row"><button class="btn secondary" id="retrySync" hidden>Réessayer l’ajout au dossier</button><button class="btn secondary" id="refreshConsent">Actualiser le statut</button><button class="btn secondary" id="withdraw" hidden>Retirer mon consentement à la télémédecine</button></div><p class="fine">Le retrait concerne les utilisations futures de la télémédecine. Les copies déjà signées demeurent accessibles ici. Ce bouton n’annule pas l’abonnement payé par votre organisation; contactez la clinique pour toute question.</p><div id="receiptHistory"></div><p id="receiptMessage" class="hint" role="status" aria-live="polite"></p></div></section>
+<footer class="legal-nav"><a href="/confidentialite/">Confidentialité</a><a href="/consentement/">Télémédecine et consentement</a><a href="mailto:cff@centremedicalfont.ca">cff@centremedicalfont.ca</a></footer>
+<div id="toast" class="status" role="status" aria-live="polite" hidden style="position:fixed;bottom:16px;left:16px;right:16px;max-width:720px;margin:auto;background:white"></div>
+<script src="config.js"></script>
+<script>
+(function () {
+'use strict';
+var KEY='tss_membre', API=window.TSS_API||'', status=null, state=null, credential='', documentVersion='', documentIdentity='', acceptRequestId='', signing=false, reauth=false, googleLoaded=false;
+var el=function(id){return document.getElementById(id);};
+try{localStorage.removeItem(KEY);}catch(e){}
+function token(){try{return sessionStorage.getItem(KEY)||'';}catch(e){return '';}}
+function id(){return crypto.randomUUID();}
+function say(text){el('toast').textContent=text;el('toast').hidden=false;setTimeout(function(){el('toast').hidden=true;},6000);}
+function post(path,body){return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),cache:'no-store'}).then(function(r){return r.json().then(function(j){j.httpStatus=r.status;return j;});});}
+function clear(){try{sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);}catch(e){}credential='';status=null;state=null;el('consentForm').reset();el('typedName').value='';el('receiptHistory').replaceChildren();documentVersion='';documentIdentity='';acceptRequestId='';}
+function show(view){el('loginView').hidden=view!=='login';el('consentView').hidden=view!=='consent';el('appView').hidden=view!=='app';el('logout').hidden=!token();el('receiptsView').hidden=!token()||!status;}
+function logout(){var t=token();if(t)post('/membre/logout',{token:t}).catch(function(){});clear();show('login');el('msg').textContent='Vous êtes déconnecté.';}
+function date(value){if(!value)return '';var d=new Date(value);return isNaN(d.getTime())?'Date indisponible':d.toLocaleString('fr-CA',{dateStyle:'long',timeStyle:'short'});}
+function sectionText(host,part){host.replaceChildren();if(!part||!Array.isArray(part.sections))return false;if(part.title){var title=document.createElement('h2');title.textContent=part.title;host.appendChild(title);}part.sections.forEach(function(s){var section=document.createElement('section'),h=document.createElement('h3');h.textContent=s.heading;section.appendChild(h);(s.paragraphs||[]).forEach(function(text){var p=document.createElement('p');p.textContent=text;section.appendChild(p);});host.appendChild(section);});return true;}
+function renderDocument(j){
+ var doc=j.document;if(!doc||!doc.telemedicine||!Array.isArray(doc.telemedicine.sections)||!doc.privacy||!Array.isArray(doc.privacy.sections)||!j.document_hash||!j.member||!Array.isArray(doc.acknowledgements)||!doc.acknowledgements.length){el('consentForm').hidden=true;el('consentMessage').textContent='Le document complet ne peut pas être affiché. Ne signez pas; actualisez la page ou contactez la clinique.';return false;}
+ var identity=String(j.actor_sub||'')+':'+String(j.member.id||j.member.name);
+ if(documentVersion!==j.document_hash||documentIdentity!==identity){sectionText(el('medicalDocument'),doc.telemedicine);sectionText(el('privacyDocument'),doc.privacy);el('acknowledgements').replaceChildren();var legend=document.createElement('legend');legend.textContent='À confirmer séparément';el('acknowledgements').appendChild(legend);doc.acknowledgements.forEach(function(a){var label=document.createElement('label'),input=document.createElement('input'),text=document.createElement('span');label.className='choice';input.type='checkbox';input.required=true;input.dataset.ack=a.id;if(a.id==='self')input.id='selfAge';text.textContent=a.text;label.append(input,text);el('acknowledgements').appendChild(label);});el('typedName').value='';acceptRequestId=id();documentVersion=j.document_hash;documentIdentity=identity;}
+ el('consentVersion').textContent='Version du document : '+j.version;el('identity').textContent='Vous êtes connecté pour : '+j.member.name+'. Vérifiez votre identité avant de signer.';el('previewNotice').hidden=!j.admin_preview;el('consentForm').hidden=!j.can_sign||!!j.admin_preview;return true;
+}
+function renderReceipts(j){
+ var c=j.consent||{},history=j.history||[];el('consentSummary').textContent=c.accepted_at?(c.state==='withdrawn'?'Consentement retiré le '+date(c.withdrawn_at)+'. ':'Consentement enregistré le '+date(c.accepted_at)+'. ')+'Version '+c.version+'.'+(c.typed_name?' Signature : '+c.typed_name+'.':''):'Aucun consentement signé enregistré pour cette inscription.';
+ var withdrawal=el('withdrawalSyncState');if(!withdrawal){withdrawal=document.createElement('p');withdrawal.id='withdrawalSyncState';withdrawal.setAttribute('role','status');el('syncState').after(withdrawal);}withdrawal.hidden=c.state!=='withdrawn';withdrawal.textContent=c.state!=='withdrawn'?'':c.withdrawal_sync_status==='saved'?'Retrait — avis au dossier : enregistrement vérifié.':c.withdrawal_sync_status==='needs_review'?'Retrait — avis au dossier : vérification par la clinique nécessaire. Votre retrait est enregistré dans le portail.':'Retrait — avis au dossier : confirmation en attente. Votre retrait est enregistré dans le portail. Contactez la clinique pour convenir de la suite de vos soins.';
+ el('syncState').textContent=!c.receipt_id?'':c.sync_status==='saved'?'La copie a été ajoutée au dossier de la clinique et son enregistrement a été vérifié.':c.sync_status==='needs_review'?'La copie est conservée dans le portail. Son ajout au dossier doit être vérifié par la clinique.':c.sync_status==='failed'?'La copie est conservée dans le portail. Son ajout au dossier n’est pas confirmé.':'La copie est conservée dans le portail. Son ajout au dossier de la clinique est en attente de confirmation.';
+ el('retrySync').hidden=!c.receipt_id||j.admin_preview||!c.can_retry_sync;el('withdraw').hidden=!c.receipt_id||c.state!=='accepted'||!j.can_sign||j.admin_preview;
+ var host=el('receiptHistory');host.replaceChildren();history.forEach(function(r){var row=document.createElement('div'),p=document.createElement('p'),button=document.createElement('button');row.className='receipt-row';p.textContent='Signé le '+date(r.accepted_at)+' · version '+r.version+(r.withdrawn_at?' · retrait le '+date(r.withdrawn_at):'');button.className='btn secondary';button.type='button';button.textContent='Télécharger cette copie PDF';button.addEventListener('click',function(){download(r.receipt_id,button);});row.append(p,button);host.appendChild(row);});
+}
+function useStatus(j){
+ if(!j.ok){if(j.httpStatus===401){clear();show('login');el('msg').textContent='Reconnectez-vous avec Google pour accéder à votre dossier.';}else{el('consentMessage').textContent='Le statut ne peut pas être confirmé. Contactez la clinique ou actualisez la page.';el('receiptMessage').textContent='Le statut ne peut pas être confirmé.';}return Promise.resolve(false);}
+ status=j;var valid=renderDocument(j);renderReceipts(j);if(j.required||!valid){show('consent');return Promise.resolve(true);}return loadApp();
+}
+function load(){if(!token()){show('login');return Promise.resolve(false);}return post('/membre/consent/status',{token:token()}).then(useStatus).catch(function(){el('consentMessage').textContent='Connexion interrompue. Actualisez le statut ou contactez la clinique.';el('receiptMessage').textContent='Connexion interrompue. Réessayez.';if(!status){show('login');el('msg').textContent='Connexion interrompue. Réessayez.';}return false;});}
+function loadApp(){return post('/membre/state',{token:token()}).then(function(j){if(!j.ok){if(j.error==='consent_required'){return useStatus(Object.assign({},j,{ok:true}));}if(j.httpStatus===401){clear();show('login');}else{show('consent');el('consentMessage').textContent='L’espace membre ne peut pas être chargé. Vos choix enregistrés restent disponibles ci-dessous.';}return false;}state=j;renderApp();show('app');return true;});}
+function renderApp(){var m=state.membre,b=state.banque;el('h1').textContent='Bonjour '+m.first_name;el('sub').textContent='Inscrit auprès de '+state.entreprise.name+'. '+(m.status==='actif'?'Votre inscription est active.':m.status==='pause'?'Votre inscription est en pause.':'Vérifiez votre statut avec votre organisation.');el('av').textContent=(m.first_name||'').slice(0,1)+(m.last_name||'').slice(0,1);el('since').textContent=(m.activated_at||m.created_at)?new Date(m.activated_at||m.created_at).toLocaleDateString('fr-CA'):'–';el('since-d').textContent=m.status==='actif'?'Inscription active':'';el('rest').textContent=b.restantes;var can=m.status==='actif'&&m.codes;el('offbox').hidden=can;el('emptybox').hidden=!(can&&b.restantes<=0);el('genrow').hidden=!can;var host=el('mycodes');host.replaceChildren();(state.mes_codes||[]).forEach(function(c){var p=document.createElement('span');p.textContent=c.code+' · '+date(c.created_at)+(c.status==='utilise'?' · utilisé':' · à utiliser');host.appendChild(p);});if(!host.children.length)host.textContent='Aucun code généré pour l’instant.';}
+function download(receiptId,button){button.disabled=true;el('receiptMessage').textContent='Préparation de votre copie…';post('/membre/consent/receipt',{token:token(),receipt_id:receiptId}).then(function(j){if(!j.ok||j.mime_type!=='application/pdf'||!j.base64)throw new Error('receipt');var raw=atob(j.base64),bytes=new Uint8Array(raw.length);for(var n=0;n<raw.length;n++)bytes[n]=raw.charCodeAt(n);var url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})),a=document.createElement('a');a.href=url;a.download=(j.filename||'consentement-truck-stop-sante.pdf').replace(/[^a-zA-Z0-9._-]/g,'_');a.click();setTimeout(function(){URL.revokeObjectURL(url);},30000);el('receiptMessage').textContent='Votre copie PDF est prête.';}).catch(function(){el('receiptMessage').textContent='La copie n’a pas pu être téléchargée. Réessayez ou demandez-la à la clinique.';}).finally(function(){button.disabled=false;});}
+el('consentForm').addEventListener('submit',function(e){
+ e.preventDefault();if(signing||!status||!status.can_sign||status.admin_preview||!this.reportValidity())return;signing=true;el('sign').disabled=true;el('consentMessage').textContent='Enregistrement de votre choix…';
+ post('/membre/consent/accept',{token:token(),credential:credential,version:status.version,document_hash:status.document_hash,typed_name:el('typedName').value.trim(),self_age_14_plus:el('selfAge').checked,acknowledgements:Array.from(el('acknowledgements').querySelectorAll('input:checked')).map(function(i){return i.dataset.ack;}),request_id:acceptRequestId}).then(function(j){
+  if(j.error==='reauthentication_required'){reauth=true;show('login');el('msg').textContent='Pour signer, confirmez de nouveau votre compte Google. Votre formulaire est conservé. Revenez ensuite cliquer sur Signer.';return;}
+  if(!j.ok){el('consentMessage').textContent=j.error==='version_changed'?'Le document a changé. Actualisez le statut et relisez-le avant de signer.':j.error==='clinic_assistance_required'?'La clinique doit vous aider à enregistrer cette signature. Contactez-la; votre nom ne sera pas modifié automatiquement.':'Votre signature n’a pas été enregistrée. Vérifiez les confirmations et votre nom, puis réessayez ou contactez la clinique.';return;}
+  el('consentMessage').textContent='Votre consentement est enregistré.';return useStatus(j).then(function(){return syncAccepted(0);});
+ }).catch(function(){el('consentMessage').textContent='La réponse a été interrompue. Actualisez le statut avant de recommencer; l’enregistrement peut avoir abouti.';}).finally(function(){signing=false;el('sign').disabled=false;el('withdraw').disabled=false;});
+});
+function syncAccepted(attempt){var c=status&&status.consent;if(!c||!c.receipt_id||status.admin_preview||!c.can_retry_sync||!['pending','uploaded','verifying'].includes(c.sync_status))return Promise.resolve();var receiptId=c.receipt_id;return post('/membre/consent/retry-sync',{token:token(),receipt_id:receiptId}).then(function(j){if(!j.ok){el('receiptMessage').textContent='Votre consentement est conservé ici; l’ajout au dossier reste à vérifier.';return;}return useStatus(j).then(function(){if(attempt<2&&status&&status.consent&&status.consent.receipt_id===receiptId&&['uploaded','verifying'].includes(status.consent.sync_status))return new Promise(function(resolve){setTimeout(resolve,1500);}).then(function(){return syncAccepted(attempt+1);});});}).catch(function(){el('receiptMessage').textContent='Votre consentement est conservé ici. Actualisez le statut pour vérifier son ajout au dossier.';});}
+el('withdraw').addEventListener('click',function(){if(signing||!status||status.admin_preview||!status.can_sign)return;if(!window.confirm('Retirer votre consentement aux prochaines utilisations de la télémédecine ? La clinique pourra vous expliquer les autres modalités. Les copies déjà signées resteront conservées.'))return;var button=this;button.disabled=true;post('/membre/consent/withdraw',{token:token(),request_id:id()}).then(function(j){if(!j.ok)throw new Error('withdraw');documentVersion='';el('consentMessage').textContent='Votre retrait a été enregistré. Contactez la clinique pour convenir des prochaines étapes.';return useStatus(j);}).catch(function(){el('receiptMessage').textContent='Le retrait n’a pas pu être confirmé. Actualisez le statut ou contactez la clinique.';}).finally(function(){button.disabled=false;});});
+el('retrySync').addEventListener('click',function(){if(!status||!status.consent)return;var button=this;button.disabled=true;post('/membre/consent/retry-sync',{token:token(),receipt_id:status.consent.receipt_id}).then(function(j){if(!j.ok)throw new Error('sync');return useStatus(j);}).catch(function(){el('receiptMessage').textContent='L’ajout au dossier n’a pas pu être confirmé. La copie reste disponible ici; contactez la clinique.';}).finally(function(){button.disabled=false;});});
+el('refreshConsent').addEventListener('click',function(){load();});el('logout').addEventListener('click',logout);el('decline').addEventListener('click',logout);
+window.onGoogleCredential=function(resp){credential=resp&&resp.credential||'';if(!credential)return;el('msg').textContent='Vérification de votre compte…';post('/membre/login',{credential:credential}).then(function(j){if(!j.ok){el('matchingHelp').hidden=false;el('msg').textContent='La clinique peut vous aider à retrouver votre inscription.';return;}try{sessionStorage.setItem(KEY,j.token);}catch(e){el('msg').textContent='Ce navigateur ne permet pas de conserver une session sécurisée. Autorisez le stockage de session ou contactez la clinique.';return;}el('matchingHelp').hidden=true;return load().then(function(){if(reauth){reauth=false;el('consentMessage').textContent='Votre compte est confirmé. Vérifiez vos choix puis cliquez sur Signer.';}});}).catch(function(){el('msg').textContent='Connexion impossible. Réessayez ou contactez la clinique.';});};
+el('loadGoogle').addEventListener('click',function(){if(googleLoaded)return;if(!window.TSS_GOOGLE_CLIENT_ID){el('msg').textContent='La connexion est indisponible. Contactez la clinique.';return;}var button=this;button.disabled=true;var sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=function(){googleLoaded=true;button.hidden=true;google.accounts.id.initialize({client_id:window.TSS_GOOGLE_CLIENT_ID,callback:window.onGoogleCredential,auto_select:false,ux_mode:'popup'});google.accounts.id.renderButton(el('gbtn'),{theme:'outline',size:'large',text:'signin_with',locale:'fr_CA',width:300});};sc.onerror=function(){button.disabled=false;el('msg').textContent='Google ne peut pas être chargé. Réessayez ou contactez la clinique.';};document.head.appendChild(sc);});
+el('gen').addEventListener('click',function(){var button=this;button.disabled=true;post('/membre/code',{token:token()}).then(function(j){if(!j.ok){if(j.error==='consent_required')return load();say('Le code ne peut pas être créé. Vérifiez votre inscription avec la clinique.');return;}var value=j.code.code,text='Bonjour ! Votre code Truck Stop Santé est '+value+'. Consultez https://truckstopsante.com/consentement/ pour les informations sur la télémédecine, puis communiquez avec la clinique sur https://spruce.care/centremdicalfont. La clinique confirmera les modalités de la consultation.';el('codeval').textContent=value;el('msgtext').value=text;el('smsbtn').href='sms:?&body='+encodeURIComponent(text);el('mailbtn').href='mailto:?subject='+encodeURIComponent('Votre code Truck Stop Santé')+'&body='+encodeURIComponent(text);el('newcode').hidden=false;return loadApp();}).catch(function(){say('Le code n’a pas pu être confirmé. Vérifiez Mes codes avant de réessayer.');}).finally(function(){button.disabled=false;});
+});
+el('copybtn').addEventListener('click',function(){if(navigator.clipboard)navigator.clipboard.writeText(el('msgtext').value).then(function(){say('Message copié.');}).catch(function(){el('msgtext').focus();el('msgtext').select();say('Sélectionnez et copiez le message.');});else{el('msgtext').focus();el('msgtext').select();}});
+load();
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+{
+  "name": "truckstopsante-portail-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "google-auth-library": "11.0.2",
+    "pdf-lib": "1.17.1"
+  }
+}

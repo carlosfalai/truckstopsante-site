@@ -2,12 +2,16 @@
 // Une association ou une entreprise se connecte avec son code, voit ses personnes couvertes,
 // en ajoute (une par une ou en lot depuis une liste collée), les met en pause, les retire,
 // et voit ce qui sera facturé ce mois-ci. Chaque ajout déclenche l'invitation Spruce (texto + courriel)
-// après vérification sur Spruce (jamais de doublon), et une alerte Telegram à Carlos.
+// après paiement admissible et vérification directe sur Spruce.
 // Carlos (code admin) crée les partenaires, active la facturation Stripe, suit les invitations.
 import {
-  DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand, DeleteItemCommand,
+  DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand, DeleteItemCommand, TransactWriteItemsCommand,
 } from "@aws-sdk/client-dynamodb";
 import { randomUUID, randomBytes, createHmac, timingSafeEqual, createHash } from "node:crypto";
+import { OAuth2Client } from "google-auth-library";
+import { createConsentService } from "./consent.mjs";
+import { createSpruceConsentSync, createSpruceWithdrawalSync } from "./spruce-consent.mjs";
+import { isConsentStreamEvent, handleConsentStream } from "./consent-events.mjs";
 
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
@@ -18,14 +22,15 @@ const PENDING_PAYMENT = "en_attente_paiement";
 const ADMIN_CODE = process.env.ADMIN_CODE || "";
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_PRICE = process.env.STRIPE_PRICE_ID || "";
-const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const TG_CHAT = process.env.TELEGRAM_CHAT_ID || "";
 const SPRUCE_AUTH = process.env.SPRUCE_AUTH || "";
 const SPRUCE_INTERNAL_ENDPOINT_ID = process.env.SPRUCE_INTERNAL_ENDPOINT_ID || ""; // ligne Spruce de la clinique (même valeur que spruce-invite-today.js) // "Basic …" — même valeur que spruce-invite-today.js
 const AUTO_INVITE = (process.env.AUTO_INVITE || "oui") === "oui";
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 const COVERAGES = ["indeterminee", "3", "6", "12"];
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const googleAuthClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+let consentServiceInstance;
+const consentService = () => consentServiceInstance ||= createConsentService({ db, commands: { GetItemCommand, QueryCommand, TransactWriteItemsCommand, UpdateItemCommand, ScanCommand }, syncReceipt: createSpruceConsentSync({ auth: SPRUCE_AUTH }), syncWithdrawal: createSpruceWithdrawalSync({ auth: SPRUCE_AUTH }) });
 const ADMIN_GOOGLE_EMAILS = (process.env.ADMIN_GOOGLE_EMAILS || "").toLowerCase().split(",").map((e) => e.trim()).filter(Boolean);
 const SPRUCE_LINK = "https://spruce.care/centremdicalfont";
 const normName = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
@@ -35,7 +40,7 @@ function makeConsultCode() { const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; const
 const splitEmails = (v) => String(v || "").toLowerCase().split(/[,;\s]+/).map((e) => e.trim()).filter(Boolean);
 
 const CORS = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://truckstopsante.com",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json; charset=utf-8",
@@ -56,11 +61,10 @@ const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 async function verifyGoogle(idToken) {
   if (!GOOGLE_CLIENT_ID || !idToken) return null;
   try {
-    const r = await fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(idToken));
-    if (!r.ok) return null;
-    const t = await r.json();
-    if (t.aud !== GOOGLE_CLIENT_ID || t.email_verified !== "true" || !t.email) return null;
-    return { email: String(t.email).toLowerCase(), sub: t.sub, name: t.name || "", picture: t.picture || "" };
+    const ticket = await googleAuthClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID });
+    const t = ticket.getPayload();
+    if (!t?.sub || !t.email_verified || !t.email || !["accounts.google.com", "https://accounts.google.com"].includes(t.iss) || t.exp <= Date.now() / 1000) return null;
+    return { email: String(t.email).toLowerCase(), sub: t.sub, iss: "https://accounts.google.com", iat: Number(t.iat), name: t.name || "", picture: t.picture || "" };
   } catch { return null; }
 }
 async function findPartnerByGoogleEmail(email) {
@@ -124,7 +128,6 @@ async function issueCode(partner, member, by) {
   const item = { partner_code: partner.code, id: "code#" + randomUUID(), kind: "code", code: makeConsultCode(), member_id: member.id, member_name: member.first_name + " " + member.last_name, created_at: now(), status: "emis", used_at: "", by, redeemed_by: "", redeemed_by_name: "" };
   await putItem(T_MEMBERS, item);
   bank.emis += 1;
-  await telegram(`Portail TSS — ${member.first_name} ${member.last_name} (${partner.name}) a généré un code de consultation ${item.code}\nBanque ${partner.name} : ${bank.restantes} disponible(s)`, partner);
   return { ok: true, code: publicCode(item), banque: bank };
 }
 const publicCode = (c) => ({ id: c.id, code: c.code, created_at: c.created_at, status: c.status, used_at: c.used_at || "", member_name: c.member_name || "", member_id: c.member_id || "", by: c.by || "", redeemed_by: c.redeemed_by || "", redeemed_by_name: c.redeemed_by_name || "" });
@@ -144,19 +147,25 @@ async function redeemCode(wanted, by, byName) {
   await updateFields(T_MEMBERS, { partner_code: S(c.partner_code), id: S(c.id) }, { status: "utilise", used_at: t, redeemed_by: by, redeemed_by_name: byName });
   Object.assign(c, { status: "utilise", used_at: t, redeemed_by: by, redeemed_by_name: byName });
   bank.utilises += 1; bank.restantes = Math.max(0, bank.restantes - 1);
-  await telegram(`Portail TSS — consultation gratuite utilisée : ${c.code} (${c.member_name}, ${p.name}) par ${byName}\nBanque ${p.name} : ${bank.restantes} disponible(s)`, p);
   return { status: 200, body: { ok: true, code: publicCode(c), partner: p.name, banque: bank } };
 }
 async function memberBySession(token) {
-  if (!token || token.length < 20) return null;
-  const m = (await scanAll(T_MEMBERS)).find((x) => x.kind !== "code" && x.session_token === token && x.status !== "retire");
-  if (!m) return null;
+  if (!/^[a-f0-9]{48}$/.test(token || "")) return null;
+  const hash = createHash("sha256").update(token).digest("hex");
+  const candidate = (await scanAll(T_MEMBERS)).find((x) => (!x.kind || x.kind === "member") && x.session_token_hash === hash && x.session_expires_at > now());
+  if (!candidate) return null;
+  const fresh = await db.send(new GetItemCommand({ TableName: T_MEMBERS, Key: { partner_code: S(candidate.partner_code), id: S(candidate.id) }, ConsistentRead: true }));
+  const m = fresh.Item && unmarshal(fresh.Item);
+  if (!m || m.session_token_hash !== hash || m.session_expires_at <= now()) return null;
   const partner = await getPartner(m.partner_code);
-  return partner ? { m, partner } : null;
+  let actor; try { actor = JSON.parse(m.session_actor); } catch { return null; }
+  if (!actor || !["member", "admin"].includes(actor.role)) return null;
+  return partner ? { m, partner, actor } : null;
 }
-async function openMemberSession(m) {
+async function openMemberSession(m, actor) {
+  if (!actor || !["member", "admin"].includes(actor.role)) throw new Error("session_actor_required");
   const token = randomBytes(24).toString("hex");
-  await updateFields(T_MEMBERS, { partner_code: S(m.partner_code), id: S(m.id) }, { session_token: token, session_at: now() });
+  await updateFields(T_MEMBERS, { partner_code: S(m.partner_code), id: S(m.id) }, { session_token: "", session_token_hash: createHash("sha256").update(token).digest("hex"), session_actor: JSON.stringify(actor), session_at: now(), session_expires_at: new Date(Date.now() + 2 * 3600000).toISOString() });
   return token;
 }
 async function memberStateReply(m, partner) {
@@ -617,7 +626,6 @@ async function completeEnrolment(session, opts = {}) {
     if (r.ok) { member = r.member; added = true; }
     else if (r.error === "duplicate") member = r.member;
   }
-  if (added && partner.demo !== "oui") await telegram(`Portail TSS — nouvel abonnement Stripe : ${partner.name} (${email}, ${phone})\nCode d'accès ${partner.code} · ${member ? member.first_name + " " + member.last_name + " : Spruce " + (member.spruce || "?") : "aucune personne"}`, partner);
   const activation = await activatePending(partner);
   const updatedMembers = await listMembers(partner.code);
   const updatedMember = member && updatedMembers.find((m) => m.id === member.id);
@@ -630,17 +638,6 @@ function verifyStripeSignature(rawBody, header) {
   if (Math.abs(Date.now() / 1000 - Number(t)) > 600) return false;
   const expected = createHmac("sha256", STRIPE_WEBHOOK_SECRET).update(t + "." + rawBody).digest("hex");
   try { return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(v1, "hex")); } catch { return false; }
-}
-
-/* ---------- Telegram (alerte à Carlos) ---------- */
-async function telegram(text, partner) {
-  if (!TG_TOKEN || !TG_CHAT || (partner && partner.demo === "oui")) return;
-  try {
-    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TG_CHAT, text, disable_web_page_preview: true }),
-    });
-  } catch { /* une alerte manquée ne doit pas bloquer le portail */ }
 }
 
 /* ---------- Résumé ---------- */
@@ -730,6 +727,7 @@ async function addMemberLocked(partner, data, existingMembers, first_name, last_
 
 /* ---------- Handler ---------- */
 export const handler = async (event) => {
+  if (isConsentStreamEvent(event)) return handleConsentStream(event, consentService());
   const method = event.requestContext?.http?.method ?? "GET";
   const path = (event.rawPath || "/").replace(/\/+$/, "") || "/";
   if (method === "OPTIONS") return reply(200, { ok: true });
@@ -743,6 +741,15 @@ export const handler = async (event) => {
   const isAdmin = ADMIN_CODE && code === ADMIN_CODE;
 
   try {
+    if (path === "/admin/consents" && method === "POST") {
+      if (!isAdmin) return reply(403, { error: "clinical_admin_required" });
+      return reply(200, await consentService().listJobs(data.cursor));
+    }
+    if (path === "/admin/consents/retry" && method === "POST") {
+      if (!isAdmin) return reply(403, { error: "clinical_admin_required" });
+      await consentService().syncStored(data.pk, data.job_id, data.kind);
+      return reply(200, { ok: true });
+    }
     /* ----- Connexion ----- */
     if (path === "/login" && method === "POST") {
       if (isAdmin) return reply(200, { ok: true, role: "admin" });
@@ -767,7 +774,6 @@ export const handler = async (event) => {
       if (!p) return reply(401, { error: "bad_code" });
       const emails = splitEmails(p.google_emails);
       if (!emails.includes(g.email)) { emails.push(g.email); await updateFields(T_PARTNERS, { code: S(p.code) }, { google_emails: emails.join(",") }); p.google_emails = emails.join(","); }
-      await telegram(`Portail TSS — ${p.name} a lié le compte Google ${g.email}`, p);
       return reply(200, { ok: true, role: "partner", code: p.code, partner: publicPartner(p), google: { email: g.email, name: g.name } });
     }
 
@@ -822,7 +828,6 @@ export const handler = async (event) => {
         verifie, active: "oui", created_at: now(), source: "portail:creer",
       };
       await putItem(T_PARTNERS, item);
-      await telegram(`Portail TSS — nouveau compte entreprise : ${name} (${contact_name || "?"}, ${email}, ${phone || "sans tél."}) · vérifié : ${verifie} · code ${pcode}`, item);
       return reply(200, { ok: true, role: "partner", code: pcode, partner: publicPartner(item) });
     }
     if (path === "/billing/checkout" && method === "POST") {
@@ -836,38 +841,43 @@ export const handler = async (event) => {
     if (path === "/membre/login" && method === "POST") {
       const g = await verifyGoogle(clean(data.credential, 4000));
       if (!g) return reply(401, { error: "bad_google" });
-      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && ["actif", "pause"].includes(x.status) && ((x.google_email || "").toLowerCase() === g.email || (x.email || "").toLowerCase() === g.email));
+      const all = (await scanAll(T_MEMBERS)).filter((x) => (!x.kind || x.kind === "member") && ["actif", "pause", "retire"].includes(x.status) && (x.google_sub ? x.google_sub === g.sub && x.google_iss === g.iss : (x.email || "").toLowerCase() === g.email));
       const m = all.find((x) => x.status === "actif") || all[0];
-      if (!m) return reply(404, { error: "unknown_member", email: g.email });
+      if (!m) return reply(403, { error: "clinic_assistance_required" });
       const partner = await getPartner(m.partner_code);
-      if (!partner) return reply(404, { error: "unknown_member", email: g.email });
-      if (!m.google_email) await updateFields(T_MEMBERS, { partner_code: S(m.partner_code), id: S(m.id) }, { google_email: g.email });
-      const token = await openMemberSession(m);
-      return reply(200, { ok: true, token, google: { email: g.email, name: g.name } });
+      if (!partner) return reply(403, { error: "clinic_assistance_required" });
+      try { await db.send(new UpdateItemCommand({ TableName: T_MEMBERS, Key: { partner_code: S(m.partner_code), id: S(m.id) },
+        UpdateExpression: "SET google_sub = :sub, google_iss = :iss, google_email = :email",
+        ConditionExpression: "attribute_not_exists(google_sub) OR (google_sub = :sub AND google_iss = :iss)",
+        ExpressionAttributeValues: { ":sub": S(g.sub), ":iss": S(g.iss), ":email": S(g.email) },
+      })); } catch (e) { if (e.name === "ConditionalCheckFailedException") return reply(403, { error: "clinic_assistance_required" }); throw e; }
+      const token = await openMemberSession(m, { role: "member", iss: g.iss, sub: g.sub, email: g.email });
+      return reply(200, { ok: true, token, expires_in: 7200, google: { email: g.email, name: g.name } });
     }
     if (path === "/membre/verify" && method === "POST") {
-      const g = await verifyGoogle(clean(data.credential, 4000));
-      if (!g) return reply(401, { error: "bad_google" });
-      const ph = digits(clean(data.phone, 40)).slice(-10), ln = normName(clean(data.last_name, 80));
-      if (ph.length < 10 || !ln) return reply(400, { error: "missing" });
-      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && ["actif", "pause"].includes(x.status) && digits(x.phone).endsWith(ph) && normName(x.last_name) === ln);
-      const m = all.find((x) => x.status === "actif") || all[0];
-      if (!m) return reply(404, { error: "no_match" });
-      await updateFields(T_MEMBERS, { partner_code: S(m.partner_code), id: S(m.id) }, { google_email: g.email });
-      const partner = await getPartner(m.partner_code);
-      if (!partner) return reply(404, { error: "no_match" });
-      await telegram(`Portail TSS — ${m.first_name} ${m.last_name} (${partner.name}) a lié son compte Google ${g.email}`, partner);
-      const token = await openMemberSession(m);
-      return reply(200, { ok: true, token, google: { email: g.email, name: g.name } });
+      return reply(403, { error: "clinic_assistance_required" });
+    }
+    if (path.startsWith("/membre/consent/") && method === "POST") {
+      const s = await memberBySession(clean(data.token, 80));
+      if (!s) return reply(401, { error: "bad_session" });
+      const service = consentService();
+      if (path === "/membre/consent/status") return reply(200, await service.status(s));
+      if (path === "/membre/consent/accept") return reply(200, await service.accept(s, data, await verifyGoogle(clean(data.credential, 4000))));
+      if (path === "/membre/consent/receipt") return reply(200, await service.download(s, data.receipt_id));
+      if (path === "/membre/consent/withdraw") return reply(200, await service.withdraw(s, data));
+      if (path === "/membre/consent/retry-sync") return reply(200, await service.sync(s, data.receipt_id));
+      return reply(404, { error: "not_found" });
     }
     if (path === "/membre/state" && method === "POST") {
       const s = await memberBySession(clean(data.token, 80));
       if (!s) return reply(401, { error: "bad_session" });
+      await consentService().requireAccepted(s);
       return memberStateReply(s.m, s.partner);
     }
     if (path === "/membre/code" && method === "POST") {
       const s = await memberBySession(clean(data.token, 80));
       if (!s) return reply(401, { error: "bad_session" });
+      await consentService().requireAccepted(s);
       if (s.m.status !== "actif") return reply(403, { error: "inactif" });
       if (s.m.codes !== "oui") return reply(403, { error: "codes_off" });
       const r = await issueCode(s.partner, s.m, "membre");
@@ -876,7 +886,7 @@ export const handler = async (event) => {
     }
     if (path === "/membre/logout" && method === "POST") {
       const s = await memberBySession(clean(data.token, 80));
-      if (s) await updateFields(T_MEMBERS, { partner_code: S(s.partner.code), id: S(s.m.id) }, { session_token: "" });
+      if (s) await updateFields(T_MEMBERS, { partner_code: S(s.partner.code), id: S(s.m.id) }, { session_token: "", session_token_hash: "", session_expires_at: "" });
       return reply(200, { ok: true });
     }
 
@@ -970,16 +980,12 @@ export const handler = async (event) => {
       if (!isAdmin) return reply(401, { error: "bad_code" });
       const m = await getMember(clean(data.partner_code, 60), clean(data.id, 80));
       if (!m) return reply(404, { error: "unknown_member" });
-      const token = await openMemberSession(m);
-      return reply(200, { ok: true, token });
+      const token = await openMemberSession(m, { role: "admin" });
+      return reply(200, { ok: true, token, admin_preview: true, expires_in: 7200 });
     }
     if (path === "/admin/member/code" && method === "POST") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
-      const p = await getPartner(clean(data.partner_code, 60));
-      const m = p && await getMember(p.code, clean(data.id, 80));
-      if (!m) return reply(404, { error: "unknown_member" });
-      const r = await issueCode(p, m, "admin");
-      return reply(r.ok ? 200 : 409, r);
+      return reply(403, { error: "member_action_requires_patient_session" });
     }
     if (path === "/admin/member/delete" && method === "POST") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
@@ -1052,7 +1058,6 @@ export const handler = async (event) => {
       const updated = await listMembers(partner.code);
       const actifs = updated.filter((m) => m.status === "actif").length;
       const m = r.member;
-      await telegram(`Portail TSS — ${partner.name} a ajouté ${m.first_name} ${m.last_name}\n${m.phone} · ${m.email}${m.family_of ? "\n(famille de " + m.family_of + ")" : ""}\nSpruce : ${m.spruce} (${m.spruce_detail || "à faire"})\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       return reply(200, { ok: true, member: publicMember(updated.find((x) => x.id === m.id) || m, true), actifs, ...outcome, resume: summary(updated) });
     }
 
@@ -1072,7 +1077,6 @@ export const handler = async (event) => {
       const invited = added.filter((r) => r.member.spruce === "invite").length;
       const already = added.filter((r) => r.member.spruce === "compte").length;
       const failed = results.length - added.length;
-      await telegram(`Portail TSS — ${partner.name} a ajouté ${added.length} personne(s) (liste collée)\nInvitations Spruce envoyées : ${invited} · déjà sur Spruce : ${already} · rejetées : ${failed}\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       return reply(200, { ok: true, results, actifs, ...outcome, resume: { ...summary(updated), added: added.length, failed } });
     }
 
@@ -1095,7 +1099,6 @@ export const handler = async (event) => {
       let stripeSync = null;
       try { stripeSync = status === "actif" ? (await finishRosterAdd(partner)).stripe : await syncStripeQuantity(partner, requestedCount(members)); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
       const verbe = status === "actif" ? "a réactivé" : status === "pause" ? "a mis en pause" : "a retiré";
-      await telegram(`Portail TSS — ${partner.name} ${verbe} ${m.first_name} ${m.last_name}. Actifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
       const finalMembers = await listMembers(partner.code);
       return reply(200, { ok: true, status: finalMembers.find((x) => x.id === id)?.status || nextStatus, actifs: finalMembers.filter((x) => x.status === "actif").length, stripe: stripeSync });
     }
@@ -1126,7 +1129,8 @@ export const handler = async (event) => {
 
     return reply(404, { error: "not_found" });
   } catch (e) {
-    console.error(e);
-    return reply(500, { error: "server_error", detail: e.message });
+    if (e.consentCode) return reply(e.status || 400, { ...(e.consentStatus || {}), ok: false, error: e.consentCode });
+    console.error("tss_request_failed", e.name || "Error");
+    return reply(500, { error: "server_error" });
   }
 };

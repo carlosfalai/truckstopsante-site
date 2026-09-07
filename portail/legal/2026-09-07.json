@@ -1,0 +1,141 @@
+{
+  "version": "2026-09-07",
+  "language": "fr-CA",
+  "privacy": {
+    "title": "Avis de confidentialité",
+    "sections": [
+      {
+        "heading": "Qui nous sommes et comment nous joindre",
+        "paragraphs": [
+          "Truck Stop Santé propose un service aux entreprises, aux associations et à leurs membres, en lien avec la pratique du Dr Carlos Font (CMQ 16812), Centre Médical Font.",
+          "Le portail sert à gérer les inscriptions et le service aux organisations. Les échanges médicaux, les décisions de soins et la tenue du dossier clinique relèvent de la pratique de la clinique.",
+          "Pour une question de confidentialité, une demande concernant vos renseignements ou une plainte, écrivez à cff@centremedicalfont.ca, à l’attention du Dr Carlos Font. Indiquez comment vous joindre; évitez d’envoyer des symptômes, des documents médicaux ou des pièces d’identité par courriel ordinaire. Nous vous indiquerons un moyen adapté pour transmettre les renseignements nécessaires."
+        ]
+      },
+      {
+        "heading": "Les renseignements recueillis et leurs sources",
+        "paragraphs": [
+          "Pour les entreprises et associations : nom de l’organisation, coordonnées de la personne responsable, courriel de facturation, liste des participants, paramètres du compte et références de paiement.",
+          "Pour les membres : prénom, nom, téléphone, courriel, organisation de rattachement, lien familial lorsqu’il est indiqué, état et dates d’inscription, état d’invitation ou de compte Spruce, et renseignements administratifs fournis pour gérer l’inscription. Une note administrative peut accompagner la liste; n’y inscrivez pas de renseignements cliniques.",
+          "La connexion fournit des renseignements du compte Google utilisé et des éléments de session. Le portail conserve aussi les codes de consultation, leur création et leur utilisation, ainsi que les acceptations, signatures électroniques, versions des documents et retraits de consentement. Ces renseignements peuvent révéler une participation à un service de santé.",
+          "Ces renseignements proviennent de vous, de l’entreprise ou de l’association qui vous inscrit, et des services utilisés pour la connexion, le paiement et l’invitation. Lors d’un échange clinique, vous fournissez directement à la clinique les renseignements nécessaires à vos soins dans le canal convenu avec elle."
+        ]
+      },
+      {
+        "heading": "À quoi servent ces renseignements",
+        "paragraphs": [
+          "Ils servent à créer et sécuriser les accès, reconnaître les participants, gérer les inscriptions et la facturation, transmettre les invitations, administrer les codes de consultation, répondre aux demandes d’aide et conserver la preuve des choix exprimés.",
+          "Les renseignements recueillis dans le cadre des soins servent à évaluer la demande, communiquer avec le patient, fournir les soins appropriés et tenir le dossier clinique. Les formulaires administratifs du portail ne sont pas destinés à recevoir une demande médicale.",
+          "Les champs indiqués comme obligatoires sont nécessaires à l’opération demandée. Sans certaines coordonnées ou informations de connexion, nous pourrions ne pas pouvoir ouvrir l’accès ou associer votre compte à votre inscription. Contactez la clinique pour examiner une autre façon de procéder."
+        ]
+      },
+      {
+        "heading": "Ce que voit votre entreprise ou votre association",
+        "paragraphs": [
+          "La personne qui gère votre inscription peut voir les renseignements administratifs de la liste : identité, coordonnées, rattachement familial déclaré, état et dates d’inscription, état des invitations ou du compte Spruce, et paramètres des codes. Elle peut également consulter les totaux de la banque de consultations.",
+          "Le portail entreprise ne donne pas accès au contenu de vos échanges cliniques, à votre signature de consentement ni au détail nominatif des consultations utilisées. Les totaux d’un petit groupe ne garantissent toutefois pas l’anonymat.",
+          "L’inscription ou le paiement par un employeur ne l’autorise pas à consentir aux soins à votre place. Toute communication de renseignements cliniques à un tiers doit reposer sur une autorisation ou une autre base permise par la loi."
+        ]
+      },
+      {
+        "heading": "Les fournisseurs utilisés",
+        "paragraphs": [
+          "Amazon Web Services héberge le service du portail et sa base de données dans la région canadienne configurée pour ce service. GitHub Pages héberge les pages publiques. Ces services peuvent traiter des renseignements techniques nécessaires à l’hébergement et à la sécurité.",
+          "Google fournit les polices de certaines pages et, lorsque vous choisissez ce mode de connexion, l’authentification. Des renseignements techniques sont alors transmis à Google; les renseignements du compte servent à vérifier la connexion et à reconnaître le membre.",
+          "Stripe traite les paiements dans ses propres pages de paiement. Le portail reçoit les références et l’état des paiements ou abonnements; il ne recueille pas le numéro complet de votre carte dans ses formulaires.",
+          "Spruce sert à gérer les invitations et les échanges avec la clinique. L’identité et les coordonnées nécessaires à une invitation peuvent lui être transmises lors de l’inscription. Lorsque vous signez dans l’espace membre, une copie du document signé est préparée pour le dossier de la personne concernée dans Spruce. Ce dépôt reste affiché « en attente » tant que sa réalisation n’a pas été confirmée.",
+          "Certains fournisseurs et leurs sous-traitants peuvent traiter des renseignements à l’extérieur du Québec, notamment à l’extérieur du Canada. L’hébergement canadien du portail ne signifie donc pas que tous les traitements restent au Québec. Contactez-nous pour toute question sur ces communications."
+        ]
+      },
+      {
+        "heading": "Stockage dans votre navigateur et communications",
+        "paragraphs": [
+          "Le site mémorise des préférences de langue. Le portail utilise le stockage du navigateur pour les accès : la session membre est limitée à la session du navigateur; certaines pages de gestion d’entreprise permettent de mémoriser une connexion.",
+          "Les services Google, Stripe et Spruce appliquent aussi leurs propres pratiques lorsqu’ils sont utilisés. Le site Truck Stop Santé n’intègre actuellement pas d’outil de publicité ciblée ni de mesure publicitaire.",
+          "Vous pouvez vous déconnecter et effacer les données du site dans votre navigateur. Cela ne supprime pas les renseignements conservés dans les systèmes de la clinique. Évitez les appareils partagés pour vos échanges confidentiels et protégez l’accès à votre appareil."
+        ]
+      },
+      {
+        "heading": "Conservation et protection",
+        "paragraphs": [
+          "Le retrait d’une personne de la liste d’une entreprise désactive son inscription; il n’efface pas automatiquement son historique, les pièces de facturation, les documents signés ni le dossier clinique.",
+          "Les renseignements demeurent soumis aux besoins de leur finalité et aux obligations légales et professionnelles de conservation applicables. Les dossiers administratifs et cliniques peuvent relever de règles différentes. Pour connaître les règles applicables à vos renseignements ou demander leur suppression lorsqu’elle est permise, contactez-nous. Un retrait de consentement n’impose pas l’effacement des documents qui doivent être conservés.",
+          "Les pages utilisent HTTPS et les fonctions du portail comportent des contrôles d’accès. Les documents de consentement sont accessibles à la personne concernée et aux intervenants autorisés pour leur gestion, pas aux comptes de gestion des entreprises. Aucune technologie ne supprime tous les risques d’accès non autorisé, d’erreur ou d’interruption."
+        ]
+      },
+      {
+        "heading": "Vos demandes et vos choix",
+        "paragraphs": [
+          "Vous pouvez demander l’accès à vos renseignements, leur rectification, une copie ou, lorsque le droit applicable le permet, leur communication dans un format technologique. Les renseignements de santé peuvent aussi faire l’objet de droits particuliers concernant leur accès et leur circulation.",
+          "Vous pouvez retirer un consentement pour l’avenir. Dans l’espace membre, le retrait relatif à la télémédecine est conservé avec votre historique; contactez également la clinique pour discuter de vos soins et des autres moyens possibles. Le retrait ne résilie pas automatiquement le contrat de votre employeur.",
+          "Nous devons vérifier l’identité et, pour une demande faite au nom d’une autre personne, l’autorité du représentant avant de communiquer des renseignements. Certaines demandes comportent des exceptions ou des obligations de conservation prévues par la loi.",
+          "Adressez vos demandes ou plaintes à cff@centremedicalfont.ca. Vous pouvez également vous informer sur vos droits et recours auprès de la Commission d’accès à l’information du Québec : https://www.cai.gouv.qc.ca/."
+        ]
+      },
+      {
+        "heading": "Versions et portée de cet avis",
+        "paragraphs": [
+          "Cet avis explique les pratiques du site et du portail ainsi que leur lien avec la clinique. Il ne constitue ni un consentement général aux soins, ni une autorisation de marketing, ni une autorisation générale de transmettre le dossier médical à un employeur.",
+          "La date de version figure sur cette page. Les changements seront signalés sur cette page et, pour une nouvelle version des documents à signer, dans l’espace membre. La copie jointe à une signature déjà enregistrée conserve le texte de cette version."
+        ]
+      }
+    ]
+  },
+  "telemedicine": {
+    "title": "Information et consentement à la télémédecine",
+    "sections": [
+      {
+        "heading": "Le service proposé",
+        "paragraphs": [
+          "Truck Stop Santé permet des échanges à distance avec la clinique, notamment par messagerie dans Spruce. Le Dr Carlos Font (CMQ 16812), Centre Médical Font, évalue si la situation peut être prise en charge de cette façon.",
+          "Les catégories présentées sur truckstopsante.com comprennent les problèmes de santé courants et le dépistage, certaines douleurs musculosquelettiques, les demandes en santé mentale et les suivis ponctuels. Selon l’évaluation, elles peuvent comprendre une ordonnance ou son renouvellement, une référence vers un autre professionnel, une requête d’imagerie ou de laboratoire, ainsi que certains documents d’arrêt de travail ou formulaires d’assurance.",
+          "Ces exemples ne garantissent pas une prescription, un examen, un document ou un traitement. Le professionnel décide avec vous des soins appropriés. Les examens, prélèvements et traitements qui nécessitent votre présence se réalisent auprès du service indiqué; ils ne se font pas tous par messagerie.",
+          "Ce consentement ne crée pas d’abonnement, ne fixe pas de tarif et ne détermine pas l’admissibilité à la RAMQ ou le contenu du contrat de votre entreprise. Une question sur la facturation doit être clarifiée séparément avant le service concerné."
+        ]
+      },
+      {
+        "heading": "Les limites et les situations urgentes",
+        "paragraphs": [
+          "À distance, le professionnel ne peut pas effectuer un examen physique complet. Il peut vous demander une consultation en personne ou vous orienter vers un autre service. Les messages peuvent être lus plus tard; ce canal ne garantit pas une réponse immédiate et ne remplace pas les urgences ni le suivi continu par un médecin de famille.",
+          "En cas d’urgence, appelez le 9-1-1 ou rendez-vous à l’urgence. N’attendez pas une réponse dans le portail ou dans Spruce pour une situation urgente.",
+          "Utilisez la messagerie seulement lorsque vous êtes arrêté dans un endroit sûr; ne consultez pas votre appareil en conduisant. Indiquez au professionnel où vous vous trouvez et comment vous joindre. Une prise en charge hors Québec n’est pas garantie et doit être vérifiée avec la clinique."
+        ]
+      },
+      {
+        "heading": "La confidentialité et la technologie",
+        "paragraphs": [
+          "Les échanges à distance présentent des risques, notamment une mauvaise adresse de destinataire, un accès à votre appareil, une interruption technique ou un accès non autorisé. Utilisez le canal indiqué par la clinique, un appareil protégé et un endroit permettant de préserver votre confidentialité.",
+          "Les textos et courriels ordinaires peuvent servir à une invitation ou à une coordination; évitez d’y transmettre des renseignements médicaux sensibles. Dans Spruce, utilisez la conversation sécurisée proposée par la clinique et vérifiez le destinataire.",
+          "L’avis de confidentialité présenté avec ce document décrit les renseignements recueillis, les fournisseurs utilisés, les communications possibles hors Québec et vos droits. La signature et la version exacte des documents sont conservées. Une copie est disponible dans votre espace; celui-ci indique si la copie a été versée au dossier dans Spruce ou si cet enregistrement est encore en attente."
+        ]
+      },
+      {
+        "heading": "Votre choix et votre signature",
+        "paragraphs": [
+          "Vous pouvez poser des questions avant de signer, refuser cette façon de consulter ou retirer votre consentement pour l’avenir. Contactez la clinique à cff@centremedicalfont.ca ou dans votre conversation clinique pour discuter d’un autre moyen adapté. Le refus ou le retrait de ce consentement ne constitue pas une renonciation à vos droits aux soins. Après un retrait, les fonctions soumises à ce consentement dans le portail deviennent indisponibles; vous conservez l’accès aux copies signées et aux moyens de joindre la clinique. La possibilité d’une autre prise en charge doit être examinée avec elle.",
+          "Ce document concerne la modalité de télémédecine. Il ne remplace pas les explications du professionnel ni votre consentement aux examens, traitements ou communications de renseignements particuliers qui vous seront proposés. Vous pouvez changer d’avis au cours des soins.",
+          "Dans cet espace, vous signez pour vous-même, à partir de votre propre compte. Le parcours de signature autonome est proposé aux personnes de 14 ans ou plus capables de comprendre ce choix. Pour un enfant plus jeune ou si vous intervenez comme représentant, contactez la clinique afin de vérifier l’identité, l’autorité et le consentement approprié. Un employeur ou un autre membre de la famille ne signe pas simplement à votre place. Cette déclaration ne remplace pas l’évaluation clinique de l’aptitude à consentir.",
+          "En inscrivant votre nom complet et en sélectionnant « Signer », vous apposez votre signature électronique à cette version. L’enregistrement comprend votre nom, votre compte authentifié, la date et les choix confirmés. Un retrait ultérieur est consigné séparément et n’efface pas le document historique."
+        ]
+      }
+    ]
+  },
+  "acknowledgements": [
+    {
+      "id": "self",
+      "text": "Je signe pour moi-même. J’ai 14 ans ou plus et je suis en mesure de comprendre les informations et de faire ce choix."
+    },
+    {
+      "id": "information",
+      "text": "J’ai lu les services décrits et les limites de la télémédecine. Je sais comment poser mes questions avant de signer et que les situations urgentes nécessitent un autre service."
+    },
+    {
+      "id": "telemedicine",
+      "text": "Je consens librement à utiliser la télémédecine dans les conditions expliquées ci-dessus. Je peux refuser une intervention ou retirer ce consentement pour l’avenir."
+    },
+    {
+      "id": "privacy",
+      "text": "J’ai pris connaissance de l’avis de confidentialité joint à cette version. Cet accusé de lecture ne constitue pas une autorisation générale de communiquer mon dossier."
+    }
+  ]
+}

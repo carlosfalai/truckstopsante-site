@@ -28,6 +28,10 @@
         .codes span.used { background: #ECFDF3; border-color: #ABEFC6; }
         .gform input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 0.85rem; min-width: 240px; }
         .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
+        .consent-job { display:flex; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--line); align-items:flex-start; }
+        .consent-job p { margin:6px 0; line-height:1.5; }
+        .consent-job button { flex-shrink:0; }
+        @media(max-width:600px) { .consent-job { flex-direction:column; } }
     </style>
 </head>
 <body>
@@ -40,6 +44,14 @@
             <h2>Utiliser un code de consultation</h2>
             <div class="redeem"><input id="rcode" placeholder="TSS-XXX-XXX" autocomplete="off"><button class="btn" id="rgo">Marquer utilisé</button><span class="meta" id="rmsg">Le proche arrive avec son code (Spruce, m28.ca) : entrez-le ici, il est retiré de la banque de la compagnie.</span></div>
         </div>
+        <section class="card" id="consentPanel" hidden aria-labelledby="consentHeading">
+            <div class="row" style="justify-content:space-between"><h2 id="consentHeading">Consentements — dépôt au dossier</h2><button class="btn secondary" id="consentRefresh" type="button">Actualiser</button></div>
+            <p class="hint">Suivi réservé à la clinique. Une copie est confirmée seulement lorsque son enregistrement dans le dossier a été vérifié. Les situations à vérifier nécessitent un contrôle du dossier concerné.</p>
+            <p id="consentStatus" class="hint" role="status" aria-live="polite"></p>
+            <div id="consentJobs"></div>
+            <button class="btn secondary" id="consentMore" type="button" hidden style="margin-top:16px">Voir la suite</button>
+        </section>
+        <p id="consentLoadError" class="hint" role="status" aria-live="polite"></p>
         <h1>Partenaires</h1>
         <p class="sub">Chaque entreprise ou association a son code d’accès (à lui remettre), son code de banque de consultations, ses personnes couvertes et son lien Stripe. Elle peut aussi entrer avec son compte Google si son courriel est connu ici. Total personnes couvertes : <b id="total">–</b>, soit <b id="mrr">–</b> par mois.</p>
         <div id="list"></div>
@@ -72,6 +84,52 @@
         function say(t) { toast.textContent = t; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
         document.getElementById("logout").addEventListener("click", function () { TSS.clearSession(); window.location.href = "index.html"; });
         var state = null;
+        var consentCursor = "", consentBusy = false, consentSeen = new Set();
+        function consentLabel(status) {
+            if (status === "saved") return "Copie enregistrée et vérifiée";
+            if (status === "needs_review") return "À vérifier par la clinique";
+            if (status === "failed") return "Dépôt non confirmé";
+            if (["uploading", "uploaded", "posting", "verifying"].includes(status)) return "Dépôt en cours de confirmation";
+            return "En attente de dépôt";
+        }
+        function consentDate(value) { var date = new Date(value); return isNaN(date.getTime()) ? "Date à vérifier" : date.toLocaleString("fr-CA", { dateStyle:"medium", timeStyle:"short" }); }
+        function consentJob(item) {
+            var row=document.createElement("div"), content=document.createElement("div"), name=document.createElement("strong"), meta=document.createElement("p"), status=document.createElement("p");
+            row.className="consent-job"; name.textContent=item.member_name || "Identité à vérifier";
+            meta.className="hint"; meta.textContent=(item.kind === "withdrawal" ? "Retrait du consentement" : "Consentement signé") + " · " + consentDate(item.date) + " · version " + (item.version || "à vérifier");
+            status.textContent=consentLabel(item.status); content.append(name,meta,status);
+            if (item.status !== "saved" && item.detail) { var detail=document.createElement("p"); detail.className="hint"; detail.textContent=item.detail; content.appendChild(detail); }
+            row.appendChild(content);
+            if (item.can_retry === true && !["saved","needs_review","uploading","posting"].includes(item.status)) {
+                var button=document.createElement("button"); button.className="btn secondary"; button.type="button"; button.textContent="Réessayer le dépôt";
+                button.addEventListener("click",function(){
+                    button.disabled=true; document.getElementById("consentStatus").textContent="Vérification du dépôt…";
+                    TSS.api("/admin/consents/retry",{pk:item.pk,job_id:item.job_id,kind:item.kind}).then(function(result){
+                        if (!result.ok) { document.getElementById("consentStatus").textContent="Le dépôt n’a pas pu être confirmé. Actualisez le suivi ou vérifiez le dossier concerné."; return; }
+                        return loadConsents(false);
+                    }).catch(function(){document.getElementById("consentStatus").textContent="La réponse a été interrompue. Actualisez le suivi avant de réessayer.";}).finally(function(){button.disabled=false;});
+                });
+                row.appendChild(button);
+            }
+            return row;
+        }
+        function loadConsents(more) {
+            if (consentBusy) return Promise.resolve(); consentBusy=true;
+            var refresh=document.getElementById("consentRefresh"), next=document.getElementById("consentMore"), error=document.getElementById("consentLoadError"), panel=document.getElementById("consentPanel"), host=document.getElementById("consentJobs");
+            refresh.disabled=true; next.disabled=true; error.textContent="";
+            return TSS.api("/admin/consents", { cursor: more ? consentCursor : "" }).then(function(result){
+                if (!result.ok || !Array.isArray(result.items)) {
+                    if (result._status === 401 || result._status === 403) { panel.hidden=true; host.replaceChildren(); consentSeen.clear(); consentCursor=""; }
+                    error.textContent="Le suivi des consentements ne peut pas être chargé. Actualisez la page avec un accès autorisé de la clinique."; return;
+                }
+                if (!more) { host.replaceChildren(); consentSeen.clear(); }
+                result.items.forEach(function(item){var key=String(item.pk)+":"+String(item.job_id)+":"+String(item.kind);if(!consentSeen.has(key)){host.appendChild(consentJob(item));consentSeen.add(key);}});
+                consentCursor=result.cursor || ""; next.hidden=!consentCursor; panel.hidden=false;
+                document.getElementById("consentStatus").textContent=consentSeen.size ? consentSeen.size + " document(s) affiché(s)." : "Aucun dépôt de consentement à afficher.";
+            }).catch(function(){error.textContent="Le suivi des consentements est indisponible pour le moment. Actualisez la page pour réessayer.";}).finally(function(){consentBusy=false;refresh.disabled=false;next.disabled=false;});
+        }
+        document.getElementById("consentRefresh").addEventListener("click",function(){loadConsents(false);});
+        document.getElementById("consentMore").addEventListener("click",function(){loadConsents(true);});
         function render() {
             var list = document.getElementById("list"); list.innerHTML = "";
             var total = 0;
@@ -149,6 +207,7 @@
             TSS.api("/admin/partner", o).then(function (j) { if (!j.ok) { say("Création impossible : " + (j.error || "")); return; } say("Créé. Code d’accès : " + j.partner.code); e.target.reset(); load(); });
         });
         load();
+        loadConsents(false);
     })();
     </script>
 </body>
