@@ -7,12 +7,14 @@
 import {
   DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand, QueryCommand, ScanCommand, DeleteItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { randomUUID, randomBytes, createHmac, timingSafeEqual } from "node:crypto";
+import { randomUUID, randomBytes, createHmac, timingSafeEqual, createHash } from "node:crypto";
 
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
 const T_MEMBERS = "tss-portail-membres";
 const PRIX = 8; // $ CAD par personne couverte par mois
+const MAX_BATCH = 5;
+const PENDING_PAYMENT = "en_attente_paiement";
 const ADMIN_CODE = process.env.ADMIN_CODE || "";
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_PRICE = process.env.STRIPE_PRICE_ID || "";
@@ -46,7 +48,7 @@ const S = (v) => ({ S: String(v ?? "") });
 const now = () => new Date().toISOString();
 const digits = (p) => String(p || "").replace(/\D/g, "");
 const e164 = (p) => { let d = digits(p); if (d.length === 10) d = "1" + d; return d.length === 11 ? "+" + d : ""; };
-const validPhone = (p) => digits(p).length >= 10;
+const validPhone = (p) => /^(?:1)?\d{10}$/.test(digits(p));
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 /* ---------- Google (connexion des entreprises, jamais des membres) ---------- */
@@ -74,22 +76,23 @@ const unmarshal = (it) => {
 };
 async function getPartner(code) {
   if (!code || code.length < 8) return null;
-  const r = await db.send(new GetItemCommand({ TableName: T_PARTNERS, Key: { code: S(code) } }));
+  const r = await db.send(new GetItemCommand({ TableName: T_PARTNERS, Key: { code: S(code) }, ConsistentRead: true }));
   if (!r.Item) return null;
   const p = unmarshal(r.Item);
   return p.active === "non" ? null : p;
 }
 async function listPartners() {
-  const r = await db.send(new ScanCommand({ TableName: T_PARTNERS }));
-  return (r.Items || []).map(unmarshal).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  return (await scanAll(T_PARTNERS)).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 }
 async function listMembers(partnerCode) {
-  const r = await db.send(new QueryCommand({
+  const items = []; let key;
+  do { const r = await db.send(new QueryCommand({
     TableName: T_MEMBERS,
     KeyConditionExpression: "partner_code = :p",
     ExpressionAttributeValues: { ":p": S(partnerCode) },
-  }));
-  return (r.Items || []).map(unmarshal).filter((x) => x.kind !== "code").sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+    ConsistentRead: true, ExclusiveStartKey: key,
+  })); items.push(...(r.Items || []).map(unmarshal)); key = r.LastEvaluatedKey; } while (key);
+  return items.filter((x) => !x.kind || x.kind === "member").sort((a, b) => (a.created_at || "").localeCompare(b.created_at || "") || a.id.localeCompare(b.id));
 }
 async function listCodes(partnerCode) {
   const r = await db.send(new QueryCommand({ TableName: T_MEMBERS, KeyConditionExpression: "partner_code = :p", ExpressionAttributeValues: { ":p": S(partnerCode) } }));
@@ -162,7 +165,7 @@ async function memberStateReply(m, partner) {
   const fresh = members.find((x) => x.id === m.id) || m;
   return reply(200, {
     ok: true,
-    membre: { id: fresh.id, first_name: fresh.first_name, last_name: fresh.last_name, phone: fresh.phone, email: fresh.email, status: fresh.status, created_at: fresh.created_at, months_covered: monthsSince(fresh.created_at), codes: fresh.codes === "oui", family_of: fresh.family_of || "" },
+    membre: { id: fresh.id, first_name: fresh.first_name, last_name: fresh.last_name, phone: fresh.phone, email: fresh.email, status: fresh.status, created_at: fresh.created_at, activated_at: fresh.activated_at || "", months_covered: fresh.status === PENDING_PAYMENT ? 0 : monthsSince(fresh.activated_at || fresh.created_at), codes: fresh.codes === "oui", family_of: fresh.family_of || "" },
     entreprise: { name: partner.name, type: partner.type },
     banque: { restantes: bank.restantes, mensuel: bank.mensuel, spruce: SPRUCE_LINK },
     mes_codes: codes.filter((c) => c.member_id === fresh.id).map(publicCode),
@@ -172,9 +175,9 @@ async function getMember(partnerCode, id) {
   const r = await db.send(new GetItemCommand({ TableName: T_MEMBERS, Key: { partner_code: S(partnerCode), id: S(id) } }));
   return r.Item ? unmarshal(r.Item) : null;
 }
-async function putItem(table, item) {
+async function putItem(table, item, unique = false) {
   const Item = {}; for (const [k, v] of Object.entries(item)) Item[k] = S(v);
-  await db.send(new PutItemCommand({ TableName: table, Item }));
+  await db.send(new PutItemCommand({ TableName: table, Item, ...(unique ? { ConditionExpression: "attribute_not_exists(#key)", ExpressionAttributeNames: { "#key": table === T_PARTNERS ? "code" : "id" } } : {}) }));
 }
 async function updateFields(table, key, fields) {
   const names = {}, values = {}, sets = [];
@@ -190,22 +193,23 @@ async function updateFields(table, key, fields) {
 }
 
 /* ---------- Stripe (facturation mensuelle = actifs x 8 $) ---------- */
-async function stripe(method, path, params) {
-  if (!STRIPE_KEY) return null;
+async function stripe(method, path, params, idempotencyKey) {
+  if (!STRIPE_KEY) throw new Error("stripe_not_configured");
   const body = params ? new URLSearchParams(params).toString() : undefined;
   const r = await fetch("https://api.stripe.com" + path, {
     method,
-    headers: { Authorization: "Bearer " + STRIPE_KEY, "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { Authorization: "Bearer " + STRIPE_KEY, "Content-Type": "application/x-www-form-urlencoded", ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) },
     body,
+    signal: AbortSignal.timeout(5000),
   });
   const j = await r.json();
   if (!r.ok) throw new Error("stripe: " + (j.error?.message || r.status));
   return j;
 }
 async function stripeGet(path, params) {
-  if (!STRIPE_KEY) return null;
+  if (!STRIPE_KEY) throw new Error("stripe_not_configured");
   const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-  const r = await fetch("https://api.stripe.com" + path + qs, { headers: { Authorization: "Bearer " + STRIPE_KEY } });
+  const r = await fetch("https://api.stripe.com" + path + qs, { headers: { Authorization: "Bearer " + STRIPE_KEY }, signal: AbortSignal.timeout(5000) });
   const j = await r.json();
   if (!r.ok) throw new Error("stripe: " + (j.error?.message || r.status));
   return j;
@@ -260,7 +264,7 @@ async function syncStripeQuantity(partner, actifs) {
   if (partner.demo === "oui") return { synced: false, reason: "demo" };
   if (!partner.stripe_subscription_id) return { synced: false, reason: "no_subscription" };
   const sub = await stripe("GET", "/v1/subscriptions/" + partner.stripe_subscription_id);
-  const item = sub.items?.data?.[0];
+  const item = sub?.items?.data?.find((it) => it.price?.id === STRIPE_PRICE);
   if (!item) return { synced: false, reason: "no_item" };
   if (Number(item.quantity) === actifs) return { synced: true, unchanged: true };
   await stripe("POST", "/v1/subscription_items/" + item.id, { quantity: String(actifs), proration_behavior: "none" });
@@ -281,6 +285,206 @@ async function billingInfo(partner) {
     return { actif: false, erreur: e.message };
   }
 }
+// Public signup never grants coverage. A paid subscription, or a billing arrangement
+// explicitly activated by an administrator, is required before any invitation.
+async function paymentApproval(partner) {
+  if (partner.demo === "oui") return { approved: true, mode: "demo" };
+  if (!partner.stripe_subscription_id) return { approved: false };
+  try {
+    const sub = await stripeGet("/v1/subscriptions/" + partner.stripe_subscription_id, { "expand[]": "latest_invoice" });
+    if (!sub || !["active", "past_due"].includes(sub.status)) return { approved: false };
+    if (!(sub.items?.data || []).some((it) => it.price?.id === STRIPE_PRICE)) return { approved: false };
+    const quantity = Number((sub.items?.data || []).find((it) => it.price?.id === STRIPE_PRICE)?.quantity) || 0;
+    if (sub.collection_method === "send_invoice") return { approved: true, mode: "invoice", quantity };
+    let invoice = sub.latest_invoice;
+    if (typeof invoice === "string") invoice = await stripeGet("/v1/invoices/" + invoice);
+    return { approved: sub.status === "active" && (invoice?.paid === true || invoice?.status === "paid"), mode: "card", quantity };
+  } catch { return { approved: false, unavailable: true }; }
+}
+const requestedCount = (members) => members.filter((m) => m.status === "actif" || m.status === PENDING_PAYMENT).length;
+async function claimIdentityLocks(scope, member) {
+  const locks = [], owner = randomUUID();
+  const identities = ["phone:" + digits(member.phone).slice(-10), "email:" + member.email.toLowerCase()].sort();
+  for (const identity of identities) {
+    const key = { partner_code: S("__IDENTITY_LOCKS__"), id: S(createHmac("sha256", ADMIN_CODE || STRIPE_KEY).update(scope + ":" + identity).digest("hex")) };
+    try {
+      await db.send(new UpdateItemCommand({ TableName: T_MEMBERS, Key: key,
+        UpdateExpression: "SET #lock = :processing, lock_owner = :owner, #kind = :kind",
+        ConditionExpression: "attribute_not_exists(#lock) OR #lock = :released",
+        ExpressionAttributeNames: { "#lock": "lock_state", "#kind": "kind" },
+        ExpressionAttributeValues: { ":processing": S("processing"), ":released": S("released"), ":owner": S(owner), ":kind": S("identity_lock") },
+      })); locks.push({ key, owner });
+    } catch (e) { await releaseIdentityLocks(locks, "released"); if (e.name === "ConditionalCheckFailedException") return null; throw e; }
+  }
+  return locks;
+}
+async function releaseIdentityLocks(locks, state) {
+  for (const lock of locks) await db.send(new UpdateItemCommand({ TableName: T_MEMBERS, Key: lock.key,
+    UpdateExpression: "SET #lock = :state", ConditionExpression: "lock_owner = :owner",
+    ExpressionAttributeNames: { "#lock": "lock_state" }, ExpressionAttributeValues: { ":state": S(state), ":owner": S(lock.owner) },
+  }));
+}
+async function validPaidSession(session) {
+  if (!session || session.mode !== "subscription" || session.status !== "complete" || session.payment_status !== "paid") return false;
+  let sub = session.subscription;
+  if (typeof sub === "string") sub = await stripeGet("/v1/subscriptions/" + sub);
+  const items = sub?.items?.data || [];
+  return !!sub?.id && sub.status === "active" && items.length === 1 && items[0].price?.id === STRIPE_PRICE && Number.isSafeInteger(items[0].quantity) && items[0].quantity > 0 && (!session.metadata?.partner_code || session.metadata.partner_code === session.client_reference_id);
+}
+async function inviteSavedMember(partner, member) {
+  if (member.status !== "actif" || ["invite", "compte", "existant"].includes(member.spruce)) return;
+  if (partner.demo === "oui") { member.spruce = "compte"; await updateFields(T_MEMBERS, { partner_code: S(partner.code), id: S(member.id) }, { spruce: "compte", spruce_detail: "démo (personne fictive)" }); return; }
+  if (!AUTO_INVITE) return;
+  try {
+    await db.send(new UpdateItemCommand({
+      TableName: T_MEMBERS, Key: { partner_code: S(partner.code), id: S(member.id) },
+      UpdateExpression: "SET #attempt = :processing, spruce_attempt_at = :at",
+      ConditionExpression: "attribute_not_exists(#attempt) OR #attempt = :retry",
+      ExpressionAttributeNames: { "#attempt": "spruce_attempt_state" },
+      ExpressionAttributeValues: { ":processing": S("processing"), ":retry": S("retry"), ":at": S(now()) },
+    }));
+  } catch (e) { if (e.name === "ConditionalCheckFailedException") return; throw e; }
+  let result;
+  const identityLocks = await claimIdentityLocks("spruce", member);
+  if (!identityLocks) result = { statut: "erreur", detail: "Identité déjà en traitement ou à vérifier — vérification manuelle requise" };
+  else {
+    try { result = await spruceInvite(member); } catch (e) { result = { statut: "erreur", detail: "spruce: " + e.message, safeRetry: e.message === "spruce_search_unavailable" }; }
+    await releaseIdentityLocks(identityLocks, result.statut !== "erreur" || result.safeRetry ? "released" : "needs_review");
+  }
+  const fields = { spruce: result.statut === "erreur" ? "a_inviter" : result.statut, spruce_detail: result.detail, spruce_attempt_state: result.statut === "erreur" ? (result.safeRetry ? "retry" : "needs_review") : "done", updated_at: now() };
+  if (result.statut === "invite") fields.spruce_invited_at = now();
+  await updateFields(T_MEMBERS, { partner_code: S(partner.code), id: S(member.id) }, fields);
+  Object.assign(member, fields);
+}
+async function activatePending(partner, approval) {
+  const owner = randomUUID();
+  try {
+    await db.send(new UpdateItemCommand({ TableName: T_PARTNERS, Key: { code: S(partner.code) },
+      UpdateExpression: "SET activation_lock_until = :until, activation_lock_owner = :owner",
+      ConditionExpression: "attribute_not_exists(activation_lock_until) OR activation_lock_until < :now",
+      ExpressionAttributeValues: { ":until": S(new Date(Date.now() + 30000).toISOString()), ":now": S(now()), ":owner": S(owner) },
+    }));
+  } catch (e) {
+    if (e.name !== "ConditionalCheckFailedException") throw e;
+    return { activated: 0, pending_remaining: (await listMembers(partner.code)).filter((m) => m.status === PENDING_PAYMENT).length, busy: true, payment_required: false };
+  }
+  try { return await activatePendingLocked(partner, approval); }
+  finally {
+    await db.send(new UpdateItemCommand({ TableName: T_PARTNERS, Key: { code: S(partner.code) },
+      UpdateExpression: "SET activation_lock_until = :empty",
+      ConditionExpression: "activation_lock_owner = :owner",
+      ExpressionAttributeValues: { ":empty": S(""), ":owner": S(owner) },
+    }));
+  }
+}
+async function activatePendingLocked(partner, approval) {
+  const members = await listMembers(partner.code);
+  const auth = approval || await paymentApproval(partner);
+  const pending = members.filter((m) => m.status === PENDING_PAYMENT);
+  if (!auth.approved) return { activated: 0, pending_remaining: pending.length, payment_required: true };
+  const activeCount = members.filter((m) => m.status === "actif").length;
+  const available = auth.mode === "demo" ? pending.length : Math.max(0, auth.quantity - activeCount);
+  const batch = pending.slice(0, Math.min(MAX_BATCH, available));
+  const activated = [];
+  for (const member of batch) {
+    const fields = { status: "actif", activated_at: now(), updated_at: now() };
+    try {
+      await db.send(new UpdateItemCommand({ TableName: T_MEMBERS, Key: { partner_code: S(partner.code), id: S(member.id) },
+        UpdateExpression: "SET #status = :active, activated_at = :at, updated_at = :at",
+        ConditionExpression: "#status = :pending",
+        ExpressionAttributeNames: { "#status": "status" }, ExpressionAttributeValues: { ":active": S("actif"), ":pending": S(PENDING_PAYMENT), ":at": S(fields.activated_at) },
+      }));
+      Object.assign(member, fields); activated.push(member);
+    } catch (e) { if (e.name !== "ConditionalCheckFailedException") throw e; }
+  }
+  await Promise.all(activated.map((m) => inviteSavedMember(partner, m)));
+  return { activated: activated.length, pending_remaining: pending.length - activated.length, invitation_pending: activated.filter((m) => m.spruce === "a_inviter").length, payment_required: pending.length > available, places_payees: auth.quantity ?? null, places_demandees: requestedCount(members) };
+}
+async function finishRosterAdd(partner) {
+  const approval = await paymentApproval(partner);
+  let sync = { synced: false, reason: "payment_required" };
+  if (approval.approved) {
+    const members = await listMembers(partner.code);
+    const initialPending = members.filter((m) => m.status === PENDING_PAYMENT && m.initial_payment === "oui").length;
+    const available = Math.max(0, (approval.quantity || 0) - members.filter((m) => m.status === "actif").length);
+    if (approval.mode === "card" && initialPending > available) return { stripe: { synced: false, reason: "initial_payment_required" }, activation: { activated: 0, pending_remaining: members.filter((m) => m.status === PENDING_PAYMENT).length, payment_required: true, places_payees: approval.quantity, places_demandees: requestedCount(members) } };
+    try {
+      sync = await syncStripeQuantity(partner, requestedCount(members));
+      if (sync.synced || approval.mode === "demo") return { stripe: sync, activation: await activatePending(partner, { ...approval, quantity: requestedCount(members) }) };
+    } catch (e) { sync = { synced: false, reason: "billing_update_failed" }; }
+  }
+  return { stripe: sync, activation: { activated: 0, pending_remaining: (await listMembers(partner.code)).filter((m) => m.status === PENDING_PAYMENT).length, payment_required: true } };
+}
+async function checkoutForPartner(partner) {
+  const owner = randomUUID();
+  try { await db.send(new UpdateItemCommand({ TableName: T_PARTNERS, Key: { code: S(partner.code) },
+    UpdateExpression: "SET checkout_lock_until = :until, checkout_lock_owner = :owner",
+    ConditionExpression: "attribute_not_exists(checkout_lock_until) OR checkout_lock_until < :now",
+    ExpressionAttributeValues: { ":until": S(new Date(Date.now() + 30000).toISOString()), ":now": S(now()), ":owner": S(owner) },
+  })); } catch (e) { if (e.name === "ConditionalCheckFailedException") return reply(409, { error: "checkout_busy" }); throw e; }
+  try { return await checkoutForPartnerLocked(await getPartner(partner.code)); }
+  finally { await db.send(new UpdateItemCommand({ TableName: T_PARTNERS, Key: { code: S(partner.code) },
+    UpdateExpression: "SET checkout_lock_until = :empty", ConditionExpression: "checkout_lock_owner = :owner",
+    ExpressionAttributeValues: { ":empty": S(""), ":owner": S(owner) },
+  })); }
+}
+async function checkoutForPartnerLocked(partner) {
+  const members = await listMembers(partner.code), quantity = requestedCount(members);
+  if (!quantity) return reply(400, { error: "no_members" });
+  if (!STRIPE_PRICE) return reply(500, { error: "no_price_configured" });
+  const roster = createHash("sha256").update(members.filter((m) => m.status === "actif" || m.status === PENDING_PAYMENT).map((m) => m.id).sort().join(",")).digest("hex");
+  if (partner.stripe_subscription_id) {
+    if (!members.some((m) => m.status === PENDING_PAYMENT)) return reply(200, { ok: true, url: await stripePortalLink(partner), deja: true });
+    const sub = await stripeGet("/v1/subscriptions/" + partner.stripe_subscription_id, { "expand[]": "latest_invoice" });
+    const item = sub?.items?.data?.find((it) => it.price?.id === STRIPE_PRICE);
+    if (!item || sub.collection_method !== "charge_automatically") return reply(200, { ok: true, url: await stripePortalLink(partner), deja: true });
+    let invoice = sub.latest_invoice;
+    if (typeof invoice === "string") invoice = await stripeGet("/v1/invoices/" + invoice);
+    if (invoice?.status === "open" && invoice.hosted_invoice_url) return reply(200, { ok: true, url: invoice.hosted_invoice_url, payment_required: true });
+    if (quantity > Number(item.quantity)) {
+      const adjusted = await stripe("POST", "/v1/subscriptions/" + sub.id, {
+        "items[0][id]": item.id, "items[0][quantity]": String(quantity), proration_behavior: "always_invoice", payment_behavior: "pending_if_incomplete", "expand[]": "latest_invoice",
+      }, "tss-adjust-" + createHash("sha256").update(partner.code + ":" + roster + ":" + (invoice?.id || "initial")).digest("hex"));
+      invoice = adjusted.latest_invoice;
+      if (typeof invoice === "string") invoice = await stripeGet("/v1/invoices/" + invoice);
+      if (invoice?.status === "open" && invoice.hosted_invoice_url) return reply(200, { ok: true, url: invoice.hosted_invoice_url, payment_required: true });
+    }
+    const activation = await activatePending(partner);
+    if (activation.payment_required) return reply(409, { error: "payment_pending", activation });
+    return reply(200, { ok: true, url: "https://truckstopsante.com/portail/tableau.html", activation });
+  }
+  // Persist the idempotency request BEFORE Stripe. If a response is lost, recover
+  // that exact request before changing the roster or creating another checkout.
+  let previousId = partner.checkout_session_id || "";
+  if (partner.checkout_key && !previousId) {
+    if (Date.now() - Date.parse(partner.checkout_requested_at || "") > 23 * 3600000) return reply(409, { error: "checkout_needs_review" });
+    const recovered = await stripe("POST", "/v1/checkout/sessions", JSON.parse(partner.checkout_params), partner.checkout_key);
+    previousId = recovered.id;
+    await updateFields(T_PARTNERS, { code: S(partner.code) }, { checkout_session_id: previousId });
+  }
+  if (previousId) {
+    const previous = await stripeGet("/v1/checkout/sessions/" + previousId, { "expand[]": "subscription" });
+    if (previous.status === "complete") {
+      const result = await completeEnrolment(previous);
+      return result.ok ? reply(200, { ok: true, url: "https://truckstopsante.com/portail/tableau.html", activation: result.activation }) : reply(409, { error: result.error || "payment_pending" });
+    }
+    if (previous.status === "open" && partner.checkout_roster === roster) return reply(200, { ok: true, url: previous.url, quantity });
+    if (previous.status === "open") await stripe("POST", "/v1/checkout/sessions/" + previousId + "/expire", {});
+    else if (previous.status !== "expired") return reply(409, { error: "checkout_needs_review" });
+  }
+  const params = {
+    mode: "subscription", "line_items[0][price]": STRIPE_PRICE, "line_items[0][quantity]": String(quantity), client_reference_id: partner.code,
+    success_url: "https://truckstopsante.com/bienvenue/?session_id={CHECKOUT_SESSION_ID}", cancel_url: "https://truckstopsante.com/portail/tableau.html",
+    "metadata[partner_code]": partner.code, locale: "fr-CA", "phone_number_collection[enabled]": "true",
+    "custom_fields[0][key]": "entreprise", "custom_fields[0][label][type]": "custom", "custom_fields[0][label][custom]": "Nom de l'entreprise", "custom_fields[0][type]": "text",
+  };
+  if (partner.stripe_customer_id) params.customer = partner.stripe_customer_id; else if (partner.contact_email) params.customer_email = partner.contact_email;
+  const checkoutKey = "tss-checkout-" + randomUUID();
+  await updateFields(T_PARTNERS, { code: S(partner.code) }, { checkout_key: checkoutKey, checkout_roster: roster, checkout_params: JSON.stringify(params), checkout_session_id: "", checkout_requested_at: now() });
+  const session = await stripe("POST", "/v1/checkout/sessions", params, checkoutKey);
+  await updateFields(T_PARTNERS, { code: S(partner.code) }, { checkout_session_id: session.id });
+  return reply(200, { ok: true, url: session.url, quantity });
+}
 // Lien vers le portail client Stripe (changer la carte, voir les factures, annuler).
 async function stripePortalLink(partner) {
   if (!partner.stripe_customer_id) return null;
@@ -297,6 +501,7 @@ async function spruce(method, path, body) {
     method,
     headers: { Authorization: SPRUCE_AUTH, Accept: "application/json", "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(1800),
   });
   let j = {};
   try { j = await r.json(); } catch { j = {}; }
@@ -314,7 +519,8 @@ async function findSpruceContact(phone, email) {
   const hits = [];
   for (const q of [e164(phone), digits(phone).slice(-10), email].filter(Boolean)) {
     const r = await spruce("POST", "/v1/contacts/search", { freeText: q });
-    const list = (r.s === 200 && r.b.contacts) || [];
+    if (r.s !== 200 || !Array.isArray(r.b.contacts)) throw new Error("spruce_search_unavailable");
+    const list = r.b.contacts;
     for (const c of list) if (contactMatches(c, phone, email) && !hits.some((h) => h.id === c.id)) hits.push(c);
   }
   if (!hits.length) return null;
@@ -326,6 +532,7 @@ async function spruceInvite(m) {
   if (existing) {
     if (existing.hasAccount) return { statut: "compte", detail: "déjà un compte Spruce" };
     if (existing.hasPendingInvite) return { statut: "invite", detail: "invitation déjà en attente" };
+    return { statut: "existant", detail: "contact Spruce existant — aucune nouvelle invitation" };
   }
   let contact = existing;
   if (!contact) {
@@ -342,13 +549,17 @@ async function spruceInvite(m) {
     contact = g.b.contact || g.b;
   }
   const results = [];
-  for (const dest of [...(contact.phoneNumbers || []).slice(0, 1), ...(contact.emailAddresses || []).slice(0, 1)]) {
+  const destinations = [...(contact.phoneNumbers || []).slice(0, 1).map((d) => ({ ...d, channel: "texto" })), ...(contact.emailAddresses || []).slice(0, 1).map((d) => ({ ...d, channel: "courriel" }))];
+  for (const dest of destinations) {
     if (!dest.id) continue;
-    const ir = await spruce("POST", `/v1/contacts/${contact.id}/invite`, { destinationId: dest.id, internalEndpointId: SPRUCE_INTERNAL_ENDPOINT_ID });
-    results.push(ir.s);
+    try {
+      const ir = await spruce("POST", `/v1/contacts/${contact.id}/invite`, { destinationId: dest.id, internalEndpointId: SPRUCE_INTERNAL_ENDPOINT_ID });
+      results.push({ channel: dest.channel, ok: [200, 201, 204].includes(ir.s) });
+    } catch { results.push({ channel: dest.channel, ok: false }); break; }
   }
-  const ok = results.some((s) => s === 200 || s === 201 || s === 204);
-  return ok ? { statut: "invite", detail: "texto + courriel envoyés", contact_id: contact.id } : { statut: "erreur", detail: "invitation HTTP " + results.join("/") };
+  const sent = results.filter((r) => r.ok).map((r) => r.channel);
+  const detail = sent.length ? sent.join(" + ") + " : envoi confirmé" + (sent.length < destinations.length ? "; autre envoi non confirmé" : "") : "Invitation non confirmée — vérification manuelle requise";
+  return { statut: sent.length ? "invite" : "erreur", detail, contact_id: contact.id };
 }
 
 /* ---------- Inscription automatique après paiement (lien Stripe -> partenaire + première personne + invitation Spruce) ---------- */
@@ -361,11 +572,21 @@ async function findPartnerBySubscription(subId) {
 async function completeEnrolment(session, opts = {}) {
   const subId = typeof session.subscription === "object" ? session.subscription?.id : session.subscription;
   const custId = typeof session.customer === "object" ? session.customer?.id : session.customer;
-  if (session.payment_status && session.payment_status !== "paid" && session.status !== "complete") return { ok: false, error: "not_paid" };
+  if (!opts.demo && !await validPaidSession(session)) return { ok: false, error: "not_paid_or_wrong_product" };
   let existing = await findPartnerBySubscription(subId);
   if (!existing && session.client_reference_id) {
     const ref = await getPartner(clean(session.client_reference_id, 60));
-    if (ref) { await updateFields(T_PARTNERS, { code: S(ref.code) }, { stripe_customer_id: custId || ref.stripe_customer_id || "", stripe_subscription_id: subId || ref.stripe_subscription_id || "", verifie: "stripe" }); ref.stripe_customer_id = custId || ref.stripe_customer_id; ref.stripe_subscription_id = subId || ref.stripe_subscription_id; existing = ref; }
+    if (ref) {
+      if (ref.stripe_subscription_id && ref.stripe_subscription_id !== subId) return { ok: false, error: "subscription_conflict" };
+      try {
+        await db.send(new UpdateItemCommand({ TableName: T_PARTNERS, Key: { code: S(ref.code) },
+          UpdateExpression: "SET stripe_customer_id = :customer, stripe_subscription_id = :subscription, verifie = :verified",
+          ConditionExpression: "attribute_not_exists(stripe_subscription_id) OR stripe_subscription_id = :empty OR stripe_subscription_id = :subscription",
+          ExpressionAttributeValues: { ":customer": S(custId || ""), ":subscription": S(subId || ""), ":verified": S("stripe"), ":empty": S("") },
+        }));
+      } catch (e) { if (e.name === "ConditionalCheckFailedException") return { ok: false, error: "subscription_conflict" }; throw e; }
+      ref.stripe_customer_id = custId; ref.stripe_subscription_id = subId; existing = ref;
+    }
   }
   const cd = session.customer_details || {};
   const fields = {}; for (const cf of session.custom_fields || []) fields[cf.key] = (cf.text || cf.numeric || cf.dropdown || {}).value || "";
@@ -376,7 +597,7 @@ async function completeEnrolment(session, opts = {}) {
   let partner = existing;
   let created = false;
   if (!partner) {
-    let pcode = makeCode(entreprise); while (await getPartner(pcode)) pcode = makeCode(entreprise);
+    const pcode = subId ? "TSS-" + createHmac("sha256", ADMIN_CODE || STRIPE_WEBHOOK_SECRET || STRIPE_KEY).update("partner:" + subId).digest("hex").slice(0, 28).toUpperCase() : makeCode(entreprise);
     const item = {
       code: pcode, name: entreprise, type: "entreprise",
       contact_name: clean(cd.name, 120), contact_email: email, contact_phone: phone, billing_email: email,
@@ -384,7 +605,8 @@ async function completeEnrolment(session, opts = {}) {
       bank_code: entreprise.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE",
       demo: opts.demo ? "oui" : "non", google_emails: email, active: "oui", created_at: now(), source: "stripe:" + (session.id || ""),
     };
-    await putItem(T_PARTNERS, item); partner = item; created = true;
+    try { await putItem(T_PARTNERS, item, true); partner = item; created = true; }
+    catch (e) { if (e.name !== "ConditionalCheckFailedException") throw e; partner = await getPartner(pcode); if (!partner) throw e; }
   }
   const members = await listMembers(partner.code);
   let member = null, added = false;
@@ -396,7 +618,10 @@ async function completeEnrolment(session, opts = {}) {
     else if (r.error === "duplicate") member = r.member;
   }
   if (added && partner.demo !== "oui") await telegram(`Portail TSS — nouvel abonnement Stripe : ${partner.name} (${email}, ${phone})\nCode d'accès ${partner.code} · ${member ? member.first_name + " " + member.last_name + " : Spruce " + (member.spruce || "?") : "aucune personne"}`, partner);
-  return { ok: true, created, added, partner: publicPartner(partner), member: member ? { first_name: member.first_name, last_name: member.last_name, phone: member.phone, email: member.email } : null, actifs: members.length + (added ? 1 : 0) };
+  const activation = await activatePending(partner);
+  const updatedMembers = await listMembers(partner.code);
+  const updatedMember = member && updatedMembers.find((m) => m.id === member.id);
+  return { ok: true, created, added, partner: publicPartner(partner), member: updatedMember ? publicMember(updatedMember, true) : null, actifs: updatedMembers.filter((m) => m.status === "actif").length, activation };
 }
 function verifyStripeSignature(rawBody, header) {
   if (!STRIPE_WEBHOOK_SECRET || !header) return false;
@@ -432,6 +657,9 @@ function summary(members, billing, full) {
   const banque = Math.floor(actifs.length / 100) * 5; // 5 consultations gratuites / mois par tranche de 100 personnes couvertes
   return {
     actifs: actifs.length, pause: pause.length, retires: retires.length,
+    en_attente_paiement: members.filter((m) => m.status === PENDING_PAYMENT).length,
+    places_demandees: requestedCount(members),
+    a_activer: billing?.actif ? members.filter((m) => m.status === PENDING_PAYMENT).length : 0,
     prix: PRIX, montant: actifs.length * PRIX,
     ajouts_mois: ajoutsMois, pauses_mois: pausesMois, retraits_mois: retraitsMois,
     ...(full ? { a_inviter: aInviter, invitations_en_attente: enAttente } : {}),
@@ -446,7 +674,9 @@ const publicMember = (m, full) => ({
   id: m.id, first_name: m.first_name, last_name: m.last_name, phone: m.phone, email: m.email,
   status: m.status, family_of: m.family_of || "", note: m.note || "",
   since_months: m.since_months ? Number(m.since_months) : 0, coverage: m.coverage || "indeterminee",
-  created_at: m.created_at, months_covered: monthsSince(m.created_at), paused_at: m.paused_at || "", removed_at: m.removed_at || "",
+  created_at: m.created_at, activated_at: m.activated_at || "", months_covered: m.status === PENDING_PAYMENT ? 0 : monthsSince(m.activated_at || m.created_at), paused_at: m.paused_at || "", removed_at: m.removed_at || "",
+  spruce: m.spruce || "a_inviter",
+  spruce_attempt_state: m.spruce_attempt_state || "", spruce_detail: m.spruce_detail || "",
   codes: m.codes === "oui",
   ...(full ? { spruce: m.spruce || "a_inviter", spruce_detail: m.spruce_detail || "", spruce_invited_at: m.spruce_invited_at || "", google_email: m.google_email || "" } : {}),
 });
@@ -472,28 +702,28 @@ async function addMember(partner, data, existingMembers) {
   if (!first_name || !last_name) return { ok: false, error: "missing_name" };
   if (!validPhone(phone)) return { ok: false, error: "bad_phone" };
   if (!validEmail(email)) return { ok: false, error: "bad_email" };
-  const dup = existingMembers.find((m) => m.status !== "retire" && ((m.email || "").toLowerCase() === email || digits(m.phone) === digits(phone)));
+  const locks = await claimIdentityLocks("roster:" + partner.code, { phone, email });
+  if (!locks) return { ok: false, error: "duplicate" };
+  try { return await addMemberLocked(partner, data, existingMembers, first_name, last_name, phone, email); }
+  finally { await releaseIdentityLocks(locks, "released"); }
+}
+async function addMemberLocked(partner, data, existingMembers, first_name, last_name, phone, email) {
+  existingMembers.splice(0, existingMembers.length, ...await listMembers(partner.code));
+  const dup = existingMembers.find((m) => m.status !== "retire" && ((m.email || "").toLowerCase() === email || digits(m.phone).slice(-10) === digits(phone).slice(-10)));
   if (dup) return { ok: false, error: "duplicate", member: publicMember(dup) };
   const since = Math.max(0, Math.min(600, parseInt(data.since_months, 10) || 0));
   const coverage = COVERAGES.includes(String(data.coverage)) ? String(data.coverage) : "indeterminee";
+  const retired = existingMembers.filter((m) => m.status === "retire" && (m.email || "").toLowerCase() === email).at(-1);
   const item = {
-    partner_code: partner.code, id: randomUUID(), first_name, last_name, phone, email,
-    status: "actif", family_of: clean(data.family_of, 80), note: clean(data.note, 300), codes: data.codes === "oui" ? "oui" : "non",
+    partner_code: partner.code, id: "member-" + createHash("sha256").update(email + (retired ? ":" + retired.id : "")).digest("hex").slice(0, 32), first_name, last_name, phone, email,
+    status: PENDING_PAYMENT, family_of: clean(data.family_of, 80), note: clean(data.note, 300), codes: data.codes === "oui" ? "oui" : "non",
+    initial_payment: partner.stripe_subscription_id ? "non" : "oui",
     since_months: String(since), coverage,
     spruce: "a_inviter", spruce_detail: "", spruce_invited_at: "",
     created_at: now(), updated_at: now(), paused_at: "", removed_at: "",
   };
-  if (partner.demo === "oui") {
-    item.spruce = data.spruce === "invite" ? "invite" : "compte"; item.spruce_detail = "démo (personne fictive)"; if (item.spruce === "invite") item.spruce_invited_at = now();
-  } else if (AUTO_INVITE) {
-    try {
-      const r = await spruceInvite(item);
-      item.spruce = r.statut === "erreur" ? "a_inviter" : r.statut;
-      item.spruce_detail = r.detail;
-      if (r.statut === "invite") item.spruce_invited_at = now();
-    } catch (e) { item.spruce_detail = "spruce: " + e.message; }
-  }
-  await putItem(T_MEMBERS, item);
+  try { await putItem(T_MEMBERS, item, true); }
+  catch (e) { if (e.name === "ConditionalCheckFailedException") return { ok: false, error: "duplicate" }; throw e; }
   existingMembers.push(item);
   return { ok: true, member: publicMember(item) };
 }
@@ -545,14 +775,16 @@ export const handler = async (event) => {
     if (path === "/stripe/webhook" && method === "POST") {
       const sig = event.headers?.["stripe-signature"] || event.headers?.["Stripe-Signature"] || "";
       if (!verifyStripeSignature(rawBody, sig)) return reply(400, { error: "bad_signature" });
+      if (data.type === "invoice.paid") {
+        const invoice = data.data?.object || {}, reference = invoice.subscription || invoice.parent?.subscription_details?.subscription;
+        const subscriptionId = typeof reference === "object" ? reference?.id : reference;
+        const p = subscriptionId && await findPartnerBySubscription(subscriptionId);
+        return reply(200, { ok: true, ...(p ? { activation: await activatePending(p) } : { ignored: "unknown_subscription" }) });
+      }
       if (data.type !== "checkout.session.completed") return reply(200, { ok: true, ignored: data.type });
       let session = data.data?.object || {};
       try { session = await stripeGet("/v1/checkout/sessions/" + session.id, { "expand[]": "subscription" }); } catch { /* on garde l'objet de l'événement */ }
-      const sub = session.subscription && typeof session.subscription === "object" ? session.subscription : null;
-      const products = await stripeListAll("/v1/products", { active: "true" });
-      const tss = new Set(products.filter((p) => /truck\s*stop\s*sant/i.test(p.name || "")).map((p) => p.id));
-      const isTss = sub ? (sub.items?.data || []).some((it) => tss.has(it.price?.product)) : true;
-      if (!isTss) return reply(200, { ok: true, ignored: "other_product" });
+      if (!await validPaidSession(session)) return reply(200, { ok: true, ignored: "unpaid_or_other_product" });
       const r = await completeEnrolment(session);
       return reply(200, r);
     }
@@ -561,7 +793,7 @@ export const handler = async (event) => {
       if (!/^cs_/.test(sid)) return reply(400, { error: "bad_session" });
       let session;
       try { session = await stripeGet("/v1/checkout/sessions/" + sid, { "expand[]": "subscription" }); } catch (e) { return reply(404, { error: "unknown_session" }); }
-      if (session.payment_status !== "paid" && session.status !== "complete") return reply(409, { error: "not_paid", status: session.payment_status });
+      if (!await validPaidSession(session)) return reply(409, { error: "not_paid", status: session?.payment_status });
       const r = await completeEnrolment(session);
       return reply(200, r);
     }
@@ -596,17 +828,7 @@ export const handler = async (event) => {
     if (path === "/billing/checkout" && method === "POST") {
       const p0 = await getPartner(code);
       if (!p0) return reply(401, { error: "bad_code" });
-      if (p0.stripe_subscription_id) { const url = await stripePortalLink(p0); return reply(200, { ok: true, url, deja: true }); }
-      const members = await listMembers(p0.code);
-      const qty = Math.max(1, members.filter((m) => m.status === "actif").length);
-      const params = {
-        mode: "subscription", "line_items[0][price]": STRIPE_PRICE, "line_items[0][quantity]": String(qty),
-        client_reference_id: p0.code, success_url: "https://truckstopsante.com/bienvenue/?session_id={CHECKOUT_SESSION_ID}", cancel_url: "https://truckstopsante.com/portail/tableau.html",
-        "metadata[partner_code]": p0.code, locale: "fr-CA", "phone_number_collection[enabled]": "true",
-        "custom_fields[0][key]": "entreprise", "custom_fields[0][label][type]": "custom", "custom_fields[0][label][custom]": "Nom de l'entreprise", "custom_fields[0][type]": "text",
-      };
-      if (p0.stripe_customer_id) params.customer = p0.stripe_customer_id; else if (p0.contact_email) params.customer_email = p0.contact_email;
-      try { const s = await stripe("POST", "/v1/checkout/sessions", params); return reply(200, { ok: true, url: s.url }); }
+      try { return await checkoutForPartner(p0); }
       catch (e) { return reply(400, { error: "stripe", detail: e.message }); }
     }
 
@@ -614,7 +836,7 @@ export const handler = async (event) => {
     if (path === "/membre/login" && method === "POST") {
       const g = await verifyGoogle(clean(data.credential, 4000));
       if (!g) return reply(401, { error: "bad_google" });
-      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && x.status !== "retire" && ((x.google_email || "").toLowerCase() === g.email || (x.email || "").toLowerCase() === g.email));
+      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && ["actif", "pause"].includes(x.status) && ((x.google_email || "").toLowerCase() === g.email || (x.email || "").toLowerCase() === g.email));
       const m = all.find((x) => x.status === "actif") || all[0];
       if (!m) return reply(404, { error: "unknown_member", email: g.email });
       const partner = await getPartner(m.partner_code);
@@ -628,7 +850,7 @@ export const handler = async (event) => {
       if (!g) return reply(401, { error: "bad_google" });
       const ph = digits(clean(data.phone, 40)).slice(-10), ln = normName(clean(data.last_name, 80));
       if (ph.length < 10 || !ln) return reply(400, { error: "missing" });
-      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && x.status !== "retire" && digits(x.phone).endsWith(ph) && normName(x.last_name) === ln);
+      const all = (await scanAll(T_MEMBERS)).filter((x) => x.kind !== "code" && ["actif", "pause"].includes(x.status) && digits(x.phone).endsWith(ph) && normName(x.last_name) === ln);
       const m = all.find((x) => x.status === "actif") || all[0];
       if (!m) return reply(404, { error: "no_match" });
       await updateFields(T_MEMBERS, { partner_code: S(m.partner_code), id: S(m.id) }, { google_email: g.email });
@@ -711,7 +933,7 @@ export const handler = async (event) => {
       if (p.stripe_subscription_id) return reply(400, { error: "already_active" });
       if (!STRIPE_PRICE) return reply(500, { error: "no_price_configured" });
       const members = await listMembers(p.code);
-      const actifs = members.filter((m) => m.status === "actif").length;
+      const actifs = requestedCount(members);
       if (actifs < 1) return reply(400, { error: "no_active_members" });
       let customerId = p.stripe_customer_id;
       if (!customerId) {
@@ -729,8 +951,10 @@ export const handler = async (event) => {
         "metadata[portail_code]": p.code, "metadata[channel]": "portail-partenaire",
         description: `Truck Stop Santé — ${p.name} — personnes couvertes x ${PRIX} $/mois`,
       });
-      await updateFields(T_PARTNERS, { code: S(p.code) }, { stripe_customer_id: customerId, stripe_subscription_id: sub.id });
-      return reply(200, { ok: true, customer: customerId, subscription: sub.id, quantite: actifs });
+      await updateFields(T_PARTNERS, { code: S(p.code) }, { stripe_customer_id: customerId, stripe_subscription_id: sub.id, invoice_approved: "oui" });
+      p.stripe_customer_id = customerId; p.stripe_subscription_id = sub.id;
+      const activation = await activatePending(p, { approved: true, mode: "invoice", quantity: actifs });
+      return reply(200, { ok: true, customer: customerId, subscription: sub.id, quantite: actifs, activation });
     }
     if (path === "/admin/finance" && method === "GET") {
       if (!isAdmin) return reply(401, { error: "bad_code" });
@@ -771,11 +995,10 @@ export const handler = async (event) => {
       const m = await getMember(pcode, id);
       if (!m) return reply(404, { error: "unknown_member" });
       if (data.action === "inviter") {
-        const r = await spruceInvite(m);
-        const fields = { spruce: r.statut === "erreur" ? "a_inviter" : r.statut, spruce_detail: r.detail, updated_at: now() };
-        if (r.statut === "invite") fields.spruce_invited_at = now();
-        await updateFields(T_MEMBERS, { partner_code: S(pcode), id: S(id) }, fields);
-        return reply(200, { ok: true, spruce: r });
+        const p = await getPartner(pcode);
+        if (!p || m.status !== "actif" || !(await paymentApproval(p)).approved) return reply(409, { error: "payment_required" });
+        await inviteSavedMember(p, m);
+        return reply(200, { ok: true, spruce: { statut: m.spruce || "a_inviter", detail: m.spruce_detail || "Vérification manuelle requise" } });
       }
       const spruce_ = ["a_inviter", "invite", "compte"].includes(data.spruce) ? data.spruce : "a_inviter";
       await updateFields(T_MEMBERS, { partner_code: S(pcode), id: S(id) }, { spruce: spruce_, updated_at: now() });
@@ -803,10 +1026,16 @@ export const handler = async (event) => {
     if (path === "/state" && method === "GET") {
       const members = await listMembers(partner.code);
       const billing = await billingInfo(partner);
+      billing.actif = (await paymentApproval(partner)).approved;
       return reply(200, {
         ok: true, partner: publicPartner(partner), members: members.map((m) => publicMember(m)),
         resume: summary(members, billing), facturation: billing, banque: await bankOf(partner, members, await listCodes(partner.code)),
       });
+    }
+
+    if (path === "/enrol/activate" && method === "POST") {
+      const activation = await activatePending(partner);
+      return reply(200, { ok: true, ...activation });
     }
 
     if (path === "/billing/portal" && method === "POST") {
@@ -819,30 +1048,32 @@ export const handler = async (event) => {
       const members = await listMembers(partner.code);
       const r = await addMember(partner, data, members);
       if (!r.ok) return reply(r.error === "duplicate" ? 409 : 400, r);
-      const actifs = members.filter((m) => m.status === "actif").length;
-      let stripeSync = null;
-      try { stripeSync = await syncStripeQuantity(partner, actifs); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
+      const outcome = await finishRosterAdd(partner);
+      const updated = await listMembers(partner.code);
+      const actifs = updated.filter((m) => m.status === "actif").length;
       const m = r.member;
       await telegram(`Portail TSS — ${partner.name} a ajouté ${m.first_name} ${m.last_name}\n${m.phone} · ${m.email}${m.family_of ? "\n(famille de " + m.family_of + ")" : ""}\nSpruce : ${m.spruce} (${m.spruce_detail || "à faire"})\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
-      return reply(200, { ok: true, member: m, actifs, stripe: stripeSync });
+      return reply(200, { ok: true, member: publicMember(updated.find((x) => x.id === m.id) || m, true), actifs, ...outcome, resume: summary(updated) });
     }
 
     // Ajout en lot : la liste collée sur le portail (max 200 personnes par envoi)
     if (path === "/members/bulk" && method === "POST") {
-      const rows = Array.isArray(data.members) ? data.members.slice(0, 200) : [];
+      const rows = Array.isArray(data.members) ? data.members : [];
       if (!rows.length) return reply(400, { error: "no_members" });
+      if (rows.length > MAX_BATCH) return reply(400, { error: "batch_too_large", max: MAX_BATCH });
       const members = await listMembers(partner.code);
       const results = [];
       for (const row of rows) results.push(await addMember(partner, row, members));
-      const actifs = members.filter((m) => m.status === "actif").length;
-      let stripeSync = null;
-      try { stripeSync = await syncStripeQuantity(partner, actifs); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
+      const outcome = await finishRosterAdd(partner);
+      const updated = await listMembers(partner.code);
+      const actifs = updated.filter((m) => m.status === "actif").length;
+      for (const result of results) if (result.ok) result.member = publicMember(updated.find((m) => m.id === result.member.id) || result.member, true);
       const added = results.filter((r) => r.ok);
       const invited = added.filter((r) => r.member.spruce === "invite").length;
       const already = added.filter((r) => r.member.spruce === "compte").length;
       const failed = results.length - added.length;
       await telegram(`Portail TSS — ${partner.name} a ajouté ${added.length} personne(s) (liste collée)\nInvitations Spruce envoyées : ${invited} · déjà sur Spruce : ${already} · rejetées : ${failed}\nActifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
-      return reply(200, { ok: true, results, actifs, stripe: stripeSync, resume: { added: added.length, failed } });
+      return reply(200, { ok: true, results, actifs, ...outcome, resume: { ...summary(updated), added: added.length, failed } });
     }
 
     if (path === "/member/status" && method === "POST") {
@@ -852,7 +1083,9 @@ export const handler = async (event) => {
       const m = await getMember(partner.code, id);
       if (!m) return reply(404, { error: "unknown_member" });
       if (m.status === status) return reply(200, { ok: true, unchanged: true });
-      const fields = { status, updated_at: now() };
+      if (status === "pause" && m.status !== "actif") return reply(400, { error: "not_active" });
+      const nextStatus = status === "actif" ? PENDING_PAYMENT : status;
+      const fields = { status: nextStatus, updated_at: now() };
       if (status === "pause") fields.paused_at = now();
       if (status === "retire") fields.removed_at = now();
       if (status === "actif") { fields.paused_at = ""; fields.removed_at = ""; }
@@ -860,10 +1093,11 @@ export const handler = async (event) => {
       const members = await listMembers(partner.code);
       const actifs = members.filter((x) => x.status === "actif").length;
       let stripeSync = null;
-      try { stripeSync = await syncStripeQuantity(partner, actifs); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
+      try { stripeSync = status === "actif" ? (await finishRosterAdd(partner)).stripe : await syncStripeQuantity(partner, requestedCount(members)); } catch (e) { stripeSync = { synced: false, reason: e.message }; }
       const verbe = status === "actif" ? "a réactivé" : status === "pause" ? "a mis en pause" : "a retiré";
       await telegram(`Portail TSS — ${partner.name} ${verbe} ${m.first_name} ${m.last_name}. Actifs : ${actifs} → ${actifs * PRIX} $/mois`, partner);
-      return reply(200, { ok: true, status, actifs, stripe: stripeSync });
+      const finalMembers = await listMembers(partner.code);
+      return reply(200, { ok: true, status: finalMembers.find((x) => x.id === id)?.status || nextStatus, actifs: finalMembers.filter((x) => x.status === "actif").length, stripe: stripeSync });
     }
 
     if (path === "/member/codes" && method === "POST") {

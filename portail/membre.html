@@ -101,13 +101,13 @@
         function render() {
             var m = state.membre, e = state.entreprise, b = state.banque;
             document.getElementById("h1").textContent = "Bonjour " + m.first_name;
-            document.getElementById("sub").textContent = "Couvert par " + e.name + ". Votre médecin est à un texto : " + "spruce.care/centremdicalfont";
+            document.getElementById("sub").textContent = m.status === "actif" ? "Couvert par " + e.name + ". Votre médecin est à un texto : spruce.care/centremdicalfont" : m.status === "en_attente_paiement" ? "Inscription en attente de paiement ou d’activation par " + e.name + ". Votre couverture n’est pas encore active." : "Votre inscription auprès de " + e.name + " est " + (m.status === "pause" ? "en pause." : "inactive.");
             document.getElementById("av").textContent = (m.first_name[0] || "") + (m.last_name[0] || "");
-            var st = sinceText(m.created_at); document.getElementById("since").textContent = st.v; document.getElementById("since-d").textContent = st.d;
+            var st = sinceText(m.status === "en_attente_paiement" ? "" : (m.activated_at || m.created_at)); document.getElementById("since").textContent = st.v; document.getElementById("since-d").textContent = st.d;
             document.getElementById("rest").textContent = b.restantes;
             var can = m.status === "actif" && m.codes;
             document.getElementById("offbox").hidden = !(m.status === "actif" && !m.codes);
-            document.getElementById("emptybox").hidden = !(m.codes && b.restantes <= 0);
+            document.getElementById("emptybox").hidden = !(can && b.restantes <= 0);
             document.getElementById("genrow").hidden = !can;
             var mc = document.getElementById("mycodes"); mc.innerHTML = "";
             if (!state.mes_codes.length) mc.innerHTML = '<span class="muted">Aucun code généré pour l’instant.</span>';

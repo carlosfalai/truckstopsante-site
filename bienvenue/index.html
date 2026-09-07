@@ -20,23 +20,23 @@
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who">Bienvenue</div></header>
     <main>
-        <div class="wait" id="wait"><h1>Merci, votre paiement est reçu.</h1><p class="sub">On prépare votre accès… quelques secondes.</p></div>
+        <div class="wait" id="wait"><h1>Vérification de votre paiement</h1><p class="sub">Nous attendons la confirmation de Stripe avant d’activer votre inscription.</p></div>
 
         <div id="done" hidden>
             <h1 id="h1">Bienvenue</h1>
-            <p class="sub">Votre couverture est active dès maintenant. Voici les deux choses à faire, dans cet ordre.</p>
+            <p class="sub" id="activationmsg"></p>
 
             <div class="card spruce">
-                <div class="step"><b class="n">1</b><div><b>Votre médecin, tout de suite : ouvrez l’invitation Spruce.</b><p class="hint" id="sprucemsg" style="margin:6px 0 0"></p><p class="hint" style="margin:6px 0 0">Pas reçue ? Le lien direct : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a>. Créez votre compte en une minute et écrivez au médecin quand vous voulez.</p></div></div>
+                <div class="step"><b class="n">1</b><div><b>Accès à la clinique sur Spruce.</b><p class="hint" id="sprucemsg" style="margin:6px 0 0"></p><p class="hint" style="margin:6px 0 0">Vous avez déjà un compte Spruce ? Le lien de la clinique : <a href="https://spruce.care/centremdicalfont" target="_blank" rel="noopener">spruce.care/centremdicalfont</a>. Ouvrez votre compte existant. L’état de votre couverture reste indiqué dans le portail.</p></div></div>
             </div>
 
             <div class="card">
-                <div class="step"><b class="n">2</b><div><b>Votre portail entreprise.</b><p class="hint" style="margin:6px 0 10px">Gardez ce code : c’est votre clé. Vous pouvez aussi entrer avec le compte Google de l’adresse utilisée pour payer.</p><div class="big" id="code">–</div><div class="row" style="margin-top:14px"><button class="btn" id="open">Ouvrir mon portail</button><a class="btn secondary" href="/portail/">Page de connexion</a></div><p class="hint" style="margin-top:10px">Dans le portail : ajoutez vos chauffeurs ou votre famille (18 ans et plus) en collant leur nom, cellulaire et courriel, 8 $ par personne par mois. Chaque personne ajoutée reçoit son invitation Spruce par texto. Votre facture suit automatiquement.</p></div></div>
+                <div class="step"><b class="n">2</b><div><b>Votre portail entreprise.</b><p class="hint" style="margin:6px 0 10px">Gardez ce code : c’est votre clé. Vous pouvez aussi entrer avec le compte Google de l’adresse utilisée pour payer.</p><div class="big" id="code">–</div><div class="row" style="margin-top:14px"><button class="btn" id="open">Ouvrir mon portail</button><a class="btn secondary" href="/portail/">Page de connexion</a></div><p class="hint" style="margin-top:10px">Dans le portail : ajoutez vos chauffeurs ou votre famille (18 ans et plus) en collant leur nom, cellulaire et courriel, 8 $ par personne par mois. Vérifiez leur statut : les inscriptions en attente sont activées après confirmation du paiement. Les invitations sont envoyées aux personnes qui ne sont pas déjà sur Spruce.</p></div></div>
             </div>
             <p class="fine">Une confirmation vous a été envoyée par Stripe. Question ? cff@centremedicalfont.ca</p>
         </div>
 
-        <div id="err" hidden class="card"><h2>On n’a pas pu terminer automatiquement</h2><p class="hint" id="errmsg"></p><p class="hint">Votre paiement est bien passé. Écrivez à cff@centremedicalfont.ca avec le nom de votre entreprise : votre accès vous sera envoyé dans la journée.</p></div>
+        <div id="err" hidden class="card"><h2>On n’a pas pu terminer automatiquement</h2><p class="hint" id="errmsg"></p><p class="hint">Ne refaites pas de paiement avant vérification. Consultez votre confirmation Stripe ou écrivez à cff@centremedicalfont.ca avec le nom de votre entreprise. Vous pouvez aussi retrouver votre liste dans votre portail.</p></div>
     </main>
     <script src="/portail/config.js"></script>
     <script src="/portail/app.js"></script>
@@ -49,8 +49,10 @@
             document.getElementById("wait").hidden = true; document.getElementById("done").hidden = false;
             document.getElementById("h1").textContent = "Bienvenue, " + j.partner.name;
             document.getElementById("code").textContent = j.partner.code;
-            var m = j.member;
-            document.getElementById("sprucemsg").textContent = m ? (m.first_name + " " + m.last_name + " : invitation envoyée par texto au " + TSS.fmtPhone(m.phone) + " et par courriel à " + m.email + ".") : "Ajoutez votre première personne dans le portail : son invitation Spruce part aussitôt.";
+            var m = j.member, activation = j.activation || {}, remaining = Number(activation.pending_remaining) || 0;
+            document.getElementById("activationmsg").textContent = remaining ? "Paiement confirmé. " + remaining + " personne(s) attendent encore leur activation. Ouvrez votre portail pour terminer et vérifier les statuts." : "Paiement confirmé. Consultez votre portail pour voir les personnes couvertes et gérer votre liste.";
+            document.getElementById("sprucemsg").textContent = m && m.spruce === "invite" ? m.first_name + " " + m.last_name + " : invitation Spruce envoyée. Vérifiez vos textos et courriels." : m && m.spruce === "compte" ? m.first_name + " " + m.last_name + " : votre compte Spruce existe déjà. Utilisez votre accès habituel." : "Les personnes déjà inscrites sur Spruce conservent leur compte. Pour les autres, vérifiez les invitations reçues; si l’accès manque, contactez la clinique. Une inscription en attente dans le portail n’est pas encore couverte.";
+            TSS.saveSession({ code: j.partner.code, role: "partner", partner: j.partner, at: Date.now() }, true);
             document.getElementById("open").addEventListener("click", function () { TSS.saveSession({ code: j.partner.code, role: "partner", partner: j.partner, at: Date.now() }, true); window.location.href = "/portail/tableau.html"; });
         }
         function go() {
@@ -60,7 +62,7 @@
                 .then(function (j) {
                     if (j.ok) { show(j); return; }
                     if (j.error === "not_paid" && tries++ < 6) { setTimeout(go, 3000); return; }
-                    fail(j.error === "unknown_session" ? "Paiement introuvable." : "Erreur : " + (j.error || ""));
+                    fail(j.error === "unknown_session" ? "Paiement introuvable." : j.error === "not_paid" ? "Le paiement n’est pas encore confirmé par Stripe." : "Nous n’avons pas pu confirmer votre inscription automatiquement.");
                 })
                 .catch(function () { if (tries++ < 6) setTimeout(go, 3000); else fail("Connexion impossible."); });
         }

@@ -11,7 +11,7 @@
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="pname"></span><a href="tableau.html" style="color:#fff;font-size:.9rem">Mon entreprise</a></div></header>
     <main>
-        <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. C’est fait</span></div>
+        <div class="steps"><span class="dot on"></span><b>1. Collez votre liste</b><span class="dot" id="d2"></span><span id="s2">2. Vérifiez</span><span class="dot" id="d3"></span><span id="s3">3. Liste enregistrée</span></div>
         <h1>Ajouter des personnes</h1>
         <p class="sub">Collez votre liste telle quelle, en vrac ou une personne par ligne : nom, cellulaire (qui reçoit les textos) et courriel. Un membre de la famille ? Ajoutez « conjointe de Marc Bélanger » sur sa ligne et il sera regroupé sous ce membre. Le système reconnaît tout seul les numéros et les courriels. Nous suivons ensuite pour vous depuis combien de temps chaque personne est abonnée.</p>
 
@@ -20,7 +20,7 @@
             <textarea id="raw" placeholder="Ex. : Marc Bélanger 418 555-0199 marc.b@transport.ca
 Karim Benali, 514-555-0133, kbenali@gmail.com
 Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
-            <p class="hint">Ou téléversez un fichier CSV ou texte avec les mêmes colonnes (un fichier Excel : copiez les cellules et collez-les ici). Les places sont ajustées sur votre abonnement automatiquement, 8 $ par mois par personne.</p>
+            <p class="hint">Ou téléversez un fichier CSV ou texte avec les mêmes colonnes (un fichier Excel : copiez les cellules et collez-les ici). Vérifiez les personnes avant l’envoi. Votre abonnement est calculé à 8 $ CA par mois par personne; le paiement se fait ensuite dans votre tableau de bord.</p>
             <div class="row"><button class="btn" id="parse">Reconnaître les personnes</button><label class="btn secondary">Téléverser un fichier<input type="file" id="file" accept=".csv,.txt,.tsv" hidden></label></div>
         </div>
 
@@ -32,7 +32,7 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
                 <tbody id="rows"></tbody>
             </table>
             <p class="hint" id="seats"></p>
-            <div class="row"><button class="btn" id="send">Ajouter et couvrir ces personnes</button><button class="btn secondary" id="back">Modifier la liste</button></div>
+            <div class="row"><button class="btn" id="send">Enregistrer ces personnes</button><button class="btn secondary" id="back">Modifier la liste</button></div>
         </div>
 
         <div class="card" id="done" hidden>
@@ -41,8 +41,8 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
                 <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Résultat</th></tr></thead>
                 <tbody id="donerows"></tbody>
             </table>
-            <p class="hint">Nous contactons chaque personne directement pour activer son accès. Vous n’avez rien d’autre à faire. Votre facture du mois prochain suit le nombre de personnes couvertes.</p>
-            <div class="row"><a class="btn" href="tableau.html">Retour à mon entreprise</a><button class="btn secondary" id="again">Ajouter d’autres personnes</button></div>
+            <p class="hint" id="nextmsg">Retournez à votre tableau de bord pour vérifier votre liste et payer sur Stripe. Les nouvelles inscriptions en attente sont activées après confirmation du paiement.</p>
+            <div class="row"><a class="btn" href="tableau.html">Voir ma liste et le paiement</a><button class="btn secondary" id="retry" hidden>Reprendre les lignes non enregistrées</button><button class="btn secondary" id="again">Ajouter d’autres personnes</button></div>
         </div>
     </main>
     <script src="config.js"></script>
@@ -51,7 +51,7 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
     (function () {
         var s = TSS.requireSession(); if (!s) return;
         if (s.partner) document.getElementById("pname").textContent = s.partner.name;
-        var parsed = [];
+        var parsed = [], retryRows = [];
         function show(id) { ["paste", "review", "done"].forEach(function (x) { document.getElementById(x).hidden = x !== id; }); window.scrollTo(0, 0); }
         document.getElementById("file").addEventListener("change", function () {
             var f = this.files[0]; if (!f) return;
@@ -67,12 +67,16 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
                 tb.appendChild(tr);
             });
             document.getElementById("count").textContent = parsed.length + " personne(s) reconnue(s). Corrigez au besoin, tout est modifiable.";
-            document.getElementById("seats").innerHTML = "Chaque personne ajoutée est couverte immédiatement et facturée le mois suivant, <b>8 $ par mois</b>.";
+            document.getElementById("seats").innerHTML = "Votre liste sera enregistrée. Tarif : <b>8 $ CA par personne par mois</b>. La couverture commence après confirmation du paiement, sauf entente de facturation déjà approuvée.";
             document.getElementById("d2").classList.add("on"); document.getElementById("s2").innerHTML = "<b>2. Vérifiez</b>";
             show("review");
         });
         document.getElementById("back").addEventListener("click", function () { show("paste"); });
         document.getElementById("again").addEventListener("click", function () { document.getElementById("raw").value = ""; show("paste"); });
+        document.getElementById("retry").addEventListener("click", function () {
+            document.getElementById("raw").value = retryRows.map(function (r) { return r.first_name + " " + r.last_name + ", " + r.phone + ", " + r.email + (r.family_of ? ", famille de " + r.family_of : ""); }).join("\n");
+            show("paste");
+        });
         document.getElementById("send").addEventListener("click", function () {
             var rows = [].map.call(document.querySelectorAll("#rows tr"), function (tr) {
                 var o = {}; tr.querySelectorAll("input,select").forEach(function (i) { o[i.name] = i.value.trim(); }); return o;
@@ -80,21 +84,39 @@ Sophie Nguyen sophie@exemple.com (438) 555-0177"></textarea>
             var bad = rows.filter(function (r) { return !r.first_name || !r.last_name || r.phone.replace(/\D/g, "").length < 10 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email); });
             if (bad.length) { alert(bad.length + " ligne(s) incomplète(s) : il faut prénom, nom, un cellulaire à 10 chiffres et un courriel."); return; }
             var btn = document.getElementById("send"); btn.disabled = true; btn.textContent = "Envoi en cours…";
-            TSS.api("/members/bulk", { members: rows }).then(function (j) {
-                btn.disabled = false; btn.textContent = "Ajouter et couvrir ces personnes";
-                if (!j.ok) { alert("Envoi impossible : " + (j.error || "erreur")); return; }
-                var tb = document.getElementById("donerows"); tb.innerHTML = "";
-                j.results.forEach(function (r, i) {
-                    var row = rows[i]; var tr = document.createElement("tr");
-                    var tag = !r.ok ? '<span class="tag grace">' + (r.error === "duplicate" ? "Déjà dans votre liste" : r.error === "bad_phone" ? "Cellulaire invalide" : r.error === "bad_email" ? "Courriel invalide" : "Rejeté") + "</span>" : '<span class="tag ok">Ajoutée et couverte</span>';
+            var results = [], latest = null, stopped = false;
+            function batch(offset) {
+                if (offset >= rows.length) return Promise.resolve();
+                btn.textContent = "Enregistrement : " + offset + " / " + rows.length + "…";
+                return TSS.api("/members/bulk", { members: rows.slice(offset, offset + 5) }).then(function (j) {
+                    if (!j.ok || !Array.isArray(j.results) || j.results.length !== Math.min(5, rows.length - offset)) throw new Error("batch_failed");
+                    latest = j; results = results.concat(j.results);
+                    return batch(offset + 5);
+                });
+            }
+            batch(0).catch(function () {
+                stopped = true;
+                while (results.length < rows.length) results.push({ ok: false, error: "not_confirmed" });
+            }).then(function () {
+                btn.disabled = false; btn.textContent = "Enregistrer ces personnes";
+                var tb = document.getElementById("donerows"); tb.innerHTML = ""; retryRows = [];
+                results.forEach(function (r, i) {
+                    var row = rows[i], tr = document.createElement("tr"), pending = r.member && r.member.status === "en_attente_paiement";
+                    if (!r.ok && r.error !== "duplicate") retryRows.push(row);
+                    var label = r.ok ? (pending ? "En attente de paiement / activation" : (r.member && r.member.status === "actif" ? "Ajoutée et couverte" : "Enregistrée")) : r.error === "duplicate" ? "Déjà dans votre liste" : r.error === "bad_phone" ? "Cellulaire invalide" : r.error === "bad_email" ? "Courriel invalide" : r.error === "not_confirmed" ? "Enregistrement non confirmé" : "À corriger";
+                    var tag = '<span class="tag ' + (r.ok && !pending ? "ok" : "wait") + '">' + label + "</span>";
                     tr.innerHTML = "<td><b>" + TSS.esc(row.first_name + " " + row.last_name) + "</b></td><td>" + TSS.esc(row.phone) + "</td><td>" + TSS.esc(row.email) + "</td><td>" + tag + "</td>";
                     tb.appendChild(tr);
                 });
-                var rs = j.resume;
-                document.getElementById("okmsg").textContent = rs.added + " personne(s) ajoutée(s)" + (rs.failed ? ", " + rs.failed + " rejetée(s)" : "") + ". Personnes couvertes : " + j.actifs + " (" + (j.actifs * 8) + " $/mois).";
-                document.getElementById("d3").classList.add("on"); document.getElementById("s3").innerHTML = "<b>3. C’est fait</b>";
+                var added = results.filter(function (r) { return r.ok; }).length;
+                var total = latest && latest.resume && latest.resume.places_demandees;
+                var pendingCount = latest && latest.resume && latest.resume.en_attente_paiement;
+                document.getElementById("okmsg").textContent = added + " personne(s) enregistrée(s)." + (retryRows.length ? " " + retryRows.length + " ligne(s) à reprendre." : "") + (!stopped && typeof total === "number" ? " Votre liste : " + total + " personne(s), " + total * 8 + " $ CA/mois" + (pendingCount ? ", dont " + pendingCount + " en attente de paiement / activation." : ".") : " Vérifiez votre liste dans le tableau de bord.");
+                document.getElementById("nextmsg").textContent = stopped ? "L’envoi s’est interrompu. Les lignes confirmées sont conservées. Reprenez les lignes non confirmées; les doublons seront reconnus. Vérifiez ensuite votre liste et le paiement dans le tableau de bord." : "Retournez à votre tableau de bord pour vérifier votre liste et payer sur Stripe. Les personnes en attente ne sont pas encore couvertes. Si votre facturation est déjà approuvée, vérifiez leur statut dans votre liste.";
+                document.getElementById("retry").hidden = !retryRows.length;
+                document.getElementById("d3").classList.add("on"); document.getElementById("s3").innerHTML = "<b>3. Liste enregistrée</b>";
                 show("done");
-            }).catch(function () { btn.disabled = false; btn.textContent = "Ajouter et couvrir ces personnes"; alert("Connexion impossible pour le moment. Réessayez."); });
+            });
         });
     })();
     </script>
