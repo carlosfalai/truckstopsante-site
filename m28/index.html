@@ -33,12 +33,26 @@
         .lang button[aria-pressed="true"] { background: #F5A623; color: var(--navy); font-weight: 700; }
         .spruce-link { font-family: "Barlow Condensed", sans-serif; font-size: 1.5rem; letter-spacing: 1px; }
         footer { text-align: center; color: var(--muted); font-size: .9rem; padding: 26px 0 40px; }
+    
+        /* --- intro video (instanthpi-videos/_scripts/m28-publish-web.cjs) --- */
+        .intro-video { display: flex; justify-content: center; margin: 0 auto 24px; }
+        .intro-video .player { position: relative; width: min(100%, 340px); aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); }
+        .intro-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .intro-video .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: #F59E0B; color: #14264A; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
+        .intro-video .sound.off { display: none; }
+        @media (min-width: 900px) { .intro-video .player { width: 300px; } }
     </style>
 </head>
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span data-fr="Examen SAAQ (M28)" data-en="SAAQ medical (M28)">Examen SAAQ (M28)</span><div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></div></header>
     <main>
         <section class="hero">
+            <div class="intro-video">
+                <div class="player">
+                    <video data-src-fr="/videos/m28-fr-web.mp4" poster="/videos/m28-fr.jpg" muted autoplay loop playsinline preload="metadata"></video>
+                    <button type="button" class="sound" data-fr="Activer le son" data-en="Turn sound on">Activer le son</button>
+                </div>
+            </div>
             <div class="kick" data-fr="Permis de classes professionnelles 1, 2, 3 et 4" data-en="Professional licence classes 1, 2, 3 and 4">Permis de classes professionnelles 1, 2, 3 et 4</div>
             <h1 data-fr="Votre examen médical de la SAAQ, par vidéoconférence." data-en="Your SAAQ medical exam, by videoconference.">Votre examen médical de la SAAQ, par vidéoconférence.</h1>
             <div class="free" data-fr="Couvert par la RAMQ : l’évaluation ET le formulaire M28. Vous ne payez rien." data-en="Covered by RAMQ: the evaluation AND the M28 form. You pay nothing.">Couvert par la RAMQ : l’évaluation ET le formulaire M28. Vous ne payez rien.</div>
@@ -106,6 +120,16 @@
         document.querySelectorAll(".lang button").forEach(function (b) { b.addEventListener("click", function () { setLang(b.getAttribute("data-lang")); }); });
         var saved = null; try { saved = localStorage.getItem("tss_lang"); } catch (e) {}
         if (saved === "en" || (!saved && /^en/i.test(navigator.language || ""))) setLang("en");
+    })();
+    </script>
+
+    <script>
+    (function () {
+        var box = document.querySelector('.intro-video'); if (!box) return;
+        var v = box.querySelector('video'), btn = box.querySelector('.sound');
+        v.setAttribute('src', v.getAttribute('data-src-fr')); v.muted = true; v.play().catch(function(){});
+        btn.addEventListener('click', function () { v.muted = false; v.currentTime = 0; v.controls = true; v.loop = false; v.play(); btn.classList.add('off'); });
+        v.addEventListener('ended', function () { btn.classList.remove('off'); v.controls = false; v.muted = true; v.loop = true; v.play().catch(function(){}); });
     })();
     </script>
 </body>
