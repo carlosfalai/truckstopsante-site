@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex">
     <title>Truck Stop Santé — Créer mon compte entreprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="portail.css">
+    <link rel="stylesheet" href="portail.css?v=20260917">
     <style>
         .gwrap { display: flex; justify-content: center; margin: 4px 0 10px; min-height: 44px; }
         .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; margin: 6px 0 12px; }
@@ -25,10 +25,11 @@
             <div class="gwrap" id="gbtn" hidden></div>
             <div class="sep" id="gsep" hidden>ou remplissez le formulaire</div>
             <form id="form">
-                <input type="text" id="name" aria-label="Nom de l’entreprise ou de l’association" placeholder="Nom de l’entreprise ou de l’association" autocomplete="organization" required>
+                <input type="text" id="name" aria-label="Nom de l’entreprise ou de l’association" placeholder="Nom de l’entreprise" autocomplete="organization" required>
                 <select id="type" aria-label="Type d’organisation"><option value="entreprise">Entreprise</option><option value="association">Association</option></select>
-                <input type="text" id="contact_name" aria-label="Votre nom" placeholder="Votre nom (personne-ressource)" autocomplete="name" required>
-                <input type="email" id="email" aria-label="Votre courriel" placeholder="Votre courriel (servira aussi à la connexion Google)" autocomplete="email" required>
+                <input type="text" id="contact_name" aria-label="Votre nom" placeholder="Votre nom" autocomplete="name" required>
+                <input type="email" id="email" aria-label="Votre courriel" placeholder="Votre courriel" autocomplete="email" required>
+                <p class="fine" style="margin:-4px 0 12px;text-align:left">Ce courriel servira aussi à la connexion Google.</p>
                 <input type="tel" id="phone" aria-label="Votre cellulaire" placeholder="Votre cellulaire" autocomplete="tel" required>
                 <button class="btn" type="submit" id="go" style="width:100%;justify-content:center">Créer mon compte</button>
             </form>
@@ -45,7 +46,7 @@
         if (new URLSearchParams(window.location.search).get("type") === "solo") {
             document.getElementById("title").textContent = "Créer mon compte — chauffeur solo";
             document.getElementById("intro").textContent = "Créez le compte de votre entreprise (ou travailleur autonome), ajoutez-vous à la liste, puis payez 8 $ CA par mois sur Stripe.";
-            document.getElementById("name").placeholder = "Nom de votre entreprise ou votre nom (autonome)";
+            document.getElementById("name").placeholder = "Votre entreprise ou votre nom";
         }
         function create(extra) {
             var body = Object.assign({ name: document.getElementById("name").value.trim(), type: document.getElementById("type").value, contact_name: document.getElementById("contact_name").value.trim(), contact_email: document.getElementById("email").value.trim(), contact_phone: document.getElementById("phone").value.trim(), credential: credential }, extra || {});
@@ -78,7 +79,7 @@
             sc.onload = function () {
                 google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
                 var host = document.getElementById("gbtn"); host.hidden = false; document.getElementById("gsep").hidden = false;
-                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "continue_with", locale: "fr_CA", width: 320 });
+                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "continue_with", locale: "fr_CA", width: Math.max(200, Math.min(320, host.clientWidth || 320)) });
             };
             document.head.appendChild(sc);
         }

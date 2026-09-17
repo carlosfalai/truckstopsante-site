@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex">
     <title>Truck Stop Santé — Portail entreprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="portail.css">
+    <link rel="stylesheet" href="portail.css?v=20260917">
     <style>
         .gwrap { display: flex; justify-content: center; margin: 4px 0 14px; min-height: 44px; }
         .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; margin: 6px 0 12px; }
@@ -25,7 +25,7 @@
             <div class="gwrap" id="gbtn" hidden></div>
             <div class="sep" id="gsep" hidden>ou avec votre code d’accès</div>
             <form id="form">
-                <input type="text" id="code" placeholder="votre code d’accès (reçu après le paiement)" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+                <input type="text" id="code" placeholder="Votre code d’accès" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
                 <label style="display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:0.9rem;margin:2px 0 12px"><input type="checkbox" id="remember" style="width:auto;margin:0"> Rester connecté sur cet appareil</label>
                 <button class="btn" type="submit" id="go" style="width:100%;justify-content:center">Entrer</button>
             </form>
@@ -96,7 +96,7 @@
             sc.onload = function () {
                 google.accounts.id.initialize({ client_id: window.TSS_GOOGLE_CLIENT_ID, callback: window.onGoogleCredential, auto_select: false, ux_mode: "popup" });
                 var host = document.getElementById("gbtn"); host.hidden = false; document.getElementById("gsep").hidden = false;
-                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: 320 });
+                google.accounts.id.renderButton(host, { theme: "outline", size: "large", text: "signin_with", locale: "fr_CA", width: Math.max(200, Math.min(320, host.clientWidth || 320)) });
             };
             document.head.appendChild(sc);
         }
