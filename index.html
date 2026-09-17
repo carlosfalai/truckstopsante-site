@@ -1189,6 +1189,10 @@
         }
 
         /* Reduced motion: kill all animation, show content immediately */
+        /* phones: no scroll-triggered fade (a missed observer left the Google-rating block blank on 390 px, 2026-09-17) */
+        @media (max-width: 768px) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
         @media (prefers-reduced-motion: reduce) {
             .hero h1, .hero h2, .hero .offer-line, .hero .support-line,
             .hero-actions, .hero-badges {
@@ -1709,6 +1713,8 @@
             });
         }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
         targets.forEach(function (el) { io.observe(el); });
+        /* fail-safe: whatever the observer missed becomes visible anyway */
+        setTimeout(function () { targets.forEach(function (el) { el.classList.add('in'); }); }, 1500);
     })();
     </script>
 
