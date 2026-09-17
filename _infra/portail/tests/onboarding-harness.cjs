@@ -9,7 +9,7 @@ const crypto = require('node:crypto');
 
 function harness(options = {}) {
   const tables = new Map(), requests = [], subscriptions = new Map(), sessions = new Map(), checkouts = new Map(); let checkoutNumber = 0;
-  const state = { searchFailure: false, existingContact: null, billingFailure: false, createTimeout: false, emailFailure: false };
+  const state = { searchFailure: false, existingContact: null, billingFailure: false, createTimeout: false, emailFailure: false, tagFailure: false, contactTags: {} };
   const key = o => o.partner_code ? o.partner_code.S + '/' + o.id.S : o.code.S;
   const table = name => { if (!tables.has(name)) tables.set(name, new Map()); return tables.get(name); };
   const conditionalError = () => Object.assign(new Error('conditional'), { name: 'ConditionalCheckFailedException' });
@@ -77,6 +77,12 @@ function harness(options = {}) {
       if (u.pathname === '/v1/contacts/search') return state.searchFailure ? json({}, 503) : json({ contacts: state.existingContact ? [state.existingContact] : [] });
       if (u.pathname === '/v1/contacts') { if (state.createTimeout) throw new Error('synthetic uncertain timeout'); const input = JSON.parse(opts.body); return json({ contact: { id: crypto.randomUUID(), phoneNumbers: [{ id: 'phone', value: input.phoneNumbers[0].value }], emailAddresses: [{ id: 'email', value: input.emailAddresses[0].value }] } }, 201); }
       if (/\/v1\/contacts\/[^/]+\/invite$/.test(u.pathname)) return json({}, state.emailFailure && JSON.parse(opts.body).destinationId === 'email' ? 503 : 200);
+      if (u.pathname === '/v1/contacts/tags' && method === 'POST') { if (state.tagFailure) return json({}, 503); const value = JSON.parse(opts.body).value; if (/\s/.test(value)) return json({ message: 'invalid tag' }, 400); return json({ id: 'tag_' + value, object: 'contactTag', value }, 201); }
+      if (/^\/v1\/contacts\/[^/]+$/.test(u.pathname)) {
+        const id = decodeURIComponent(u.pathname.split('/').pop()); const tags = state.contactTags[id] || (state.contactTags[id] = []);
+        if (method === 'GET') return json({ id, tags: tags.map(t => ({ id: t, value: t.replace(/^tag_/, '') })) });
+        if (method === 'PATCH') { state.contactTags[id] = JSON.parse(opts.body).tagIds; return json({ id }); }
+      }
       throw new Error('Unexpected synthetic Spruce request: ' + u.pathname);
     }
     throw new Error('External network forbidden: ' + u.hostname);

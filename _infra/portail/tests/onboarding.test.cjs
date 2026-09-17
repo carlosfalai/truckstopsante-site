@@ -1,7 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { harness } = require('./onboarding-harness.cjs');
-const spruceWrites = h => h.requests.filter(r => r.url.includes('sprucehealth.com') && !r.url.endsWith('/search'));
+// Contact creation and invitations only: membership/company tagging (tags, contact GET/PATCH) is expected on every resolved contact.
+const spruceWrites = h => h.requests.filter(r => r.url.includes('sprucehealth.com') && (r.url.endsWith('/v1/contacts') || r.url.endsWith('/invite')));
 
 test('signup + roster + checkout never invite before payment; duplicate email exposes no code', async () => {
   const h = harness(), p = await h.create(); assert.equal(p.ok, true);
@@ -129,4 +130,32 @@ test('two partners cannot concurrently create or invite the same Spruce identity
   assert.equal(h.requests.filter(r => r.url.endsWith('/v1/contacts')).length, 1);
   assert.equal(h.requests.filter(r => r.url.endsWith('/invite')).length, 2);
   assert.ok(result.some(r => r.member.spruce_attempt_state === 'needs_review'));
+});
+test('every resolved Spruce contact gets TSQ_membership + company tag, merged with existing tags; tag failure never changes the invite', async () => {
+  const members = h => [...h.tables.get('tss-portail-membres').values()].filter(m => m.id.S.startsWith('member-'));
+  // New contact: created, invited, then tagged.
+  let h = harness(), p = await h.create();
+  await h.call('/member', { code: p.code, ...h.person(1) }); h.pay(p.code, 1);
+  await h.call('/enrol/complete', { session_id: 'cs_synthetic' });
+  let tagged = Object.values(h.state.contactTags); assert.equal(tagged.length, 1);
+  assert.deepEqual(tagged[0].sort(), ['tag_Synthetic_Fleet', 'tag_TSQ_membership']);
+  assert.equal(members(h)[0].spruce.S, 'invite'); assert.ok(members(h)[0].spruce_tagged_at?.S);
+  // Existing contact with an unrelated tag: no invite, tags merged (never wiped).
+  h = harness(); p = await h.create(); const driver = h.person(1);
+  h.state.existingContact = { id: 'existing', phoneNumbers: [{ value: driver.phone }], emailAddresses: [{ value: driver.email }], hasAccount: true, hasPendingInvite: false };
+  h.state.contactTags.existing = ['tag_ADHD'];
+  await h.call('/member', { code: p.code, ...driver }); h.pay(p.code, 1);
+  await h.call('/enrol/complete', { session_id: 'cs_synthetic' });
+  assert.deepEqual(h.state.contactTags.existing.sort(), ['tag_ADHD', 'tag_Synthetic_Fleet', 'tag_TSQ_membership']);
+  assert.equal(spruceWrites(h).length, 0);
+  // Solo payer whose "company" is their own name: membership tag only.
+  h = harness(); p = await h.call('/partner/create', { name: 'David Solo', contact_name: 'DAVID SOLO', contact_email: 'solo@example.invalid' });
+  await h.call('/member', { code: p.code, ...h.person(1) }); h.pay(p.code, 1, { customer_details: { email: 'solo@example.invalid', name: 'DAVID SOLO' } });
+  await h.call('/enrol/complete', { session_id: 'cs_synthetic' });
+  assert.deepEqual(Object.values(h.state.contactTags)[0], ['tag_TSQ_membership']);
+  // Tagging outage: invitation result unchanged, no tagged timestamp.
+  h = harness(); p = await h.create(); h.state.tagFailure = true;
+  await h.call('/member', { code: p.code, ...h.person(1) }); h.pay(p.code, 1);
+  await h.call('/enrol/complete', { session_id: 'cs_synthetic' });
+  assert.equal(members(h)[0].spruce.S, 'invite'); assert.equal(members(h)[0].spruce_tagged_at, undefined);
 });

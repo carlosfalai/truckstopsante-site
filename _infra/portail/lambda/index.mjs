@@ -362,6 +362,11 @@ async function inviteSavedMember(partner, member) {
   }
   const fields = { spruce: result.statut === "erreur" ? "a_inviter" : result.statut, spruce_detail: result.detail, spruce_attempt_state: result.statut === "erreur" ? (result.safeRetry ? "retry" : "needs_review") : "done", updated_at: now() };
   if (result.statut === "invite") fields.spruce_invited_at = now();
+  if (result.statut !== "erreur" && result.contact_id) {
+    // Une étiquette ratée ne change jamais le résultat de l'invitation (rattrapée par sync-spruce-tags.mjs).
+    try { if (await tagSpruceContact(result.contact_id, partner)) fields.spruce_tagged_at = now(); }
+    catch (e) { console.error("tss_spruce_tag_failed", e.message); }
+  }
   await updateFields(T_MEMBERS, { partner_code: S(partner.code), id: S(member.id) }, fields);
   Object.assign(member, fields);
 }
@@ -539,9 +544,9 @@ async function findSpruceContact(phone, email) {
 async function spruceInvite(m) {
   const existing = await findSpruceContact(m.phone, m.email);
   if (existing) {
-    if (existing.hasAccount) return { statut: "compte", detail: "déjà un compte Spruce" };
-    if (existing.hasPendingInvite) return { statut: "invite", detail: "invitation déjà en attente" };
-    return { statut: "existant", detail: "contact Spruce existant — aucune nouvelle invitation" };
+    if (existing.hasAccount) return { statut: "compte", detail: "déjà un compte Spruce", contact_id: existing.id };
+    if (existing.hasPendingInvite) return { statut: "invite", detail: "invitation déjà en attente", contact_id: existing.id };
+    return { statut: "existant", detail: "contact Spruce existant — aucune nouvelle invitation", contact_id: existing.id };
   }
   let contact = existing;
   if (!contact) {
@@ -569,6 +574,36 @@ async function spruceInvite(m) {
   const sent = results.filter((r) => r.ok).map((r) => r.channel);
   const detail = sent.length ? sent.join(" + ") + " : envoi confirmé" + (sent.length < destinations.length ? "; autre envoi non confirmé" : "") : "Invitation non confirmée — vérification manuelle requise";
   return { statut: sent.length ? "invite" : "erreur", detail, contact_id: contact.id };
+}
+
+// Étiquettes Spruce : chaque personne couverte porte TSQ_membership + le nom de son entreprise.
+// Spruce refuse les espaces dans une étiquette ; PATCH tagIds REMPLACE la liste, donc on fusionne avec l'existant.
+const MEMBERSHIP_TAG = "TSQ_membership";
+const spruceTagValue = (name) => clean(name, 120).replace(/\s+/g, "_");
+function companyTagFor(partner) {
+  const company = clean(partner.spruce_tag || partner.name, 120);
+  if (!company) return "";
+  // Payeur solo : le « nom d'entreprise » est son propre nom (ex. « david », « David Vinas ») -> pas d'étiquette entreprise.
+  const person = clean(partner.contact_name, 120).toLowerCase();
+  if (person && person.includes(company.toLowerCase())) return "";
+  return spruceTagValue(company);
+}
+async function tagSpruceContact(contactId, partner) {
+  if (!contactId || partner.demo === "oui") return false;
+  const values = [MEMBERSHIP_TAG, companyTagFor(partner)].filter(Boolean);
+  const ids = [];
+  for (const value of values) {
+    const r = await spruce("POST", "/v1/contacts/tags", { value });
+    if (![200, 201].includes(r.s) || !r.b.id) throw new Error("spruce_tag_create_" + r.s);
+    ids.push(r.b.id);
+  }
+  const g = await spruce("GET", "/v1/contacts/" + encodeURIComponent(contactId));
+  if (g.s !== 200) throw new Error("spruce_contact_get_" + g.s);
+  const current = ((g.b.contact || g.b).tags || []).map((t) => t.id).filter(Boolean);
+  if (ids.every((id) => current.includes(id))) return true;
+  const u = await spruce("PATCH", "/v1/contacts/" + encodeURIComponent(contactId), { tagIds: [...new Set([...current, ...ids])] });
+  if (u.s !== 200) throw new Error("spruce_tag_patch_" + u.s);
+  return true;
 }
 
 /* ---------- Inscription automatique après paiement (lien Stripe -> partenaire + première personne + invitation Spruce) ---------- */
