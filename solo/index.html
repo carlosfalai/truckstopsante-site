@@ -8,15 +8,15 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2314264A'/><text x='50' y='74' font-size='64' text-anchor='middle' fill='%23F59E0B' font-family='Arial,sans-serif' font-weight='bold'>T</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --navy: #14264A; --navy-deep: #0B1530; --amber: #F59E0B; --muted: rgba(255,255,255,0.75); }
         * { box-sizing: border-box; }
-        body { margin: 0; background: var(--navy-deep); color: #fff; font-family: Barlow, Inter, system-ui, sans-serif; }
+        body { margin: 0; background: var(--navy-deep); color: #fff; font-family: "Open Sans", Inter, system-ui, sans-serif; }
         header { background: var(--navy); border-bottom: 4px solid var(--amber); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-        .brand { font-family: "Barlow Condensed", Impact, sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; color: #fff; text-decoration: none; }
+        .brand { font-family: "Montserrat", Impact, sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; color: #fff; text-decoration: none; }
         .brand span { color: var(--amber); }
-        .tag { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 0.95rem; letter-spacing: 4px; color: var(--muted); }
+        .tag { font-family: "Montserrat", Impact, sans-serif; font-size: 0.95rem; letter-spacing: 4px; color: var(--muted); }
         main { max-width: 1040px; margin: 0 auto; padding: 36px 20px 60px; display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
         @media (min-width: 860px) { main { grid-template-columns: 340px 1fr; gap: 56px; padding-top: 56px; } }
         .player { position: relative; width: min(100%, 340px); margin: 0 auto; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); }
@@ -24,16 +24,16 @@
         .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--amber); color: var(--navy); font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
         .sound.off { display: none; }
         .kicker { color: var(--amber); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.85rem; margin: 0 0 12px; }
-        h1 { font-family: "Barlow Condensed", Impact, sans-serif; font-weight: 700; font-size: clamp(2.4rem, 6vw, 3.6rem); line-height: 1.02; margin: 0 0 16px; }
+        h1 { font-family: "Montserrat", Impact, sans-serif; font-weight: 700; font-size: clamp(2rem, 5.2vw, 2.8rem); line-height: 1.02; margin: 0 0 16px; }
         .lead { font-size: 1.15rem; line-height: 1.5; color: var(--muted); margin: 0 0 22px; }
         .price { display: flex; align-items: baseline; gap: 12px; margin: 0 0 20px; }
-        .price b { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 3rem; color: var(--amber); line-height: 1; }
+        .price b { font-family: "Montserrat", Impact, sans-serif; font-size: 3rem; color: var(--amber); line-height: 1; }
         .price span { color: var(--muted); }
         .btn { display: inline-block; background: var(--amber); color: var(--navy); font-weight: 700; padding: 16px 30px; border-radius: 10px; text-decoration: none; font-size: 1.1rem; box-shadow: 0 8px 20px rgba(245,158,11,0.3); }
         .btn:hover { transform: translateY(-2px); }
         .steps { margin: 30px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
         .steps li { display: flex; gap: 14px; align-items: flex-start; color: var(--muted); line-height: 1.4; }
-        .steps b { font-family: "Barlow Condensed", Impact, sans-serif; color: var(--amber); font-size: 1.5rem; line-height: 1; min-width: 28px; }
+        .steps b { font-family: "Montserrat", Impact, sans-serif; color: var(--amber); font-size: 1.5rem; line-height: 1; min-width: 28px; }
         .steps strong { color: #fff; display: block; font-size: 1rem; }
         .fine { margin-top: 26px; font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
         .fine a { color: var(--amber); }
