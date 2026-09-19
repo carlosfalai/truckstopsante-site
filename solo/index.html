@@ -18,7 +18,7 @@
         .brand span { color: var(--amber); }
         .tag { font-family: "Montserrat", Impact, sans-serif; font-size: 0.95rem; letter-spacing: 4px; color: var(--muted); }
         main { max-width: 1040px; margin: 0 auto; padding: 36px 20px 60px; display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
-        @media (min-width: 860px) { main { grid-template-columns: 340px 1fr; gap: 56px; padding-top: 56px; } }
+        @media (min-width: 860px) { main { grid-template-columns: 1fr; max-width: 820px; padding-top: 56px; } }
         .player { position: relative; width: min(100%, 340px); margin: 0 auto; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #0B1530; box-shadow: 0 18px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); }
         .player video { width: 100%; height: 100%; object-fit: cover; display: block; }
         .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--amber); color: var(--navy); font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
@@ -47,14 +47,11 @@
         <span class="tag">SOLO</span>
     </header>
     <main>
-        <div class="player">
-            <video src="/videos/solo-fr-web.mp4" poster="/videos/solo-fr.jpg" muted autoplay loop playsinline preload="metadata"></video>
-            <button type="button" class="sound">Activer le son</button>
-        </div>
+
         <div>
             <p class="kicker">Chauffeur solo, propriétaire-exploitant, autonome incorporé</p>
-            <h1>Un médecin pour la route. Toi aussi.</h1>
-            <p class="lead">Un problème de santé qui ne peut pas attendre ? Tu écris au médecin sur Spruce, du camion, d’une halte ou de la maison. Pas de rendez-vous, pas de salle d’attente. Le médecin répond, et l’ordonnance part directement à ta pharmacie.</p>
+            <h1>Consulte un médecin sur Spruce.</h1>
+            <p class="lead">Décris ta demande au médecin sur Spruce, sans rendez-vous. Il évalue si elle peut être traitée par messagerie ou si une consultation en personne est nécessaire. Lorsqu’une ordonnance est indiquée, elle est envoyée à ta pharmacie.</p>
             <div class="price"><b>8 $/mois</b><span>par personne couverte, facturés à ton entreprise. Sans engagement.</span></div>
             <a class="btn" href="/portail/creer.html?type=solo">M’abonner maintenant</a>
             <ul class="steps">
@@ -66,12 +63,5 @@
         </div>
     </main>
     <footer>Dr Carlos Font, médecin de famille — Truck Stop Santé · Centre Médical Font — permis CMQ 16812<p><a href="/confidentialite/">Avis de confidentialité</a> · <a href="/consentement/">Télémédecine et consentement</a></p><p>Commanditaire : <a href="https://communautesurlaroute.com">Communauté sur la route</a></p></footer>
-    <script>
-    (function () {
-        var v = document.querySelector('.player video'), btn = document.querySelector('.sound');
-        btn.addEventListener('click', function () { v.muted = false; v.currentTime = 0; v.controls = true; v.loop = false; v.play(); btn.classList.add('off'); });
-        v.addEventListener('ended', function () { btn.classList.remove('off'); v.controls = false; v.muted = true; v.loop = true; v.play().catch(function(){}); });
-    })();
-    </script>
 </body>
 </html>
