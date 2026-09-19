@@ -50,6 +50,10 @@
     (function () {
         var s = TSS.session(); if (s && s.code) { window.location.replace("tableau.html"); return; }
         var form = document.getElementById("form"), msg = document.getElementById("msg"), go = document.getElementById("go");
+        try {
+            var prefill = new URLSearchParams(window.location.search).get("demo");
+            if (prefill) { document.getElementById("code").value = prefill.toUpperCase(); msg.textContent = "Code de démonstration pré-rempli — cliquez sur Entrer."; }
+        } catch (e) {}
         var remember = function () { return document.getElementById("remember").checked; };
         var lastCredential = "";
         function enter(j, code) {
