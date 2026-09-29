@@ -41,7 +41,6 @@
             <div class="stat"><div class="k">Personnes couvertes</div><div class="v amber" id="s-actifs">–</div><div class="d" id="s-montant"></div></div>
             <div class="stat"><div class="k">Ajoutées ce mois-ci</div><div class="v" id="s-mois">–</div><div class="d" id="s-mois-d"></div></div>
             <div class="stat"><div class="k">Prochaine facture</div><div class="v" id="s-facture">–</div><div class="d" id="s-facture-d"></div></div>
-            <div class="stat"><div class="k">Consultations gratuites</div><div class="v" id="s-banque">–</div><div class="d" id="s-banque-d">disponibles pour vos gens et leur famille</div></div>
         </div>
         <div class="card">
             <div class="row" style="justify-content: space-between;">
@@ -52,15 +51,10 @@
                 </div>
             </div>
             <table style="margin-top: 16px;">
-                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th>Codes</th><th></th></tr></thead>
-                <tbody id="rows"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
+                <thead><tr><th>Personne</th><th>Cellulaire</th><th>Courriel</th><th>Abonné depuis</th><th>Statut</th><th></th></tr></thead>
+                <tbody id="rows"><tr><td colspan="6" class="empty">Chargement…</td></tr></tbody>
             </table>
             <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
-        </div>
-        <div class="card" id="bankCard">
-            <div class="row" style="justify-content: space-between;"><h2 style="margin:0">Banque de consultations gratuites</h2><button class="btn secondary" id="allcodes">Activer les codes pour tout le monde</button></div>
-            <div class="bank"><div><b id="b-rest">–</b><span>consultations disponibles</span></div><div><b id="b-mois">–</b><span>ajoutées chaque mois</span></div><div><b id="b-acc">–</b><span>accumulées depuis le début</span></div><div><b id="b-emis">–</b><span>codes générés</span></div></div>
-            <p class="hint" style="margin:0">Chaque mois, 5 consultations gratuites par tranche de 100 personnes couvertes s’ajoutent à votre banque, et elles s’accumulent. Vos gens génèrent eux-mêmes un code au besoin, dans leur espace membre (<b>truckstopsante.com/portail/membre.html</b>, connexion Google), et l’envoient à un proche : un code = une consultation, sans abonnement. La banque ne baisse que lorsque le médecin utilise le code. La colonne « Codes » indique qui peut en générer. Le portail de gestion présente les totaux de la banque, sans les échanges cliniques ni le détail nominatif des consultations utilisées. Les totaux d’un petit groupe ne garantissent toutefois pas l’anonymat.</p>
         </div>
     </main>
     <footer class="fine" style="max-width:1120px;margin:0 auto;padding:0 24px 32px"><a href="/confidentialite/">Avis de confidentialité</a> · <a href="/consentement/">Télémédecine et consentement</a> · <a href="mailto:cff@centremedicalfont.ca">Questions à la clinique</a></footer>
@@ -103,13 +97,9 @@
             document.getElementById("s-mois-d").textContent = pending ? pending + " en attente de paiement / activation" : (r.pause ? r.pause + " en pause" : "");
             document.getElementById("s-facture").textContent = r.prochaine_facture ? r.prochaine_facture.slice(5).split("-").reverse().join("/") : "–";
             document.getElementById("s-facture-d").textContent = r.facturation_active ? r.actifs + " personne(s) × " + price + " $ CA" : requested + " personne(s), " + requested * price + " $ CA/mois à activer";
-            var bk = state.banque || { restantes: 0, mensuel: 0, accumulees: 0, emis: 0 };
-            document.getElementById("s-banque").textContent = bk.restantes;
-            document.getElementById("s-banque-d").textContent = "+" + bk.mensuel + " par mois, cumulatives";
-            document.getElementById("b-rest").textContent = bk.restantes; document.getElementById("b-mois").textContent = "+" + bk.mensuel; document.getElementById("b-acc").textContent = bk.accumulees; document.getElementById("b-emis").textContent = bk.emis;
             var tb = document.getElementById("rows"); tb.innerHTML = "";
             var live = ms.filter(function (m) { return m.status !== "retire"; });
-            if (!live.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">Votre liste est vide. Cliquez sur « Ajouter des personnes », puis vérifiez le montant avant de payer.</td></tr>'; return; }
+            if (!live.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">Votre liste est vide. Cliquez sur « Ajouter des personnes », puis vérifiez le montant avant de payer.</td></tr>'; return; }
             var norm = function (s) { return String(s || "").toLowerCase().replace(/[^a-z0-9À-ſ]/g, ""); };
             var principals = live.filter(function (m) { return !m.family_of; });
             var orphans = live.filter(function (m) { return m.family_of && !principals.some(function (p) { return norm(p.first_name + p.last_name) === norm(m.family_of); }); });
@@ -117,7 +107,7 @@
                 var tr = document.createElement("tr");
                 if (sub) tr.className = "fam";
                 var act = m.status === "en_attente_paiement" ? '<button data-a="retire" data-id="' + m.id + '">Retirer</button>' : m.status === "actif" ? '<button data-a="pause" data-id="' + m.id + '">Pause</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>' : '<button data-a="actif" data-id="' + m.id + '">Réactiver</button><button data-a="retire" data-id="' + m.id + '">Retirer</button>';
-                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳ famille</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.coverTag(m) + (m.spruce && m.status === "actif" ? '<div style="margin-top:6px">' + TSS.spruceTag(m) + "</div>" : "") + "</td><td>" + (m.status !== "actif" ? '<span class="muted">indisponible</span>' : sub ? '<span class="muted" style="font-size:.8rem">via le membre</span>' : '<label class="sw"><input type="checkbox" data-codes="' + m.id + '"' + (m.codes ? " checked" : "") + '> ' + (m.codes ? "peut générer" : "désactivé") + "</label>") + "</td><td class=\"actions\">" + act + "</td>";
+                tr.innerHTML = "<td>" + (sub ? '<span class="famlink">↳</span> ' : "") + "<b>" + TSS.esc(m.first_name + " " + m.last_name) + "</b></td><td>" + TSS.esc(TSS.fmtPhone(m.phone)) + "</td><td>" + TSS.esc(m.email) + "</td><td>" + TSS.sinceLabel(m) + "</td><td>" + TSS.coverTag(m) + (m.spruce && m.status === "actif" ? '<div style="margin-top:6px">' + TSS.spruceTag(m) + "</div>" : "") + "</td><td class=\"actions\">" + act + "</td>";
                 return tr;
             }
             principals.forEach(function (p) {
@@ -146,16 +136,6 @@
                 say(m.first_name + " " + m.last_name + " : " + (status === "en_attente_paiement" ? "en attente de paiement / activation" : status === "pause" ? "en pause" : status === "retire" ? "retiré" : "réactivé") + (j.stripe && j.stripe.synced ? ". Facturation mise à jour." : ". Vérifiez la facturation dans votre tableau de bord."));
                 load();
             });
-        });
-        document.getElementById("rows").addEventListener("change", function (e) {
-            var c = e.target.closest("input[data-codes]"); if (!c) return;
-            var on = c.checked ? "oui" : "non"; c.disabled = true;
-            TSS.api("/member/codes", { id: c.getAttribute("data-codes"), codes: on }).then(function (j) { if (!j.ok) { say("Changement impossible"); } load(); });
-        });
-        document.getElementById("allcodes").addEventListener("click", function () {
-            var ids = state.members.filter(function (m) { return m.status === "actif" && !m.family_of; }).map(function (m) { return m.id; });
-            if (!ids.length) { say("Aucune personne active."); return; }
-            TSS.api("/member/codes", { ids: ids, codes: "oui" }).then(function (j) { say(j.ok ? j.updated + " personne(s) peuvent maintenant générer des codes." : "Changement impossible"); load(); });
         });
         function payment(button, resolvePending) {
             if (!state) return;

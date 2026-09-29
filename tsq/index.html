@@ -1214,22 +1214,7 @@
         .intro-video .sound { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: #F59E0B; color: #14264A; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; font-size: 1rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.35); white-space: nowrap; }
         .intro-video .sound.off { display: none; }
         @media (min-width: 900px) { .intro-video .player { width: 300px; } }
-    
-        /* --- paliers: banque d'accès gratuits (paliers-2026-09-02.cjs) --- */
-        .paliers { padding: 72px 0; background: var(--surface-white, #fff); }
-        .paliers .wrap, .paliers .container { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
-        .paliers h2 { text-align: center; margin: 0 0 12px; }
-        .paliers .paliers-sub { text-align: center; max-width: 760px; margin: 0 auto 32px; color: var(--text-muted, #6b7280); font-size: 1.1rem; line-height: 1.55; }
-        .paliers .paliers-sub strong { color: var(--text-dark, #14264A); }
-        .paliers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 920px; margin: 0 auto; }
-        .palier { border: 1px solid rgba(20,38,74,0.14); border-top: 4px solid var(--accent-amber, #F59E0B); border-radius: 10px; padding: 20px 18px; text-align: center; background: var(--bg-light, #f8fafc); }
-        .palier .p-n { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted, #6b7280); }
-        .palier .p-head { font-size: 1.4rem; font-weight: 700; color: var(--text-dark, #14264A); margin: 4px 0 10px; }
-        .palier .p-free { font-size: 2.4rem; font-weight: 800; color: var(--accent-amber, #F59E0B); line-height: 1; }
-        .palier .p-label { font-size: 0.9rem; color: var(--text-dark, #14264A); margin-top: 6px; font-weight: 600; }
-        .paliers-note { max-width: 860px; margin: 26px auto 0; text-align: center; font-size: 0.95rem; color: var(--text-muted, #6b7280); line-height: 1.55; }
-        @media (max-width: 760px) { .paliers-grid { grid-template-columns: 1fr 1fr; } }
-    </style>
+        </style>
 </head>
 <body>
 
@@ -1241,7 +1226,6 @@
                 <a href="#inclus" data-fr="Inclus" data-en="Included">Inclus</a>
                 <a href="#calcul" data-fr="Le calcul" data-en="The math">Le calcul</a>
                 <a href="#prix" data-fr="Prix" data-en="Pricing">Prix</a>
-                <a href="#paliers" data-fr="Paliers" data-en="Tiers">Paliers</a>
                 <a href="#faq">FAQ</a>
             </nav>
             <div class="nav-right">
@@ -1451,13 +1435,6 @@
                         <span class="checklist-label" data-fr="Suivis" data-en="Follow-ups">Suivis</span>
                     </div>
                 </div>
-                <div class="checklist-item item-wide">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <div>
-                        <span class="checklist-label" data-fr="Famille sur demande" data-en="Family on request">Famille sur demande</span>
-                        <span class="checklist-det" data-fr="À la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés — 8 $/mois par personne" data-en="At the employee’s request, family members aged 18 and over can be added — $8/month per person">À la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés — 8 $/mois par personne</span>
-                    </div>
-                </div>
             </div>
 
             <div class="confidentiality-notice">
@@ -1503,8 +1480,6 @@
                 <div class="pricing-period" data-fr="/ mois / employé" data-en="/ month / employee">/ mois / employé</div>
 
                 <p class="pricing-desc" data-fr="Service aux entreprises — l’employé ne paie jamais rien. Sans engagement. Quantité ajustable de 1 à 10 000 employés." data-en="A service for businesses — the employee never pays a thing. No commitment. Adjustable from 1 to 10,000 employees.">Service aux entreprises — l’employé ne paie jamais rien. Sans engagement. Quantité ajustable de 1 à 10 000 employés.</p>
-                <p class="pricing-family" data-fr="Famille (18 ans et plus) sur demande de l’employé — 8 $/mois par personne." data-en="Family (18 and over) at the employee’s request — $8/month per person.">Famille (18 ans et plus) sur demande de l’employé — 8 $/mois par personne.</p>
-
                 <a href="/portail/creer.html" class="btn btn-primary" data-fr="Inscrire ma flotte" data-en="Enrol my fleet">Inscrire ma flotte</a>
 
                 <div class="pricing-solo">
@@ -1518,40 +1493,6 @@
                     <span data-fr="— pour les questions sur l’inscription." data-en="— for enrolment questions.">— pour les questions sur l’inscription.</span>
                 </p>
             </div>
-        </div>
-    </section>
-
-    <section id="paliers" class="paliers">
-        <div class="container">
-            <h2 class="section-title" data-fr="La banque de consultations gratuites" data-en="The bank of free consultations">La banque de consultations gratuites</h2>
-            <p class="paliers-sub" data-fr="Le forfait coûte <strong>8 $ par personne couverte, par mois</strong>. L’entreprise reçoit aussi 5 consultations gratuites par mois pour chaque groupe de 100 personnes couvertes. Elles peuvent servir à des proches ou à d’autres personnes sans abonnement. Les consultations inutilisées s’accumulent." data-en="The subscription costs <strong>$8 per covered person, per month</strong>. The company also receives 5 free consultations each month for every 100 covered people. Relatives or other people can use them without a subscription. Unused consultations carry over.">Le forfait coûte <strong>8 $ par personne couverte, par mois</strong>. L’entreprise reçoit aussi 5 consultations gratuites par mois pour chaque groupe de 100 personnes couvertes. Elles peuvent servir à des proches ou à d’autres personnes sans abonnement. Les consultations inutilisées s’accumulent.</p>
-            <div class="paliers-grid">
-                <div class="palier">
-                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
-                    <div class="p-head" data-fr="100 personnes couvertes" data-en="100 covered persons">100 personnes couvertes</div>
-                    <div class="p-free">5</div>
-                    <div class="p-label" data-fr="consultations gratuites par mois" data-en="free consultations a month">consultations gratuites par mois</div>
-                </div>
-                <div class="palier">
-                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
-                    <div class="p-head" data-fr="500 personnes couvertes" data-en="500 covered persons">500 personnes couvertes</div>
-                    <div class="p-free">25</div>
-                    <div class="p-label" data-fr="consultations gratuites par mois" data-en="free consultations a month">consultations gratuites par mois</div>
-                </div>
-                <div class="palier">
-                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
-                    <div class="p-head" data-fr="1 000 personnes couvertes" data-en="1,000 covered persons">1 000 personnes couvertes</div>
-                    <div class="p-free">50</div>
-                    <div class="p-label" data-fr="consultations gratuites par mois" data-en="free consultations a month">consultations gratuites par mois</div>
-                </div>
-                <div class="palier">
-                    <div class="p-n" data-fr="Palier" data-en="Tier">Palier</div>
-                    <div class="p-head" data-fr="2 000 personnes couvertes" data-en="2,000 covered persons">2 000 personnes couvertes</div>
-                    <div class="p-free">100</div>
-                    <div class="p-label" data-fr="consultations gratuites par mois" data-en="free consultations a month">consultations gratuites par mois</div>
-                </div>
-            </div>
-            <p class="paliers-note" data-fr="La personne couverte génère un code dans son espace membre et le remet au bénéficiaire. Celui-ci contacte la clinique sur Spruce avec ce code. Une consultation est déduite de la banque lorsque le médecin utilise le code. Le solde doit être suffisant." data-en="The covered person generates a code in their member space and gives it to the recipient. The recipient contacts the clinic on Spruce with the code. One consultation is deducted from the bank when the doctor uses the code. The bank must have a sufficient balance.">La personne couverte génère un code dans son espace membre et le remet au bénéficiaire. Celui-ci contacte la clinique sur Spruce avec ce code. Une consultation est déduite de la banque lorsque le médecin utilise le code. Le solde doit être suffisant.</p>
         </div>
     </section>
 
@@ -1571,11 +1512,6 @@
                 <details>
                     <summary><span data-fr="En quelles langues?" data-en="In which languages?">En quelles langues?</span></summary>
                     <div class="faq-answer" data-fr="Les consultations sont offertes en français, en espagnol et en anglais." data-en="Consultations are available in French, Spanish and English.">Les consultations sont offertes en français, en espagnol et en anglais.</div>
-                </details>
-
-                <details>
-                    <summary><span data-fr="Peut-on ajouter la famille d’un chauffeur?" data-en="Can a driver’s family be added?">Peut-on ajouter la famille d’un chauffeur?</span></summary>
-                    <div class="faq-answer" data-fr="Oui — à la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés, au même tarif de 8 $/mois par personne." data-en="Yes — at the employee’s request, family members aged 18 and over can be added, at the same $8/month per person.">Oui — à la demande de l’employé, les membres de sa famille de 18 ans et plus peuvent être ajoutés, au même tarif de 8 $/mois par personne.</div>
                 </details>
 
                 <details>

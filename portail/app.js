@@ -39,14 +39,11 @@
     text.split(/\n|;/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (line) {
       var email = (line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [""])[0];
       var phone = (line.match(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [""])[0];
-      var family_of = "";
-      var fam = line.match(/(?:famille|conjoint|conjointe|époux|épouse|fils|fille|enfant|mère|père|parent)\s+(?:de|d’|d')\s*([^,()]+)/i);
-      if (fam) { family_of = fam[1].trim(); line = line.replace(fam[0], " "); }
       var rest = line.replace(email, " ").replace(phone, " ").replace(/depuis|since|nouveau|nouvelle|new|\d+\s*(mois|ans?)/gi, " ").replace(/[,()\t]/g, " ").replace(/\s+/g, " ").trim();
       var parts = rest.split(" ").filter(Boolean);
       var given = parts.shift() || "";
       var family = parts.join(" ");
-      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email, family_of: family_of });
+      if (given || phone || email) people.push({ first_name: given, last_name: family, phone: fmtPhone(phone), email: email });
     });
     return people;
   }
