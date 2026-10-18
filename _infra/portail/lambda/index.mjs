@@ -12,6 +12,7 @@ import { OAuth2Client } from "google-auth-library";
 import { createConsentService } from "./consent.mjs";
 import { createSpruceConsentSync, createSpruceWithdrawalSync } from "./spruce-consent.mjs";
 import { isConsentStreamEvent, handleConsentStream } from "./consent-events.mjs";
+import { createVoiceToken } from "./voix.mjs";
 
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
@@ -776,6 +777,10 @@ export const handler = async (event) => {
   const isAdmin = ADMIN_CODE && code === ADMIN_CODE;
 
   try {
+    if (path === "/voix/jeton" && method === "POST") {
+      const r = await createVoiceToken({ apiKey: process.env.XAI_API_KEY || "", origin: event.headers?.origin });
+      return reply(r.status, r.body);
+    }
     if (path === "/admin/consents" && method === "POST") {
       if (!isAdmin) return reply(403, { error: "clinical_admin_required" });
       return reply(200, await consentService().listJobs(data.cursor));
