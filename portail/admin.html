@@ -159,7 +159,9 @@
                 });
             });
             var kp = document.getElementById("kpis"); kp.innerHTML = "";
-            [[k.entreprises, "entreprise(s)"], [k.associations, "association(s)"], [k.personnes, "personnes couvertes"], [(k.personnes * state.prix) + " $", "par mois (" + (k.personnes * state.prix * 12) + " $/an)"], [k.familles, "membres de famille"], [k.nouveaux, "ajoutées ce mois-ci"], [k.spruceOk, "actives sur Spruce"], [k.spruceAttente, "invitées, en attente"], [k.aInviter, "à inviter"], [k.enPause, "en pause"], [k.sansFacturation, "partenaire(s) sans facturation Stripe"], [k.codesEmis, "codes de consultation émis"], [k.codesUtilises, "consultations gratuites utilisées"]].forEach(function (x) {
+            var v = state.voix || {}, viaVoix = state.partners.filter(function (p) { return p.source === "portail:creer:voix"; });
+            var clics = ["inscription", "solo", "spruce", "courriel", "m28"].map(function (x) { return x + " " + (v["clic_" + x] || 0); }).join(" · ");
+            [[k.entreprises, "entreprise(s)"], [k.associations, "association(s)"], [k.personnes, "personnes couvertes"], [(k.personnes * state.prix) + " $", "par mois (" + (k.personnes * state.prix * 12) + " $/an)"], [k.familles, "membres de famille"], [k.nouveaux, "ajoutées ce mois-ci"], [k.spruceOk, "actives sur Spruce"], [k.spruceAttente, "invitées, en attente"], [k.aInviter, "à inviter"], [k.enPause, "en pause"], [k.sansFacturation, "partenaire(s) sans facturation Stripe"], [k.codesEmis, "codes de consultation émis"], [k.codesUtilises, "consultations gratuites utilisées"], [v.vue || 0, "assistant vocal affiché (30 j)"], [v.appel || 0, "appels à l’assistant (30 j)"], [viaVoix.length, "comptes créés via l’assistant"], [viaVoix.filter(function (p) { return p.stripe_subscription_id; }).length, "payants via l’assistant"], ["", "clics (30 j) : " + clics]].forEach(function (x) {
                 var d = document.createElement("div"); d.className = "kpi"; d.innerHTML = "<b>" + x[0] + "</b><span>" + x[1] + "</span>"; kp.appendChild(d);
             });
             state.partners.forEach(function (p) {

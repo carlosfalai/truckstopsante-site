@@ -117,6 +117,8 @@ try { currentConfiguration = (await lambda.send(new GetFunctionCommand({ Functio
 // Preserve the live billing, authentication and provider settings on updates.
 const Variables = { ...defaultVariables, ...(currentConfiguration?.Environment?.Variables || {}), CONSENTS_TABLE: T_CONSENTS, CONSENT_STREAM_ARN: consentStreamArn };
 for (const key of Object.keys(Variables)) if (/TELEGRAM|^TG_/i.test(key)) delete Variables[key];
+// Assistant vocal (Grok Voice) : la clé du .env remplace la valeur en ligne quand elle est fournie.
+if (env.XAI_API_KEY) Variables.XAI_API_KEY = env.XAI_API_KEY;
 if (!exists) {
   for (let attempt = 1; ; attempt++) {
     try {

@@ -12,10 +12,12 @@ import { OAuth2Client } from "google-auth-library";
 import { createConsentService } from "./consent.mjs";
 import { createSpruceConsentSync, createSpruceWithdrawalSync } from "./spruce-consent.mjs";
 import { isConsentStreamEvent, handleConsentStream } from "./consent-events.mjs";
+import { createVoiceToken } from "./voix.mjs";
 
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
 const T_MEMBERS = "tss-portail-membres";
+const VOICE_EVENTS = new Set(["vue", "appel", "lien:inscription", "lien:solo", "lien:spruce", "lien:courriel", "lien:m28", "clic:inscription", "clic:solo", "clic:spruce", "clic:courriel", "clic:m28"]);
 const PRIX = 8; // $ CAD par personne couverte par mois
 const MAX_BATCH = 5;
 const PENDING_PAYMENT = "en_attente_paiement";
@@ -716,7 +718,7 @@ const publicPartner = (p) => ({
   code: p.code, name: p.name, type: p.type, contact_name: p.contact_name, contact_email: p.contact_email,
   contact_phone: p.contact_phone, billing_email: p.billing_email, created_at: p.created_at,
   stripe_subscription_id: p.stripe_subscription_id || "", stripe_customer_id: p.stripe_customer_id || "",
-  bank_code: p.bank_code || "", demo: p.demo === "oui", google_emails: splitEmails(p.google_emails), verifie: p.verifie || "",
+  bank_code: p.bank_code || "", source: p.source || "", demo: p.demo === "oui", google_emails: splitEmails(p.google_emails), verifie: p.verifie || "",
 });
 function makeCode(name) {
   const base = clean(name, 12).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "TSS";
@@ -776,6 +778,22 @@ export const handler = async (event) => {
   const isAdmin = ADMIN_CODE && code === ADMIN_CODE;
 
   try {
+    if (path === "/voix/jeton" && method === "POST") {
+      const r = await createVoiceToken({ apiKey: process.env.XAI_API_KEY || "", origin: event.headers?.origin });
+      return reply(r.status, r.body);
+    }
+    if (path === "/voix/evt" && method === "POST") {
+      // Compteurs anonymes de l'assistant vocal (aucune donnée personnelle) : un item par jour.
+      const e = String(data.e || "");
+      if (!VOICE_EVENTS.has(e)) return reply(400, { error: "bad_event" });
+      await db.send(new UpdateItemCommand({
+        TableName: T_MEMBERS, Key: { partner_code: S("_voix"), id: S("jour:" + now().slice(0, 10)) },
+        UpdateExpression: "SET #k = :k, #d = :d ADD #e :one",
+        ExpressionAttributeNames: { "#k": "kind", "#d": "jour", "#e": e.replace(":", "_") },
+        ExpressionAttributeValues: { ":k": S("stat"), ":d": S(now().slice(0, 10)), ":one": { N: "1" } },
+      }));
+      return reply(200, { ok: true });
+    }
     if (path === "/admin/consents" && method === "POST") {
       if (!isAdmin) return reply(403, { error: "clinical_admin_required" });
       return reply(200, await consentService().listJobs(data.cursor));
@@ -860,7 +878,7 @@ export const handler = async (event) => {
         stripe_customer_id: "", stripe_subscription_id: "",
         bank_code: name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) + "-SANTE",
         demo: "non", google_emails: [email, google_email].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(","),
-        verifie, active: "oui", created_at: now(), source: "portail:creer",
+        verifie, active: "oui", created_at: now(), source: data.source === "voix" ? "portail:creer:voix" : "portail:creer",
       };
       await putItem(T_PARTNERS, item);
       return reply(200, { ok: true, role: "partner", code: pcode, partner: publicPartner(item) });
@@ -938,7 +956,10 @@ export const handler = async (event) => {
         const rachats = allCodes.filter((c) => c.redeemed_by === p.code && !demoCodes.has(c.partner_code));
         out.push({ ...publicPartner(p), active: p.active !== "non", banque_bonus: parseInt(p.banque_bonus, 10) || 0, banque_ajust: parseInt(p.banque_ajust, 10) || 0, banque: await bankOf(p, members, codes), codes: codes.map(publicCode), rachats: rachats.length, rachats_mois: rachats.filter((c) => (c.used_at || "").startsWith(now().slice(0, 7))).length, resume: summary(members, null, true), members: members.map((m) => publicMember(m, true)) });
       }
-      return reply(200, { ok: true, partners: out, prix: PRIX });
+      const jours = (await db.send(new QueryCommand({ TableName: T_MEMBERS, KeyConditionExpression: "partner_code = :p", ExpressionAttributeValues: { ":p": S("_voix") } }))).Items || [];
+      const voix = {};
+      for (const j of jours.map(unmarshal)) if (j.jour >= new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10)) for (const [k, v] of Object.entries(j)) if (typeof v === "number") voix[k] = (voix[k] || 0) + v;
+      return reply(200, { ok: true, partners: out, prix: PRIX, voix });
     }
     if (path === "/admin/partner" && method === "POST") {
       if (!isAdmin) return reply(401, { error: "bad_code" });

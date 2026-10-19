@@ -50,7 +50,7 @@
             document.getElementById("name").placeholder = "Votre entreprise ou votre nom";
         }
         function create(extra) {
-            var body = Object.assign({ name: document.getElementById("name").value.trim(), type: document.getElementById("type").value, contact_name: document.getElementById("contact_name").value.trim(), contact_email: document.getElementById("email").value.trim(), contact_phone: document.getElementById("phone").value.trim(), credential: credential }, extra || {});
+            var body = Object.assign({ name: document.getElementById("name").value.trim(), type: document.getElementById("type").value, contact_name: document.getElementById("contact_name").value.trim(), contact_email: document.getElementById("email").value.trim(), contact_phone: document.getElementById("phone").value.trim(), credential: credential, source: new URLSearchParams(window.location.search).get("src") === "voix" ? "voix" : "" }, extra || {});
             if (!body.name) { msg.textContent = "Le nom de l’entreprise est requis."; document.getElementById("name").focus(); return; }
             if (!body.contact_email) { msg.textContent = "Le courriel est requis."; document.getElementById("email").focus(); return; }
             go.disabled = true; msg.textContent = "Création du compte…";
