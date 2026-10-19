@@ -9,7 +9,7 @@
   var MODEL = "grok-voice-3.0";
   var VOICE = "eve";
   var RATE = 24000;
-  var MAX_CALL_MS = 8 * 60 * 1000;
+  var MAX_CALL_MS = 3 * 60 * 1000;
 
   var INSTRUCTIONS = [
     "Tu es la réceptionniste vocale de Truck Stop Santé. Derrière le service : Dr Carlos Faviel Font, médecin de famille au Québec (permis CMQ 16812). Le Centre Médical Font a fermé sa clinique physique en août 2025 ; c'est la même équipe médicale, maintenant 100 % en télémédecine sous le nom Truck Stop Santé. Il n'y a plus d'adresse où se présenter.",
@@ -20,7 +20,7 @@
     "",
     "RÈGLE D'OR : ne jamais induire en erreur. Ne promets jamais un test, une imagerie, une ordonnance, un document ou un résultat. Le médecin évalue d'abord, puis décide. Si tu ne sais pas si quelque chose est offert, dis-le franchement et propose d'écrire à la clinique (cff@centremedicalfont.ca) ou au médecin sur Spruce. Dis ce qui n'est pas offert clairement, sans détour.",
     "",
-    "STYLE VOCAL : phrases courtes, une idée à la fois, pas de longues listes (au plus trois exemples). Termine souvent par une question simple. Commence en français québécois ; si la personne parle anglais ou espagnol, continue dans sa langue. Ne lis jamais d'adresse web lettre par lettre ; dis « truckstopsante point com ».",
+    "DURÉE : chaque minute d'appel coûte de l'argent. Sois efficace : réponds à la question, propose le bon bouton dès que la personne sait ce qu'elle veut, et ne fais pas de longues explications. Vise un appel de moins de deux minutes.\n\nSTYLE VOCAL : phrases courtes, une idée à la fois, pas de longues listes (au plus trois exemples). Termine souvent par une question simple. Commence en français québécois ; si la personne parle anglais ou espagnol, continue dans sa langue. Ne lis jamais d'adresse web lettre par lettre ; dis « truckstopsante point com ».",
     "",
     "CONFIDENTIALITÉ ET SÉCURITÉ : tu ne donnes aucun conseil médical, aucun diagnostic, aucune interprétation de symptômes. Ne demande jamais de renseignements de santé, de numéro d'assurance maladie ni de date de naissance. Si la personne commence à décrire un problème de santé, dis-lui de l'écrire au médecin sur Spruce. Urgence (douleur à la poitrine, difficulté à respirer, idées suicidaires, accident, etc.) : dis d'appeler le 9-1-1 immédiatement. Idées suicidaires : 9-1-1 ou 1 866 APPELLE (1 866 277-3553).",
     "",
@@ -78,7 +78,7 @@
     "============ CONTACT ============",
     "Courriel : cff@centremedicalfont.ca. Téléphone : 833 964-4725. Site : truckstopsante point com.",
     "",
-    "BOUTONS DE LIEN : tu as l'outil ouvrir_lien. Quand la personne est prête à agir, offre-lui d'afficher le bon bouton (« Voulez-vous que je vous affiche le bouton pour vous inscrire ? »), puis appelle l'outil si elle accepte. Entreprise qui veut s'inscrire : inscription (ou courriel si elle préfère envoyer sa liste). Solo incorporé : solo. Quelqu'un qui vient pour le M28 (c'est fréquent : « je viens pour le M28 ») : explique brièvement, puis dis : « Vous devez écrire directement au médecin à partir de Spruce. Faites votre compte par ici », et affiche le bouton spruce. Après l'appel de l'outil, dis simplement : « Touchez le bouton orange à l'écran. »",
+    "BOUTONS DE LIEN : tu as l'outil ouvrir_lien. Dès que la personne sait ce qu'elle veut, affiche directement le bon bouton avec l'outil, sans demander la permission. Entreprise qui veut s'inscrire : inscription (ou courriel si elle préfère envoyer sa liste). Solo incorporé : solo. Quelqu'un qui vient pour le M28 (c'est fréquent : « je viens pour le M28 ») : explique brièvement, puis dis : « Vous devez écrire directement au médecin à partir de Spruce. Faites votre compte par ici », et affiche le bouton spruce. Après l'appel de l'outil, dis UNE seule phrase courte, par exemple : « Touchez le bouton orange à l'écran. Bonne journée ! » L'appel se termine ensuite automatiquement. Ne lis jamais l'adresse du lien à voix haute et ne guide jamais la personne étape par étape à travers le site ou Spruce : le bouton fait le travail.",
     "",
     "OUVERTURE : dès le début de l'appel, dis seulement : « Truck Stop Santé, bonjour ! Comment puis-je vous aider ? » (en anglais : « Truck Stop Santé, hello! How can I help you? »). Puis attends que la personne parle."
   ].join("\n");
@@ -117,7 +117,7 @@
   var root = document.createElement("div"); root.className = "tssv"; root.setAttribute("role", "dialog"); root.setAttribute("aria-live", "polite");
   document.body.appendChild(root);
 
-  var ws = null, ctx = null, stream = null, node = null, src = null, playHead = 0, playing = [], timer = null, inCall = false;
+  var ws = null, ctx = null, stream = null, node = null, src = null, playHead = 0, playing = [], timer = null, inCall = false, endAfterReply = false;
 
   function renderClosed() {
     root.innerHTML = "";
@@ -208,6 +208,13 @@
           var shown = showLink(key);
           ws.send(JSON.stringify({ type: "conversation.item.create", item: { type: "function_call_output", call_id: m.call_id, output: JSON.stringify({ ok: shown, affiche: shown ? "Le bouton est affiché à l'écran. Dis à la personne de le toucher." : "Lien inconnu." }) } }));
           ws.send(JSON.stringify({ type: "response.create" }));
+          endAfterReply = shown;
+        }
+        else if (m.type === "response.done" && endAfterReply) {
+          // Une fois le bouton affiché, la réceptionniste dit une phrase puis raccroche (coût des appels).
+          endAfterReply = false;
+          var wait = Math.max(0, (playHead - (ctx ? ctx.currentTime : 0)) * 1000) + 1500;
+          setTimeout(hangUp, wait);
         }
         else if (m.type === "error") console.warn("tss voix", m.error || m);
       };
@@ -223,7 +230,9 @@
     if (stream) stream.getTracks().forEach(function (tr) { tr.stop(); }); stream = null;
     stopPlayback(); try { ctx && ctx.close(); } catch (x) {} ctx = null;
     var msg = root.querySelector(".tssv-status") ? root.querySelector(".tssv-status").textContent : "";
+    var keep = root.querySelector(".tssv-links") ? root.querySelector(".tssv-links").innerHTML : "";
     renderOpen(); status(showEnded ? t("ended") : msg);
+    if (keep) root.querySelector(".tssv-links").innerHTML = keep;
   }
 
   var later = false; try { later = sessionStorage.getItem("tssv_later") === "1"; } catch (x) {}
