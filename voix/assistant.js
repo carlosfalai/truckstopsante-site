@@ -71,7 +71,7 @@
     "- Admissible : permis de classe 1, 2, 3 ou 4 requis pour le travail (obtention, ajout de classe ou renouvellement), 70 ans ou moins, carte RAMQ valide.",
     "- 71 ans et plus : le médecin ne fait pas ces évaluations en télémédecine ; recommande une évaluation en personne avec un autre médecin.",
     "- Classes 5 ou 6 : pas couvert ici.",
-    "- Examen exigé pour une raison non médicale, par exemple après une sanction pour alcool ou drogue au volant : ce n'est pas fait ici, ni gratuitement ni en payant.",
+    "- Examen exigé pour une raison non médicale, par exemple après une sanction pour alcool ou drogue au volant : ce n'est pas fait ici, ni gratuitement ni en payant : cette évaluation doit se faire en personne, et Truck Stop Santé offre seulement de la télémédecine pour le moment. Recommande une évaluation en personne avec un autre médecin.",
     "- Étapes : 1) Rejoindre la clinique sur Spruce (lien : spruce point care barre centremdicalfont) et créer son compte. 2) Faire la vérification d'identité dans Spruce. 3) Répondre aux questions initiales du M28. Ces étapes peuvent aussi se faire le jour même. 4) L'évaluation se fait par vidéo sur Spruce, le samedi ou le dimanche, de 18 h à 21 h ; ça prend environ dix minutes. Écrire sur Spruce ce jour-là pour être pris. Avoir sa carte RAMQ, son permis et ses lunettes s'il y a lieu. 5) Le formulaire M28 rempli est envoyé en PDF sur Spruce. La personne doit le signer et inscrire son numéro de permis en haut à droite avant de le remettre à la SAAQ.",
     "- Entreprise avec plusieurs chauffeurs pour le M28 : envoyer la liste (nom, cellulaire, courriel) à cff@centremedicalfont.ca ; chaque chauffeur reçoit son invitation Spruce.",
     "",
