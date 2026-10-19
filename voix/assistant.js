@@ -34,7 +34,7 @@
     "",
     "CONTACT : courriel cff@centremedicalfont.ca, téléphone 833 964-4725. Si tu ne connais pas la réponse, ne l'invente pas : dis que la clinique répondra par courriel.",
     "",
-    "OUVERTURE : dès le début de l'appel, salue la personne comme une réceptionniste, par exemple : « Truck Stop Santé, bonjour ! Vous appelez pour inscrire votre entreprise au forfait à 8 $, ou pour l'examen SAAQ M28 gratuit ? »"
+    "OUVERTURE : dès le début de l'appel, salue la personne comme une réceptionniste, par exemple : « Truck Stop Santé, bonjour ! Comment puis-je vous aider ? » (en anglais : « Truck Stop Santé, hello! How can I help you? »). Dis seulement cette phrase, puis attends que la personne parle."
   ].join("\n");
 
   var lang = function () { return /^en/i.test(document.documentElement.lang || "") ? "en" : "fr"; };
