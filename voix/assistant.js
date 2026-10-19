@@ -78,8 +78,24 @@
     "============ CONTACT ============",
     "Courriel : cff@centremedicalfont.ca. Téléphone : 833 964-4725. Site : truckstopsante point com.",
     "",
+    "BOUTONS DE LIEN : tu as l'outil ouvrir_lien. Quand la personne est prête à agir, offre-lui d'afficher le bon bouton (« Voulez-vous que je vous affiche le bouton pour vous inscrire ? »), puis appelle l'outil si elle accepte. Entreprise qui veut s'inscrire : inscription (ou courriel si elle préfère envoyer sa liste). Solo incorporé : solo. Quelqu'un qui vient pour le M28 (c'est fréquent : « je viens pour le M28 ») : explique brièvement, puis dis : « Vous devez écrire directement au médecin à partir de Spruce. Faites votre compte par ici », et affiche le bouton spruce. Après l'appel de l'outil, dis simplement : « Touchez le bouton orange à l'écran. »",
+    "",
     "OUVERTURE : dès le début de l'appel, dis seulement : « Truck Stop Santé, bonjour ! Comment puis-je vous aider ? » (en anglais : « Truck Stop Santé, hello! How can I help you? »). Puis attends que la personne parle."
   ].join("\n");
+
+  // Liens que la réceptionniste peut proposer d'ouvrir (bouton dans le panneau ; les navigateurs bloquent les fenêtres ouvertes sans toucher).
+  var LINKS = {
+    inscription: { url: "/portail/creer.html", fr: "Inscrire mes chauffeurs", en: "Enrol my drivers" },
+    solo: { url: "/portail/creer.html?type=solo", fr: "M'inscrire (solo incorporé)", en: "Enrol (incorporated solo)" },
+    spruce: { url: "https://spruce.care/centremdicalfont", fr: "Ouvrir Spruce (clinique)", en: "Open Spruce (clinic)" },
+    courriel: { url: "mailto:cff@centremedicalfont.ca?subject=Liste%20de%20chauffeurs", fr: "Envoyer ma liste par courriel", en: "Email my driver list" },
+    m28: { url: "/m28/", fr: "Page examen SAAQ M28", en: "SAAQ M28 exam page" }
+  };
+  var TOOLS = [{
+    type: "function", name: "ouvrir_lien",
+    description: "Affiche à la personne un bouton pour ouvrir une page. inscription = inscrire les chauffeurs d'une entreprise ; solo = chauffeur solo incorporé ; spruce = rejoindre la clinique sur Spruce (M28 ou chauffeurs déjà inscrits) ; courriel = envoyer la liste des chauffeurs par courriel ; m28 = page de l'examen SAAQ M28.",
+    parameters: { type: "object", properties: { lien: { type: "string", enum: Object.keys(LINKS) } }, required: ["lien"] }
+  }];
 
   var lang = function () { return /^en/i.test(document.documentElement.lang || "") ? "en" : "fr"; };
   var T = {
@@ -95,7 +111,7 @@
     ".tssv-call{background:#16a34a;color:#fff}.tssv-end{background:#dc2626;color:#fff}.tssv-later{background:#f1f5f9;color:#14213d;flex:0 0 auto}" +
     ".tssv-status{font-size:13px;margin:10px 0 0;color:#475569}.tssv-note{font-size:11px;color:#64748b;margin:10px 0 0}" +
     ".tssv-fab{border:0;border-radius:999px;padding:12px 18px;background:#16a34a;color:#fff;font-weight:600;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}" +
-    ".tssv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:6px;animation:tssvp 1.2s infinite}@keyframes tssvp{50%{opacity:.3}}";
+    ".tssv-link{display:block;margin:10px 0 0;padding:12px 14px;border-radius:12px;background:#f59e0b;color:#14213d;font-weight:700;text-align:center;text-decoration:none;font-size:15px}.tssv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:6px;animation:tssvp 1.2s infinite}@keyframes tssvp{50%{opacity:.3}}";
   var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
   var root = document.createElement("div"); root.className = "tssv"; root.setAttribute("role", "dialog"); root.setAttribute("aria-live", "polite");
@@ -109,7 +125,7 @@
     b.onclick = renderOpen; root.appendChild(b);
   }
   function renderOpen() {
-    root.innerHTML = '<div class="tssv-card"><h3></h3><p class="tssv-sub"></p><div class="tssv-row"></div><div class="tssv-status"></div><div class="tssv-note"></div></div>';
+    root.innerHTML = '<div class="tssv-card"><h3></h3><p class="tssv-sub"></p><div class="tssv-row"></div><div class="tssv-links"></div><div class="tssv-status"></div><div class="tssv-note"></div></div>';
     root.querySelector("h3").textContent = t("title");
     root.querySelector(".tssv-sub").textContent = t("sub");
     root.querySelector(".tssv-note").textContent = t("note");
@@ -147,6 +163,16 @@
 
   var WORKLET = "class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){var c=i[0]&&i[0][0];if(c){this.b.push(new Float32Array(c));this.n+=c.length;if(this.n>=2400){var o=new Float32Array(this.n),k=0;this.b.forEach(function(a){o.set(a,k);k+=a.length});this.port.postMessage(o);this.b=[];this.n=0}}return true}}registerProcessor('tss-mic',P);";
 
+  function showLink(key) {
+    var l = LINKS[key], box = root.querySelector(".tssv-links");
+    if (!l || !box) return false;
+    if (box.querySelector('[data-k="' + key + '"]')) return true;
+    var a = document.createElement("a"); a.className = "tssv-link"; a.setAttribute("data-k", key);
+    a.href = l.url; a.textContent = "➜ " + l[lang()];
+    if (/^https?:/.test(l.url)) { a.target = "_blank"; a.rel = "noopener"; }
+    box.appendChild(a); return true;
+  }
+
   async function startCall() {
     inCall = true; renderOpen(); status(t("connecting"));
     try {
@@ -161,7 +187,7 @@
       ws.onopen = async function () {
         ws.send(JSON.stringify({ type: "session.update", session: {
           instructions: INSTRUCTIONS, voice: VOICE,
-          turn_detection: { type: "server_vad" },
+          turn_detection: { type: "server_vad" }, tools: TOOLS,
           audio: { input: { format: { type: "audio/pcm", rate: RATE } }, output: { format: { type: "audio/pcm", rate: RATE } } }
         } }));
         // La réceptionniste « décroche » : elle parle en premier.
@@ -177,6 +203,12 @@
         var m; try { m = JSON.parse(ev.data); } catch (x) { return; }
         if ((m.type === "response.output_audio.delta" || m.type === "response.audio.delta") && m.delta) playB64(m.delta);
         else if (m.type === "input_audio_buffer.speech_started") stopPlayback();
+        else if (m.type === "response.function_call_arguments.done" && m.name === "ouvrir_lien") {
+          var key = ""; try { key = JSON.parse(m.arguments || "{}").lien; } catch (x) {}
+          var shown = showLink(key);
+          ws.send(JSON.stringify({ type: "conversation.item.create", item: { type: "function_call_output", call_id: m.call_id, output: JSON.stringify({ ok: shown, affiche: shown ? "Le bouton est affiché à l'écran. Dis à la personne de le toucher." : "Lien inconnu." }) } }));
+          ws.send(JSON.stringify({ type: "response.create" }));
+        }
         else if (m.type === "error") console.warn("tss voix", m.error || m);
       };
       ws.onerror = function () { status(t("err")); };
