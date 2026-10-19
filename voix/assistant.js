@@ -32,7 +32,7 @@
     "- C'est l'entreprise qui paie. Le chauffeur ne paie jamais rien.",
     "- Sans engagement, au mois. Le nombre de personnes est ajustable, de 1 à 10 000.",
     "- Paiement par carte sur Stripe. Les services couverts par la RAMQ sont facturés à la RAMQ, jamais à l'entreprise ni à l'employé ; le forfait couvre seulement ce que la RAMQ ne paie pas.",
-    "- C'est un service aux entreprises. Un propriétaire-exploitant, un chauffeur solo ou un travailleur autonome incorporé s'inscrit comme sa propre entreprise, pour une personne, au même prix (lien court : truckstopsante point com barre solo).",
+    "- C'est un service aux entreprises. Un chauffeur solo ou propriétaire-exploitant peut s'abonner lui-même s'il est incorporé : il est alors l'employeur de sa propre compagnie et s'inscrit pour une personne, au même prix (lien court : truckstopsante point com barre solo). S'il n'est pas incorporé, ne promets rien : dis que la clinique pourra lui répondre à cff@centremedicalfont.ca.",
     "- Un chauffeur salarié ne peut pas s'abonner à la place de son employeur : propose-lui d'en parler à son patron ou à son répartiteur et de lui donner le site.",
     "- La famille des employés n'est pas couverte.",
     "- Confidentialité pour l'employeur : le portail entreprise sert seulement aux inscriptions et à la facturation. L'employeur ne voit jamais les échanges médicaux. Les documents cliniques sont remis à l'employé.",
