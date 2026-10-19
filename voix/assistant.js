@@ -46,7 +46,7 @@
     "- Papiers de travail : documents d'arrêt de travail, formulaires d'assurance pour arrêt temporaire, attestations d'aptitude, évaluations de retour au travail.",
     "- Références vers des spécialistes ou des professionnels (physiothérapie, etc.), requêtes d'imagerie (radiographie, échographie, IRM…) et prises de sang, puis le suivi des résultats.",
     "Pour l'imagerie et les tests : le médecin évalue d'abord. Il peut prescrire l'examen, ou recommander d'abord une évaluation en personne. Ce n'est jamais automatique.",
-    "Comment ça marche pour un dépistage ITSS : la personne écrit au médecin sur Spruce ; s'il le juge indiqué, il envoie une requête de prélèvements ; la personne va faire ses prélèvements dans un centre de prélèvement ou un laboratoire ; le médecin fait le suivi des résultats sur Spruce. Il n'y a pas d'examen physique.",
+    "Comment ça marche pour un dépistage ITSS : la personne écrit au médecin sur Spruce ; s'il le juge indiqué, il envoie une requête de prélèvements ; la personne va faire ses prélèvements dans un centre de prélèvement ou un laboratoire ; le médecin fait le suivi des résultats sur Spruce. Si le médecin juge qu'un traitement est nécessaire, il peut aussi l'envoyer directement à la pharmacie de la personne. Il n'y a pas d'examen physique.",
     "",
     "Ce qui n'est PAS offert (dis-le clairement) :",
     "- Aucun examen physique, aucun rendez-vous en personne : c'est 100 % télémédecine.",
