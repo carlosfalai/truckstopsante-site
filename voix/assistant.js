@@ -85,8 +85,8 @@
 
   // Liens que la réceptionniste peut proposer d'ouvrir (bouton dans le panneau ; les navigateurs bloquent les fenêtres ouvertes sans toucher).
   var LINKS = {
-    inscription: { url: "/portail/creer.html", fr: "Inscrire mes chauffeurs", en: "Enrol my drivers" },
-    solo: { url: "/portail/creer.html?type=solo", fr: "M'inscrire (solo incorporé)", en: "Enrol (incorporated solo)" },
+    inscription: { url: "/portail/creer.html?src=voix", fr: "Inscrire mes chauffeurs", en: "Enrol my drivers" },
+    solo: { url: "/portail/creer.html?type=solo&src=voix", fr: "M'inscrire (solo incorporé)", en: "Enrol (incorporated solo)" },
     spruce: { url: "https://spruce.care/centremdicalfont", fr: "Ouvrir Spruce (clinique)", en: "Open Spruce (clinic)" },
     courriel: { url: "mailto:cff@centremedicalfont.ca?subject=Liste%20de%20chauffeurs", fr: "Envoyer ma liste par courriel", en: "Email my driver list" },
     m28: { url: "https://m28.ca", fr: "Évaluation M28 de la SAAQ (m28.ca)", en: "SAAQ M28 evaluation (m28.ca)" }
@@ -170,11 +170,20 @@
     var a = document.createElement("a"); a.className = "tssv-link"; a.setAttribute("data-k", key);
     a.href = l.url; a.textContent = "➜ " + l[lang()];
     if (/^https?:/.test(l.url)) { a.target = "_blank"; a.rel = "noopener"; }
-    box.appendChild(a); return true;
+    a.addEventListener("click", function () { track("clic:" + key); });
+    box.appendChild(a); track("lien:" + key); return true;
+  }
+  // Compteurs anonymes (vues, appels, boutons affichés, boutons cliqués) pour mesurer les conversions.
+  function track(e) {
+    try {
+      var body = JSON.stringify({ e: e });
+      if (navigator.sendBeacon) navigator.sendBeacon(API + "/voix/evt", new Blob([body], { type: "text/plain" }));
+      else fetch(API + "/voix/evt", { method: "POST", body: body, keepalive: true });
+    } catch (x) {}
   }
 
   async function startCall() {
-    inCall = true; gotAudio = false; renderOpen(); status(t("connecting"));
+    inCall = true; gotAudio = false; track("appel"); renderOpen(); status(t("connecting"));
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: RATE });
       await ctx.resume();
@@ -258,7 +267,7 @@
   if (off) root.remove();
   else fetchToken().then(function (tok) {
     if (!tok) return root.remove();
-    cached = tok; cachedAt = Date.now();
+    cached = tok; cachedAt = Date.now(); track("vue");
     if (later) renderClosed(); else setTimeout(renderOpen, 800);
   });
 })();
