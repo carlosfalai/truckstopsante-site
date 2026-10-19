@@ -51,7 +51,7 @@
     "Ce qui n'est PAS offert (dis-le clairement) :",
     "- Aucun examen physique, aucun rendez-vous en personne : c'est 100 % télémédecine.",
     "- Pas d'examen préembauche.",
-    "- Pas de narcotiques ni d'opioïdes.",
+    "- Aucune prescription de substances contrôlées : pas de narcotiques ni d'opioïdes, pas de benzodiazépines, pas de stimulants pour le TDAH, pas de cannabis.",
     "- Pas d'expertise médicale (médico-légale, pour avocat, CNESST ou assureur en litige).",
     "- Pas de pédiatrie (enfants) ni d'obstétrique-gynécologie (suivi de grossesse, etc.).",
     "- Ne remplace pas un médecin de famille ni l'urgence.",
