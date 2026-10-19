@@ -117,7 +117,7 @@
   var root = document.createElement("div"); root.className = "tssv"; root.setAttribute("role", "dialog"); root.setAttribute("aria-live", "polite");
   document.body.appendChild(root);
 
-  var ws = null, ctx = null, stream = null, node = null, src = null, playHead = 0, playing = [], timer = null, inCall = false, endAfterReply = false;
+  var ws = null, ctx = null, stream = null, node = null, src = null, playHead = 0, playing = [], timer = null, inCall = false, endAfterReply = false, gotAudio = false;
 
   function renderClosed() {
     root.innerHTML = "";
@@ -174,15 +174,14 @@
   }
 
   async function startCall() {
-    inCall = true; renderOpen(); status(t("connecting"));
+    inCall = true; gotAudio = false; renderOpen(); status(t("connecting"));
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: RATE });
       await ctx.resume();
       try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
       catch (e) { status(t("mic")); return cleanup(false); }
-      var r = await fetch(API + "/voix/jeton", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-      if (!r.ok) throw new Error("token " + r.status);
-      var tok = (await r.json()).token;
+      var tok = await getToken();
+      if (!tok) { inCall = false; return disable(); }
       ws = new WebSocket("wss://api.x.ai/v1/realtime?model=" + encodeURIComponent(MODEL), ["xai-client-secret." + tok]);
       ws.onopen = async function () {
         ws.send(JSON.stringify({ type: "session.update", session: {
@@ -201,7 +200,7 @@
       };
       ws.onmessage = function (ev) {
         var m; try { m = JSON.parse(ev.data); } catch (x) { return; }
-        if ((m.type === "response.output_audio.delta" || m.type === "response.audio.delta") && m.delta) playB64(m.delta);
+        if ((m.type === "response.output_audio.delta" || m.type === "response.audio.delta") && m.delta) { gotAudio = true; playB64(m.delta); }
         else if (m.type === "input_audio_buffer.speech_started") stopPlayback();
         else if (m.type === "response.function_call_arguments.done" && m.name === "ouvrir_lien") {
           var key = ""; try { key = JSON.parse(m.arguments || "{}").lien; } catch (x) {}
@@ -219,7 +218,8 @@
         else if (m.type === "error") console.warn("tss voix", m.error || m);
       };
       ws.onerror = function () { status(t("err")); };
-      ws.onclose = function () { if (inCall) cleanup(true); };
+      // Fermée avant toute réponse (ex. crédit xAI épuisé) : on retire l'assistant du site pour ce visiteur.
+      ws.onclose = function () { if (inCall && !gotAudio) return disable(); if (inCall) cleanup(true); };
     } catch (e) { console.warn("tss voix", e); status(t("err")); cleanup(false); }
   }
   function hangUp() { cleanup(true); }
@@ -235,6 +235,30 @@
     if (keep) root.querySelector(".tssv-links").innerHTML = keep;
   }
 
-  var later = false; try { later = sessionStorage.getItem("tssv_later") === "1"; } catch (x) {}
-  if (later) renderClosed(); else setTimeout(renderOpen, 800);
+  // Jeton demandé dès l'arrivée : si xAI refuse (plus de crédit, clé absente), l'assistant n'apparaît pas du tout.
+  var cached = null, cachedAt = 0;
+  async function fetchToken() {
+    try {
+      var r = await fetch(API + "/voix/jeton", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      if (!r.ok) return null;
+      return (await r.json()).token || null;
+    } catch (x) { return null; }
+  }
+  async function getToken() {
+    if (cached && Date.now() - cachedAt < 90000) { var c = cached; cached = null; return c; }
+    return fetchToken();
+  }
+  function disable() {
+    cleanup(false); root.remove();
+    try { sessionStorage.setItem("tssv_off", "1"); } catch (x) {}
+  }
+
+  var later = false, off = false;
+  try { later = sessionStorage.getItem("tssv_later") === "1"; off = sessionStorage.getItem("tssv_off") === "1"; } catch (x) {}
+  if (off) root.remove();
+  else fetchToken().then(function (tok) {
+    if (!tok) return root.remove();
+    cached = tok; cachedAt = Date.now();
+    if (later) renderClosed(); else setTimeout(renderOpen, 800);
+  });
 })();
