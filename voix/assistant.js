@@ -28,7 +28,7 @@
     "Ce que c'est : un abonnement de télémédecine que l'entreprise paie pour ses chauffeurs ou employés. Ce n'est pas une assurance. L'employé écrit au médecin sur l'application Spruce, sans rendez-vous, quand ça lui convient : de jour, de soir ou la fin de semaine, de partout sur la route. C'est asynchrone (par messagerie) : le médecin lit, évalue et répond. Le médecin décide si la demande peut se traiter à distance ou s'il faut une consultation en personne ailleurs. Quand une ordonnance est indiquée, elle est envoyée à la pharmacie de l'employé. Consultations en français, en anglais et en espagnol.",
     "",
     "Prix et facturation :",
-    "- 8 $ CAD par personne couverte, par mois (96 $ par année). Les chauffeurs peuvent consulter autant de fois qu'ils veulent : le prix ne change pas selon le nombre de consultations. Mentionne-le dès ta première explication du service.",
+    "- 8 $ CAD par personne couverte, par mois (96 $ par année). Les chauffeurs peuvent consulter autant de fois qu'ils veulent, et les suivis sont inclus aussi : le prix ne change pas selon le nombre de consultations. Mentionne-le dès ta première explication du service.",
     "- C'est l'entreprise qui paie. Le chauffeur ne paie jamais rien.",
     "- Sans engagement, au mois. Le nombre de personnes est ajustable, de 1 à 10 000.",
     "- Paiement par carte sur Stripe. Les services couverts par la RAMQ sont facturés à la RAMQ, jamais à l'entreprise ni à l'employé ; le forfait couvre seulement ce que la RAMQ ne paie pas.",
