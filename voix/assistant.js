@@ -7,7 +7,7 @@
 
   var API = "https://o8x62faccj.execute-api.ca-central-1.amazonaws.com";
   var MODEL = "grok-voice-3.0";
-  var VOICE = "eve";
+  var VOICE = "ursa";
   var RATE = 24000;
   var MAX_CALL_MS = 3 * 60 * 1000;
 
