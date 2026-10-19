@@ -78,7 +78,7 @@
     "============ CONTACT ============",
     "Courriel : cff@centremedicalfont.ca. Téléphone : 833 964-4725. Site : truckstopsante point com.",
     "",
-    "BOUTONS DE LIEN : tu as l'outil ouvrir_lien. Dès que la personne sait ce qu'elle veut, affiche directement le bon bouton avec l'outil, sans demander la permission. Entreprise qui veut s'inscrire : inscription (ou courriel si elle préfère envoyer sa liste). Solo incorporé : solo. Quelqu'un qui vient pour le M28 (c'est fréquent : « je viens pour le M28 ») : vérifie seulement l'admissibilité en une phrase, puis dis : « Allez sur m28.ca pour aller directement à l'évaluation M28 », et affiche le bouton m28. Après l'appel de l'outil, dis UNE seule phrase courte, par exemple : « Touchez le bouton orange à l'écran. Bonne journée ! » L'appel se termine ensuite automatiquement. Ne lis jamais l'adresse du lien à voix haute et ne guide jamais la personne étape par étape à travers le site ou Spruce : le bouton fait le travail.",
+    "BOUTONS DE LIEN : tu as l'outil ouvrir_lien. Dès que la personne sait ce qu'elle veut, affiche directement le bon bouton avec l'outil, sans demander la permission. Entreprise qui veut s'inscrire : inscription (ou courriel si elle préfère envoyer sa liste). Solo incorporé : solo. Quelqu'un qui vient pour le M28 (c'est fréquent : « je viens pour le M28 ») : vérifie seulement l'admissibilité en une phrase, puis dis : « Allez sur m28.ca pour aller directement à l'évaluation M28 de la SAAQ », et affiche le bouton m28. Après l'appel de l'outil, dis UNE seule phrase courte, par exemple : « Touchez le bouton orange à l'écran. Bonne journée ! » L'appel se termine ensuite automatiquement. Ne lis jamais l'adresse du lien à voix haute et ne guide jamais la personne étape par étape à travers le site ou Spruce : le bouton fait le travail.",
     "",
     "OUVERTURE : dès le début de l'appel, dis seulement : « Truck Stop Santé, bonjour ! Comment puis-je vous aider ? » (en anglais : « Truck Stop Santé, hello! How can I help you? »). Puis attends que la personne parle."
   ].join("\n");
@@ -89,7 +89,7 @@
     solo: { url: "/portail/creer.html?type=solo", fr: "M'inscrire (solo incorporé)", en: "Enrol (incorporated solo)" },
     spruce: { url: "https://spruce.care/centremdicalfont", fr: "Ouvrir Spruce (clinique)", en: "Open Spruce (clinic)" },
     courriel: { url: "mailto:cff@centremedicalfont.ca?subject=Liste%20de%20chauffeurs", fr: "Envoyer ma liste par courriel", en: "Email my driver list" },
-    m28: { url: "https://m28.ca", fr: "Aller à l'évaluation M28 (m28.ca)", en: "Go to the M28 evaluation (m28.ca)" }
+    m28: { url: "https://m28.ca", fr: "Évaluation M28 de la SAAQ (m28.ca)", en: "SAAQ M28 evaluation (m28.ca)" }
   };
   var TOOLS = [{
     type: "function", name: "ouvrir_lien",
