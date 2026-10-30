@@ -25,7 +25,7 @@ process.env.AWS_SECRET_ACCESS_KEY = env.HEALTHYPLAN_AWS_SECRET_ACCESS_KEY;
 
 const REGION = "ca-central-1", ACCOUNT = "730335301855";
 const FN = "tss-portail-api", ROLE = "tss-portail-lambda-role", API = "tss-portail-api";
-const T_PARTNERS = "tss-portail-partenaires", T_MEMBERS = "tss-portail-membres", T_CONSENTS = "tss-portail-consents";
+const T_PARTNERS = "tss-portail-partenaires", T_MEMBERS = "tss-portail-membres", T_CONSENTS = "tss-portail-consents", T_VISITES = "tss-portail-visites";
 const STRIPE_PRICE_ID = "price_1TuXuRKyyCqeElTHUDNlr3KS"; // Truck Stop Santé — Couverture santé, 8 $ CAD / mois / personne
 
 let adminCode = env.TSS_PORTAIL_ADMIN_CODE;
@@ -62,6 +62,7 @@ async function ensureTable(name, keys) {
 }
 await ensureTable(T_PARTNERS, [{ name: "code", type: "HASH" }]);
 await ensureTable(T_MEMBERS, [{ name: "partner_code", type: "HASH" }, { name: "id", type: "RANGE" }]);
+await ensureTable(T_VISITES, [{ name: "jour", type: "HASH" }, { name: "page", type: "RANGE" }]); // compteur de visites, aucune donnee personnelle
 await ensureTable(T_CONSENTS, [{ name: "pk", type: "HASH" }, { name: "sk", type: "RANGE" }]);
 let consentTable = (await db.send(new DescribeTableCommand({ TableName: T_CONSENTS }))).Table;
 if (!consentTable.StreamSpecification?.StreamEnabled || consentTable.StreamSpecification.StreamViewType !== "NEW_IMAGE") {
@@ -90,7 +91,7 @@ catch (e) {
 await iam.send(new PutRolePolicyCommand({
   RoleName: ROLE, PolicyName: "tss-portail-dynamodb",
   PolicyDocument: JSON.stringify({ Version: "2012-10-17", Statement: [
-    { Effect: "Allow", Action: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:Scan", "dynamodb:ConditionCheckItem"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_PARTNERS}`, `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_MEMBERS}`] },
+    { Effect: "Allow", Action: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:Scan", "dynamodb:ConditionCheckItem"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_PARTNERS}`, `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_MEMBERS}`, `arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_VISITES}`] },
     { Effect: "Allow", Action: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query", "dynamodb:Scan", "dynamodb:ConditionCheckItem"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_CONSENTS}`] },
     { Effect: "Allow", Action: ["dynamodb:GetRecords", "dynamodb:GetShardIterator", "dynamodb:DescribeStream"], Resource: [`arn:aws:dynamodb:${REGION}:${ACCOUNT}:table/${T_CONSENTS}/stream/*`] },
     { Effect: "Allow", Action: ["dynamodb:ListStreams"], Resource: "*" },

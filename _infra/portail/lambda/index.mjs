@@ -16,6 +16,7 @@ import { isConsentStreamEvent, handleConsentStream } from "./consent-events.mjs"
 const db = new DynamoDBClient({ region: "ca-central-1" });
 const T_PARTNERS = "tss-portail-partenaires";
 const T_MEMBERS = "tss-portail-membres";
+const T_VISITES = "tss-portail-visites"; // compteur de visites du site public: jour + page, aucune donnee personnelle
 const PRIX = 8; // $ CAD par personne couverte par mois
 const MAX_BATCH = 5;
 const PENDING_PAYMENT = "en_attente_paiement";
@@ -776,6 +777,36 @@ export const handler = async (event) => {
   const isAdmin = ADMIN_CODE && code === ADMIN_CODE;
 
   try {
+    /* ----- Compteur de visites (site public). Recoit seulement la page et un drapeau "nouvelle visite" (sessionStorage cote navigateur).
+       Aucune adresse IP, aucun temoin, aucun identifiant n'est conserve: on additionne des compteurs par jour et par page. ----- */
+    if (path === "/hit" && method === "POST") {
+      const page = clean(data.page, 80).replace(/[^a-zA-Z0-9/_.-]/g, "");
+      if (!page.startsWith("/") || page.startsWith("/cmf") || page.startsWith("/portail/admin")) return reply(200, { ok: true, ignored: true });
+      const day = new Date(Date.now() - 4 * 3600 * 1000).toISOString().slice(0, 10); // jour local approximatif (Toronto)
+      const nouveau = data.nouveau === true || data.nouveau === "oui";
+      const expr = nouveau ? "ADD vues :un, visites :un" : "ADD vues :un";
+      for (const p of [page, "_total"]) {
+        await db.send(new UpdateItemCommand({ TableName: T_VISITES, Key: { jour: S(day), page: S(p) }, UpdateExpression: expr, ExpressionAttributeValues: { ":un": { N: "1" } } }));
+      }
+      return reply(200, { ok: true });
+    }
+    if (path === "/admin/visites" && method === "GET") {
+      if (!isAdmin) return reply(401, { error: "bad_code" });
+      const days = Math.min(Math.max(parseInt(q.jours, 10) || 30, 1), 365);
+      const rows = await scanAll(T_VISITES);
+      const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      const recent = rows.filter((r) => (r.jour || "") >= since);
+      const parJour = {}, parPage = {};
+      let vues = 0, visites = 0;
+      for (const r of recent) {
+        const v = parseInt(r.vues, 10) || 0, s = parseInt(r.visites, 10) || 0;
+        if (r.page === "_total") { parJour[r.jour] = { vues: v, visites: s }; vues += v; visites += s; }
+        else { parPage[r.page] = parPage[r.page] || { vues: 0, visites: 0 }; parPage[r.page].vues += v; parPage[r.page].visites += s; }
+      }
+      const pages = Object.entries(parPage).map(([page, c]) => ({ page, ...c })).sort((a, b) => b.vues - a.vues).slice(0, 25);
+      const jours = Object.entries(parJour).map(([jour, c]) => ({ jour, ...c })).sort((a, b) => a.jour.localeCompare(b.jour));
+      return reply(200, { ok: true, depuis: since, jours, pages, total: { vues, visites }, premier_jour: rows.map((r) => r.jour).sort()[0] || "" });
+    }
     if (path === "/admin/consents" && method === "POST") {
       if (!isAdmin) return reply(403, { error: "clinical_admin_required" });
       return reply(200, await consentService().listJobs(data.cursor));

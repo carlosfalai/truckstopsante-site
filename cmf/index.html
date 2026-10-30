@@ -34,6 +34,7 @@
         .toolbar a.btn { font-size: 0.9rem; }
         .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; display: none; }
     </style>
+    <script src="/visites.js" defer></script>
 </head>
 <body>
     <header class="top"><a class="brand" href="https://truckstopsante.com/">TRUCK STOP <span>SANTÉ</span></a><div class="who"><span id="who">Centre Médical Font</span><button id="logout" hidden style="background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem">Quitter</button></div></header>
@@ -86,6 +87,18 @@
                 <table><thead><tr><th>Médecin</th><th class="num">Ce mois-ci</th><th class="num">Total</th></tr></thead><tbody id="docs"></tbody></table>
                 <p class="hint" id="codesnote"></p>
             </div>
+        </div>
+        <h2 style="margin:6px 0 0">Les visites du site</h2>
+        <div class="kpis" id="visites-kpis"></div>
+        <div class="card">
+            <h2>Visites par jour (30 derniers jours)</h2>
+            <div class="bars" id="visites-bars"></div>
+            <p class="hint" id="visitesnote"></p>
+        </div>
+        <div class="card">
+            <h2>Pages les plus vues (30 jours)</h2>
+            <table><thead><tr><th>Page</th><th class="num">Visites</th><th class="num">Pages vues</th></tr></thead><tbody id="visites-pages"></tbody></table>
+            <p class="hint">Compteur maison, sans témoin ni adresse IP : une visite = une session de navigation, une page vue = un chargement de page. Les pages d’administration ne comptent pas.</p>
         </div>
     </main>
     <div class="toast" id="toast"></div>
@@ -186,9 +199,38 @@
             document.getElementById("codesnote").textContent = "Une consultation gratuite = un code généré par un membre, utilisé par le médecin. La banque de chaque compagnie baisse à ce moment-là seulement.";
         }
 
+        function renderVisites(v) {
+            var k = document.getElementById("visites-kpis"); k.innerHTML = "";
+            if (!v || !v.ok) { k.innerHTML = '<div class="kpi"><b>–</b><span>Compteur indisponible</span></div>'; return; }
+            var j = v.jours || [];
+            var last7 = j.slice(-7).reduce(function (a, d) { return { visites: a.visites + d.visites, vues: a.vues + d.vues }; }, { visites: 0, vues: 0 });
+            var todayKey = new Date(Date.now() - 4 * 3600 * 1000).toISOString().slice(0, 10);
+            var today = j.filter(function (d) { return d.jour === todayKey; })[0] || { visites: 0, vues: 0 };
+            [[v.total.visites, "visites en 30 jours", v.total.vues + " pages vues"], [last7.visites, "visites, 7 derniers jours", last7.vues + " pages vues"], [today.visites, "visites aujourd’hui", today.vues + " pages vues"]].forEach(function (x) {
+                var d = document.createElement("div"); d.className = "kpi"; d.innerHTML = "<b>" + x[0] + "</b><span>" + x[1] + "</span><small>" + x[2] + "</small>"; k.appendChild(d);
+            });
+            var bars = document.getElementById("visites-bars"); bars.innerHTML = "";
+            var days = [], t = Date.now() - 4 * 3600 * 1000;
+            for (var i = 29; i >= 0; i--) days.push(new Date(t - i * 86400000).toISOString().slice(0, 10));
+            var byDay = {}; j.forEach(function (d) { byDay[d.jour] = d; });
+            var max = 1; days.forEach(function (d) { if (byDay[d] && byDay[d].visites > max) max = byDay[d].visites; });
+            days.forEach(function (d, idx) {
+                var c = byDay[d] || { visites: 0, vues: 0 };
+                var el = document.createElement("div"); el.className = "bar" + (idx === days.length - 1 ? " cur" : "");
+                el.title = d + " : " + c.visites + " visites, " + c.vues + " pages vues";
+                el.innerHTML = "<b>" + (c.visites || "") + "</b><i style=\"height:" + Math.round(100 * c.visites / max) + "%\"></i><span>" + (idx % 5 === 0 || idx === days.length - 1 ? d.slice(5) : "") + "</span>";
+                bars.appendChild(el);
+            });
+            document.getElementById("visitesnote").textContent = v.premier_jour ? "Le compteur existe depuis le " + v.premier_jour + "." : "Aucune visite enregistrée encore.";
+            var tb = document.getElementById("visites-pages"); tb.innerHTML = "";
+            if (!(v.pages || []).length) tb.innerHTML = '<tr><td colspan="3" class="muted">Aucune page vue encore.</td></tr>';
+            (v.pages || []).forEach(function (p) { var tr = document.createElement("tr"); tr.innerHTML = "<td>" + TSS.esc(p.page) + "</td><td class=\"num\">" + p.visites + "</td><td class=\"num\">" + p.vues + "</td>"; tb.appendChild(tr); });
+        }
+
         function load() {
             var s = TSS.session(); if (!s || s.role !== "admin") { show("login"); return; }
             show("app");
+            TSS.api("/admin/visites?jours=30").then(renderVisites).catch(function () { renderVisites(null); });
             Promise.all([TSS.api("/admin/state"), TSS.api("/admin/finance")]).then(function (r) {
                 if (!r[0].ok) { if (r[0]._status === 401) { TSS.clearSession(); show("login"); msg.textContent = "Session expirée."; } else say("Chargement impossible"); return; }
                 render(r[0], r[1]);

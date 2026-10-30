@@ -1,0 +1,27 @@
+{
+  "note": "NOT a GoDaddy API zone export. GoDaddy API access was attempted and DENIED for all three known credential sets (GODADDY_API_KEY, GODADDY_API_KEY_OLDCLINIC, GODADDY_OLD_PAT) -- all returned 403 ACCESS_DENIED on GET /v1/domains/centremedicalfont.ca/records. Per memory file godaddy-two-accounts.md, centremedicalfont.ca lives in GoDaddy account 171078437, which Carlos has not recovered. Faste (Guillaume Proulx / Normand Flageole) has delegate access to that account and made the SPF/DMARC changes on 2026-08-20. This file is instead a snapshot of what the PUBLIC DNS currently answers, captured via 8.8.8.8/1.1.1.1, taken 2026-09-24 before any change was made. Use it as the 'before' picture to confirm nothing else moved once a change is made by whoever has access.",
+  "fetchedAt": "2026-09-24",
+  "domain": "centremedicalfont.ca",
+  "method": "public DNS query (8.8.8.8, 1.1.1.1) -- not an authoritative GoDaddy zone export",
+  "records": {
+    "NS": ["ns69.domaincontrol.com", "ns70.domaincontrol.com"],
+    "A_apex": ["104.254.183.62"],
+    "A_www": ["104.254.183.62"],
+    "MX": [
+      { "priority": 1, "exchange": "aspmx.l.google.com" },
+      { "priority": 5, "exchange": "alt1.aspmx.l.google.com" },
+      { "priority": 5, "exchange": "alt2.aspmx.l.google.com" },
+      { "priority": 10, "exchange": "alt3.aspmx.l.google.com" },
+      { "priority": 10, "exchange": "alt4.aspmx.l.google.com" }
+    ],
+    "TXT_apex": [
+      "MS=ms73865882",
+      "v=spf1 include:_spf.google.com include:servers.mcsv.net ~all",
+      "google-site-verification=mLxvat01TiUoYPPj9n5WSdKvBminFYhmWQpz8MpuC_I"
+    ],
+    "TXT__dmarc": [
+      "v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
+    ],
+    "CNAME_google._domainkey": "NXDOMAIN / no record yet (DKIM still pending per cmf-email-spf-fixed.md)"
+  }
+}
