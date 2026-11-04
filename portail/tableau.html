@@ -58,7 +58,7 @@
             <p class="hint" style="margin-top:14px">Mettre en pause garde la couverture 90 jours (grâce) sans facturation. Retirer libère la place. Les changements se reflètent sur la facture du mois suivant.</p>
         </div>
     </main>
-    <footer class="fine" style="max-width:1120px;margin:0 auto;padding:0 24px 32px"><a href="/confidentialite/">Avis de confidentialité</a> · <a href="/consentement/">Télémédecine et consentement</a> · <a href="mailto:cff@centremedicalfont.ca">Questions à la clinique</a></footer>
+    <footer class="fine" style="max-width:1120px;margin:0 auto;padding:0 24px 32px"><a href="/confidentialite/">Avis de confidentialité</a> · <a href="/consentement/">Télémédecine et consentement</a> · <a href="mailto:info@truckstopsante.com">Questions à la clinique</a></footer>
     <div class="toast" id="toast"></div>
     <script src="config.js"></script>
     <script src="app.js"></script>
@@ -145,7 +145,7 @@
             button.disabled = true;
             TSS.api(hasSubscription && !resolvePending ? "/billing/portal" : "/billing/checkout", {}).then(function (j) {
                 if (j.ok && j.url) window.location.href = j.url;
-                else say(j.error === "no_members" ? "Ajoutez au moins une personne avant de payer." : j.error === "payment_pending" ? "Stripe attend encore la confirmation du paiement. Consultez votre facture ou réessayez dans quelques instants." : j.error === "checkout_busy" ? "Une vérification du paiement est déjà en cours. Réessayez dans quelques instants." : "Paiement indisponible pour le moment. Réessayez ou écrivez à cff@centremedicalfont.ca.");
+                else say(j.error === "no_members" ? "Ajoutez au moins une personne avant de payer." : j.error === "payment_pending" ? "Stripe attend encore la confirmation du paiement. Consultez votre facture ou réessayez dans quelques instants." : j.error === "checkout_busy" ? "Une vérification du paiement est déjà en cours. Réessayez dans quelques instants." : "Paiement indisponible pour le moment. Réessayez ou écrivez à info@truckstopsante.com.");
             }).catch(function () { say("Connexion au paiement impossible. Réessayez."); }).finally(function () { button.disabled = false; });
         }
         function activate() {
