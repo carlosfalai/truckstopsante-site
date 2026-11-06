@@ -7,6 +7,7 @@ Carlos: "tell each terminal to run their own ad campaign with remotion, except t
 - Job: Run this project's own free campaign with Remotion videos: write the scripts, render (instanthpi-videos/ or this project's own Remotion setup), 9:16 Reel plus 1:1 or 16:9 Feed, 15 to 45 s, captions burned in. Art from this project's own approved images (STYLE-LOCK if it has one); voices through voiceq (audq) unless noted.
 
 ## Rules
+- Graph API ONLY for everything on Facebook. Never open or drive the Facebook website in any browser or automated window, never log in there by script: Carlos 2026-11-05, it gets the accounts banned. What the API cannot do, Carlos does by hand.
 - FREE page posts only. Never paid ads, never Boost, never the ad account (Carlos 2026-11-04: "dont pay facebook, just post on the web page"). A paused campaign was built by mistake once and deleted.
 - Show Carlos each video and its caption before it goes up; post only after his go for that post.
 - Post with the Graph API: page token FB_PAGE_TOKEN_<page id> in the master .env (permanent, never print it). Video: POST https://graph-video.facebook.com/v21.0/<page id>/videos with source, title, description, published=true; then check status ready and the permalink.
